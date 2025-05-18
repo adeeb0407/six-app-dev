@@ -1,4 +1,3 @@
-// FlexiblePostComponent.tsx
 import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -88,7 +87,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
             activeConnectionLevel={connectionLevel}
             onConnectionLevelChange={handleConnectionLevelChange}
           />
-          {isModal && onClose && (
+          {onClose && (
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <Feather name="x" size={22} color="#666" />
             </TouchableOpacity>
@@ -97,15 +96,17 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       </View>
 
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Type your note..."
-          placeholderTextColor="#A0A0A0"
-          multiline
-           scrollEnabled={true}   
-          value={noteText}
-          onChangeText={setNoteText}
-        />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Type your note..."
+            placeholderTextColor="#A0A0A0"
+            multiline
+            scrollEnabled={true}
+            value={noteText}
+            onChangeText={setNoteText}
+          />
+        </View>
       </View>
 
       <View style={styles.bottomSection}>
@@ -152,17 +153,23 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <Animated.View
-          style={[
-            styles.centerModalContainer,
-            { opacity: fadeAnim }
-          ]}
+      <TouchableOpacity
+        activeOpacity={1}
+        style={styles.modalOverlay}
+        onPress={onClose}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => { }}
+          style={styles.centerModalContainer}
         >
-          {renderContent()}
-        </Animated.View>
-      </View>
+          <Animated.View style={{ opacity: fadeAnim }}>
+            {renderContent()}
+          </Animated.View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
+
   );
 };
 
@@ -223,10 +230,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: '#F9F9FB',
     borderRadius: 12,
-    padding: 8,
     minHeight: 120,
   },
+  inputWrapper: {
+    flex: 1,
+    height: '100%',
+    padding: 8,
+  },
   textInput: {
+    flex: 1,
     fontSize: 16,
     color: '#333',
     textAlignVertical: 'top',

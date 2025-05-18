@@ -1,7 +1,8 @@
+import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import Feather from '@expo/vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   ScrollView,
@@ -26,6 +27,12 @@ type MessageType = {
 
 const ChatsScreen = () => {
   const router = useRouter();
+  const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
+  const [postModalVisible, setPostModalVisible] = useState(false);
+
+  useEffect(() => {
+    setPostModalVisible(true);
+  }, [showPostModal]);
   const messages: MessageType[] = [
     {
       id: '1',
@@ -108,6 +115,17 @@ const ChatsScreen = () => {
           <Text style={styles.tabButtonActiveText}>Group Chats</Text>
         </LinearGradient>
       </View>
+
+      {
+        postModalVisible &&
+        <FlexiblePostComponent
+          isModal={true}
+          visible={postModalVisible}
+          onClose={() => setPostModalVisible(false)}
+          onPost={() => { }}
+        />
+
+      }
 
       {/* Messages List */}
       <ScrollView style={styles.messagesContainer}>

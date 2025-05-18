@@ -1,4 +1,3 @@
-// CategorySelector.tsx
 import { CategoryTabs, categoryTabColors } from '@/src/constants/types/categoryTabs';
 import { CategorySelectorProps } from '@/src/constants/types/post';
 import React, { useEffect, useRef, useState } from 'react';

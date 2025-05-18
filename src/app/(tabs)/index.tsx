@@ -1,18 +1,23 @@
 import HeaderText from '@/src/components/common/HeaderText';
 import CategoryTabSelector from '@/src/components/feature/Home/CategoryTabSelector';
 import PostTabSelector from '@/src/components/feature/Home/PostTabSelector';
+import PostCard from '@/src/components/feature/Post/PostCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
 import { PostType } from '@/src/constants/types/post';
 import { PostTabs } from '@/src/constants/types/postTabs';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useLocalSearchParams } from 'expo-router/build/hooks';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   Image,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -54,9 +59,15 @@ const posts: PostType[] = [
 
 const HomeScreen: React.FC = () => {
   const router = useRouter();
+  const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const [postTabs, setPostTabs] = useState<PostTabs>(PostTabs.AllPosts);
-  const [categoryTabs, setCategoryTabs] = useState<CategoryTabs[]>([])
+  const [categoryTabs, setCategoryTabs] = useState<CategoryTabs[]>([]);
   const [postModalVisible, setPostModalVisible] = useState(false);
+  const modalScaleAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    setPostModalVisible(true);
+  }, [showPostModal]);
 
   const toggleCategoryTab = (tab: CategoryTabs) => {
     setCategoryTabs(prev =>
@@ -64,6 +75,26 @@ const HomeScreen: React.FC = () => {
         ? prev.filter(t => t !== tab) // remove if selected
         : [...prev, tab]              // add if not selected
     );
+  };
+
+  const showModal = () => {
+    setPostModalVisible(true);
+    Animated.spring(modalScaleAnim, {
+      toValue: 0.95, // Scale down to 95%
+      useNativeDriver: true,
+      tension: 80,
+      friction: 8,
+    }).start();
+  };
+
+  const hideModal = () => {
+    Animated.timing(modalScaleAnim, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setPostModalVisible(false);
+    });
   };
 
   const tabs = Object.values(CategoryTabs);
@@ -84,14 +115,47 @@ const HomeScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
+      
+
       {/* Share input */}
-      <TouchableOpacity style={styles.shareContainer}
-        onPress={() => setPostModalVisible(true)}
+      
+     { !postModalVisible &&
+       <TouchableOpacity 
+        style={styles.shareContainer}
+        onPress={showModal}
       >
         <Text style={styles.shareInput}>
           + Share something
         </Text>
       </TouchableOpacity>
+     }
+
+      {postModalVisible && (
+        <TouchableWithoutFeedback onPress={hideModal}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <Animated.View 
+                style={[
+                  styles.modalContainer,
+                  {
+                    transform: [{ scale: modalScaleAnim }]
+                  }
+                ]}
+              >
+                <FlexiblePostComponent
+                  isModal={false}
+                  visible={postModalVisible}
+                  onClose={hideModal}
+                  onPost={() => {
+                    // handle post
+                    hideModal();
+                  }}
+                />
+              </Animated.View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      )}
 
       {/* PostTabs section */}
       <PostTabSelector
@@ -101,35 +165,19 @@ const HomeScreen: React.FC = () => {
       />
 
       {/* Category tabs */}
-      {/* Category tabs */}
       <CategoryTabSelector
         onToggle={toggleCategoryTab}
         selectedTabs={categoryTabs}
         tabs={tabs}
       />
 
-
       {/* Posts */}
-      {/* <ScrollView style={styles.postsContainer}>
+      <ScrollView style={styles.postsContainer}>
         {posts.map(post => (
           <PostCard post={post}/>
         ))}
-      </ScrollView> */}
+      </ScrollView>
 
-      {/* Modal component */}
-      <FlexiblePostComponent
-        isModal={true}
-        modalPosition="center"
-        visible={postModalVisible}
-        onClose={() => setPostModalVisible(false)}
-        onPost={() => {}}
-      />
-
-      {/* <PostModal
-        visible={postModalVisible}
-        onClose={() => setPostModalVisible(false)}
-        defaultTab="General"
-      /> */}
     </SafeAreaView>
   );
 };
@@ -168,7 +216,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-
+  modalOverlay: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '90%',
+  },
 });
 
 export default HomeScreen;
