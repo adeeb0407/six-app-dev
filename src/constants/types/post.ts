@@ -2,10 +2,12 @@ import { CategoryTabs } from "./categoryTabs";
 
 export type PostType = {
   id: string;
-  username: string;
-  age: string;
+  connectionType : ConnectionLevel
+  university: string;
   title: string;
   description: string;
+  about: string
+  category: CategoryTabs
   timeAgo: string;
 };
 

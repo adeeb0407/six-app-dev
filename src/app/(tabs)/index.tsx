@@ -4,7 +4,7 @@ import PostTabSelector from '@/src/components/feature/Home/PostTabSelector';
 import PostCard from '@/src/components/feature/Post/PostCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
-import { PostType } from '@/src/constants/types/post';
+import { ConnectionLevel, PostType } from '@/src/constants/types/post';
 import { PostTabs } from '@/src/constants/types/postTabs';
 import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
@@ -25,36 +25,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const posts: PostType[] = [
   {
     id: '1',
-    username: `NYU'26`,
-    age: '26',
+    connectionType: ConnectionLevel.First,
+    university: `NYU'26`,
     title: 'Grabbing coffee in SoHo - anyone free to join?',
-    description: 'Econ | Loves matcha and dogs',
+    description: 'Econ',
+    about: 'Loves matcha and dogs',
+    category: CategoryTabs.General,
     timeAgo: '2h ago',
   },
   {
     id: '2',
-    username: `NYU'26`,
-    age: '26',
-    title: 'Grabbing coffee in SoHo - anyone free to join?',
-    description: 'Econ | Loves matcha and dogs',
+    connectionType: ConnectionLevel.Second,
+    university: `Columbia'25`,
+    title: 'Need to rant about Philosophy 210 - anyone taken it before?',
+    description: `Philosophy`,
+    about: 'Coffee enthusiast and tennis player',
+    category: CategoryTabs.Hangout,
     timeAgo: '2h ago',
-  },
-  {
-    id: '3',
-    username: `Columbia'24`,
-    age: '28',
-    title: 'Working on a startup idea - looking for tech co-founders',
-    description: 'MBA | Tech enthusiast',
-    timeAgo: '3h ago',
-  },
-  {
-    id: '4',
-    username: `Hunter'25`,
-    age: '27',
-    title: 'Study group for LSAT prep this weekend?',
-    description: 'Pre-Law | Coffee addict',
-    timeAgo: '4h ago',
-  },
+  }
 ];
 
 const HomeScreen: React.FC = () => {
@@ -115,26 +103,26 @@ const HomeScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      
+
 
       {/* Share input */}
-      
-     { !postModalVisible &&
-       <TouchableOpacity 
-        style={styles.shareContainer}
-        onPress={showModal}
-      >
-        <Text style={styles.shareInput}>
-          + Share something
-        </Text>
-      </TouchableOpacity>
-     }
+
+      {!postModalVisible &&
+        <TouchableOpacity
+          style={styles.shareContainer}
+          onPress={showModal}
+        >
+          <Text style={styles.shareInput}>
+            + Share something
+          </Text>
+        </TouchableOpacity>
+      }
 
       {postModalVisible && (
         <TouchableWithoutFeedback onPress={hideModal}>
           <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback onPress={() => {}}>
-              <Animated.View 
+            <TouchableWithoutFeedback onPress={() => { }}>
+              <Animated.View
                 style={[
                   styles.modalContainer,
                   {
@@ -157,24 +145,26 @@ const HomeScreen: React.FC = () => {
         </TouchableWithoutFeedback>
       )}
 
-      {/* PostTabs section */}
-      <PostTabSelector
-        degrees={degrees}
-        selectedTab={postTabs}
-        onSelectTab={setPostTabs}
-      />
+      <View style={styles.filterContainer}>
+        {/* PostTabs section */}
+        <PostTabSelector
+          degrees={degrees}
+          selectedTab={postTabs}
+          onSelectTab={setPostTabs}
+        />
 
-      {/* Category tabs */}
-      <CategoryTabSelector
-        onToggle={toggleCategoryTab}
-        selectedTabs={categoryTabs}
-        tabs={tabs}
-      />
+        {/* Category tabs */}
+        <CategoryTabSelector
+          onToggle={toggleCategoryTab}
+          selectedTabs={categoryTabs}
+          tabs={tabs}
+        />
+      </View>
 
       {/* Posts */}
       <ScrollView style={styles.postsContainer}>
         {posts.map(post => (
-          <PostCard post={post}/>
+          <PostCard post={post} />
         ))}
       </ScrollView>
 
@@ -212,6 +202,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center'
   },
+  filterContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 5,
+    paddingVertical: 16
+  },
   postsContainer: {
     flex: 1,
     paddingHorizontal: 20,
@@ -219,6 +215,7 @@ const styles = StyleSheet.create({
   modalOverlay: {
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1000
   },
   modalContainer: {
     width: '90%',
