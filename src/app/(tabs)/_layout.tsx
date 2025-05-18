@@ -1,3 +1,4 @@
+import { usePostModalStore } from '@/src/store/postModalStore';
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
@@ -6,6 +7,8 @@ import { Image, StyleSheet } from 'react-native';
 
 export default function TabLayout() {
   const [currentTab, setCurrentTab] = useState('index');
+  const setHomePostModalVisible = usePostModalStore(state => state.setHomePostModalVisible);
+  const setChatPostModalVisible = usePostModalStore(state => state.setChatPostModalVisible);
 
   return (
     <Tabs
@@ -14,8 +17,8 @@ export default function TabLayout() {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          height: 64, // ⬆️ increased height
-          paddingBottom: 2, // aligns icons vertically
+          height: 64, 
+          paddingBottom: 2, 
           paddingTop: 10,
         },
       }}
@@ -24,6 +27,8 @@ export default function TabLayout() {
           const activeIndex = e.data.state.index;
           const activeTabName = e.data.state.routeNames[activeIndex];
           setCurrentTab(activeTabName);
+          if (activeTabName != 'index') setHomePostModalVisible(false)
+          if (activeTabName != 'chats') setChatPostModalVisible(false)
         },
       }}
     >
@@ -53,6 +58,7 @@ export default function TabLayout() {
         listeners={({ navigation }) => ({
           tabPress: e => {
             e.preventDefault();
+            console.log('idhar kyu ara bro')
             navigation.navigate(currentTab, { showPostModal: Date.now().toString() });
           },
         })}

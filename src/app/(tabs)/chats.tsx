@@ -1,8 +1,8 @@
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
+import { usePostModalStore } from '@/src/store/postModalStore';
 import Feather from '@expo/vector-icons/Feather';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   Image,
   ScrollView,
@@ -28,11 +28,13 @@ type MessageType = {
 const ChatsScreen = () => {
   const router = useRouter();
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
-  const [postModalVisible, setPostModalVisible] = useState(false);
+  const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
 
   useEffect(() => {
-    setPostModalVisible(true);
+    if (showPostModal)
+      setChatPostModalVisible(true);
   }, [showPostModal]);
+
   const messages: MessageType[] = [
     {
       id: '1',
@@ -102,7 +104,7 @@ const ChatsScreen = () => {
       </View>
 
       {/* Message Tabs */}
-      <View style={styles.tabContainer}>
+      {/* <View style={styles.tabContainer}>
         <TouchableOpacity style={styles.tabButton}>
           <Text style={styles.tabButtonText}>Direct Messages</Text>
         </TouchableOpacity>
@@ -114,14 +116,14 @@ const ChatsScreen = () => {
         >
           <Text style={styles.tabButtonActiveText}>Group Chats</Text>
         </LinearGradient>
-      </View>
+      </View> */}
 
       {
-        postModalVisible &&
+        isChatPostModalVisible &&
         <FlexiblePostComponent
           isModal={true}
-          visible={postModalVisible}
-          onClose={() => setPostModalVisible(false)}
+          visible={isChatPostModalVisible}
+          onClose={() => setChatPostModalVisible(false)}
           onPost={() => { }}
         />
 

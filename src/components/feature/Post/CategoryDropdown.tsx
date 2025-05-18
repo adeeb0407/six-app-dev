@@ -1,4 +1,4 @@
-import { CategoryTabs, categoryTabColors } from '@/src/constants/types/categoryTabs';
+import { CategoryTabs } from '@/src/constants/types/categoryTabs';
 import { CategorySelectorProps } from '@/src/constants/types/post';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -56,12 +56,10 @@ const CategoryDropdown: React.FC<CategorySelectorProps> = ({
     };
   }, []);
 
-  const activeColor = categoryTabColors[activeTab]?.bg || '#dbfae6';
-
   return (
     <View style={{ position: 'relative', alignSelf: 'flex-start' }}>
       <TouchableOpacity
-        style={[styles.categoryButton, { backgroundColor: activeColor }]}
+        style={[styles.categoryButton, { backgroundColor: '#9191ff' }]}
         onPress={toggleDropdown}
       >
         <Text style={styles.categoryText}>{activeTab}</Text>
@@ -93,7 +91,6 @@ const CategoryDropdown: React.FC<CategorySelectorProps> = ({
                 key={category}
                 style={[
                   styles.categoryOption,
-                  { backgroundColor: categoryTabColors[category].bg },
                   activeTab === category && styles.activeCategoryOption
                 ]}
                 onPress={() => handleSelectCategory(category)}
@@ -124,7 +121,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#000',
+    color: '#fff',
   },
   dropdown: {
     position: 'absolute',

@@ -12,7 +12,7 @@ type Props = {
 const PostTabSelector = ({ degrees, selectedTab, onSelectTab }: Props) => {
   return (
     <View style={styles.tabsSection}>
-      <View style={styles.tabsLeft}>
+      {/* <View style={styles.tabsLeft}> */}
         <TouchableOpacity onPress={() => onSelectTab(PostTabs.AllPosts)}>
           {selectedTab === PostTabs.AllPosts ? (
             <LinearGradient
@@ -29,9 +29,9 @@ const PostTabSelector = ({ degrees, selectedTab, onSelectTab }: Props) => {
             </View>
           )}
         </TouchableOpacity>
-      </View>
+      {/* </View> */}
 
-      <View style={styles.tabsRight}>
+      {/* <View style={styles.tabsRight}> */}
         {degrees.map((degree, index) => {
           const tabKey = (index + 1).toString() as PostTabs;
           const isActive = selectedTab === tabKey;
@@ -56,7 +56,7 @@ const PostTabSelector = ({ degrees, selectedTab, onSelectTab }: Props) => {
           );
         })}
       </View>
-    </View>
+    // </View>
   );
 };
 
@@ -84,7 +84,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   tabButtonInactive: {
-    backgroundColor: '#E5E7EB',
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -102,18 +101,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 20,
-    backgroundColor: '#E5E7EB',
     marginLeft: 8,
   },
   degreeButtonActive: {
-    backgroundColor: '#35c3f0',
+    backgroundColor: '#E5E7EB',
   },
   degreeText: {
     color: '#333',
     textAlign: 'center',
   },
   degreeTextActive: {
-    color: '#fff',
+    color: '#000',
     fontWeight: 'bold',
   },
 

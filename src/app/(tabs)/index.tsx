@@ -6,6 +6,7 @@ import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
 import { ConnectionLevel, PostType } from '@/src/constants/types/post';
 import { PostTabs } from '@/src/constants/types/postTabs';
+import { usePostModalStore } from '@/src/store/postModalStore';
 import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
 import React, { useEffect, useRef, useState } from 'react';
@@ -30,7 +31,7 @@ const posts: PostType[] = [
     title: 'Grabbing coffee in SoHo - anyone free to join?',
     description: 'Econ',
     about: 'Loves matcha and dogs',
-    category: CategoryTabs.General,
+    category: CategoryTabs.Chat,
     timeAgo: '2h ago',
   },
   {
@@ -40,7 +41,7 @@ const posts: PostType[] = [
     title: 'Need to rant about Philosophy 210 - anyone taken it before?',
     description: `Philosophy`,
     about: 'Coffee enthusiast and tennis player',
-    category: CategoryTabs.Hangout,
+    category: CategoryTabs.Meet,
     timeAgo: '2h ago',
   }
 ];
@@ -50,11 +51,13 @@ const HomeScreen: React.FC = () => {
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const [postTabs, setPostTabs] = useState<PostTabs>(PostTabs.AllPosts);
   const [categoryTabs, setCategoryTabs] = useState<CategoryTabs[]>([]);
-  const [postModalVisible, setPostModalVisible] = useState(false);
+  const { isHomePostModalVisible, setHomePostModalVisible } = usePostModalStore();
   const modalScaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    setPostModalVisible(true);
+    if(showPostModal) {
+      setHomePostModalVisible(true);
+    }
   }, [showPostModal]);
 
   const toggleCategoryTab = (tab: CategoryTabs) => {
@@ -66,22 +69,22 @@ const HomeScreen: React.FC = () => {
   };
 
   const showModal = () => {
-    setPostModalVisible(true);
+    setHomePostModalVisible(true);
     Animated.spring(modalScaleAnim, {
-      toValue: 0.95, // Scale down to 95%
+      toValue: 0.95, 
       useNativeDriver: true,
-      tension: 80,
-      friction: 8,
+      tension: 40,
+      friction: 10,
     }).start();
   };
 
   const hideModal = () => {
     Animated.timing(modalScaleAnim, {
       toValue: 1,
-      duration: 150,
+      duration: 100,
       useNativeDriver: true,
     }).start(() => {
-      setPostModalVisible(false);
+      setHomePostModalVisible(false);
     });
   };
 
@@ -107,18 +110,18 @@ const HomeScreen: React.FC = () => {
 
       {/* Share input */}
 
-      {!postModalVisible &&
+      {!isHomePostModalVisible &&
         <TouchableOpacity
           style={styles.shareContainer}
           onPress={showModal}
         >
           <Text style={styles.shareInput}>
-            + Share something
+            Share something
           </Text>
         </TouchableOpacity>
       }
 
-      {postModalVisible && (
+      {isHomePostModalVisible && (
         <TouchableWithoutFeedback onPress={hideModal}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback onPress={() => { }}>
@@ -132,7 +135,7 @@ const HomeScreen: React.FC = () => {
               >
                 <FlexiblePostComponent
                   isModal={false}
-                  visible={postModalVisible}
+                  visible={isHomePostModalVisible}
                   onClose={hideModal}
                   onPost={() => {
                     // handle post
@@ -164,7 +167,7 @@ const HomeScreen: React.FC = () => {
       {/* Posts */}
       <ScrollView style={styles.postsContainer}>
         {posts.map(post => (
-          <PostCard post={post} />
+          <PostCard key={post.id} post={post} />
         ))}
       </ScrollView>
 
@@ -200,7 +203,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     fontSize: 20,
-    textAlign: 'center'
+    textAlign: 'center',
+    fontStyle: 'italic'
   },
   filterContainer: {
     display: 'flex',
@@ -215,7 +219,7 @@ const styles = StyleSheet.create({
   modalOverlay: {
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000
+    zIndex: 1000,
   },
   modalContainer: {
     width: '90%',

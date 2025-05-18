@@ -9,14 +9,6 @@ import {
   View
 } from 'react-native';
 
-const categoryTabColors: Record<CategoryTabs, { bg: string }> = {
-  [CategoryTabs.General]: { bg: '#dbfae6' },
-  [CategoryTabs.Hangout]: { bg: '#dbeafe' },
-  [CategoryTabs.Opportunity]: { bg: '#fbe7f3' },
-  [CategoryTabs.Help]: { bg: '#fef7c3' },
-  [CategoryTabs.Chat]: { bg: '#f3f4f6' },
-};
-
 type props = {
   post: PostType;
 };
@@ -40,22 +32,28 @@ const PostCard = ({ post }: props) => {
         ? '2nd connection'
         : '3rd+ connection';
 
-  const categoryColor = categoryTabColors[post.category]?.bg || '#eee';
-
   return (
     <TouchableWithoutFeedback onPress={handleShowDetailsToggle}>
       <View key={post.id} style={styles.postCard}>
         <View style={styles.postHeader}>
           <View style={styles.subPostHeader}>
+
             <Text style={styles.postConnectionText}>{connectionText}</Text>
-            <View style={[styles.categoryPill, { backgroundColor: categoryColor }]}>
-              <Text style={styles.categoryText}>{post.category}</Text>
-            </View>
           </View>
           <Text style={styles.postTimeText}>{post.timeAgo}</Text>
         </View>
 
         <Text style={styles.postTitle}>{post.title}</Text>
+        {post.category !== CategoryTabs.General &&
+        
+          <View style={styles.postActions}>
+                <TouchableOpacity style={styles.meetButton}>
+                    <Text style={styles.meetButtonText}>{post.category}</Text>
+                </TouchableOpacity>
+            </View>
+        }
+
+
 
         {showDetails && (
           <View>
@@ -101,7 +99,6 @@ const styles = StyleSheet.create({
   subPostHeader: {
     display: 'flex',
     flexDirection: 'row',
-    gap: 5,
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -128,7 +125,7 @@ const styles = StyleSheet.create({
   postTitle: {
     fontSize: 26,
     fontWeight: '500',
-    marginBottom: 15,
+    marginBottom: 2,
     fontFamily: 'TimesNewRomanRegular',
   },
   postDescription: {
@@ -150,7 +147,7 @@ const styles = StyleSheet.create({
   repliedContaniner: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 10,
+    marginTop: 2,
   },
   repliedText: {
     backgroundColor: '#d0f2fc',
@@ -160,6 +157,21 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     fontSize: 12,
     fontWeight: '500',
+  },
+  postActions: {
+    alignItems: 'flex-end',
+    marginBottom: 10,
+  },
+  meetButton: {
+    borderWidth: 1,
+    borderColor: '#000',
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  meetButtonText: {
+    fontSize: 14,
+    color: '#333',
   },
 });
 

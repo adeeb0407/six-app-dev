@@ -1,4 +1,4 @@
-import { categoryTabColors, CategoryTabs } from '@/src/constants/types/categoryTabs';
+import { CategoryTabs } from '@/src/constants/types/categoryTabs';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -7,7 +7,6 @@ type Props = {
     selectedTabs: CategoryTabs[];
     onToggle: (tab: CategoryTabs) => void;
 };
-
 
 const CategoryTabSelector = ({ tabs, selectedTabs, onToggle }: Props) => {
     return (
@@ -19,7 +18,6 @@ const CategoryTabSelector = ({ tabs, selectedTabs, onToggle }: Props) => {
             >
                 {tabs.map((tab, index) => {
                     const isSelected = selectedTabs.includes(tab);
-                    const { bg } = categoryTabColors[tab];
 
                     return (
                         <TouchableOpacity
@@ -28,13 +26,14 @@ const CategoryTabSelector = ({ tabs, selectedTabs, onToggle }: Props) => {
                             style={[
                                 styles.categoryTab,
                                 {
-                                    backgroundColor: bg,
-                                    borderColor: isSelected ? '#007bff' : 'transparent',
-                                    borderWidth: isSelected ? 2 : 0,
+                                    backgroundColor: isSelected ? '#9191ff' : '#fff',
+
                                 },
                             ]}
                         >
-                            <Text style={styles.categoryTabText}>{tab}</Text>
+                            <Text style={[styles.categoryTabText, {
+                                color: isSelected ? '#fff' : '#000',
+                            }]}>{tab}</Text>
                         </TouchableOpacity>
                     );
                 })}
@@ -50,9 +49,11 @@ const styles = StyleSheet.create({
     },
     categoryTab: {
         paddingVertical: 8,
-        paddingHorizontal: 16,
+        paddingHorizontal: 24,
         borderRadius: 20,
         margin: 4,
+        borderColor: '#000',
+        borderWidth: 1,
     },
     categoryTabSelected: {
         backgroundColor: '#5170ff',
@@ -62,7 +63,6 @@ const styles = StyleSheet.create({
         fontWeight: '500'
     },
     categoryTabTextSelected: {
-        color: '#fff',
         fontWeight: 'bold',
     },
 })
