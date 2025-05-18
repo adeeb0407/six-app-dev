@@ -2,7 +2,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-
+import { AuthProvider } from '../context/AuthContext';
 
 export default function RootLayout() {
 
@@ -22,15 +22,11 @@ export default function RootLayout() {
     return null;
   }
 
-  return <Stack screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-    <Stack.Screen name="auth/landing" options={{ headerShown: false }} />
-    <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-    <Stack.Screen name="auth/otp" options={{ headerShown: false }} />
-
-
-    <Stack.Screen name='profile' />
-    <Stack.Screen name="chat/[id]" options={{ title: 'chat' }} />
-  </Stack>;
+  return (
+    <AuthProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name='(protected)' />
+      </Stack>
+    </AuthProvider>
+  )
 }

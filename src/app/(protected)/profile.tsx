@@ -1,5 +1,7 @@
+import SharingCard from '@/src/components/common/SharingCard';
 import { Theme } from '@/src/constants/color';
-import { Feather, Octicons } from '@expo/vector-icons';
+import { useAuth } from '@/src/context/AuthContext';
+import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import {
     Image,
@@ -10,9 +12,10 @@ import {
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ProfileDetails from '../components/feature/Profile/ProfileDetails';
+import ProfileDetails from '../../components/feature/Profile/ProfileDetails';
 
 const Profile = () => {
+    const {logout} = useAuth();
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
@@ -22,7 +25,7 @@ const Profile = () => {
                         <TouchableOpacity style={styles.iconButton}>
                             <Feather name="refresh-cw" size={22} color={Theme.secondary} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconButton}>
+                        <TouchableOpacity style={styles.iconButton} onPress={logout}>
                             <Feather name="edit-2" size={22} color={Theme.secondary} />
                         </TouchableOpacity>
                     </View>
@@ -30,7 +33,7 @@ const Profile = () => {
 
                 <View style={styles.profileImageContainer}>
                     <Image
-                        source={require('../assets/images/pfp.jpg')}
+                        source={require('@/src/assets/images/pfp.jpg')}
                         style={styles.profileImage}
                     />
                 </View>
@@ -43,23 +46,10 @@ const Profile = () => {
                     <Text style={styles.infoText}>LSE | Football | Singing</Text>
                 </View>
 
-
-
-                <View style={styles.inviteContainer}>
-                    <View style={styles.inviteContent}>
-                        <View style={styles.inviteIconContainer}>
-                            <Octicons name="person-add" size={24} color="#9191ff" />
-                        </View>
-                        <View style={styles.inviteTextContainer}>
-                            <Text style={styles.inviteTitle}>Invite your contacts</Text>
-                            <Text style={styles.inviteSubtitle}>Help your network grow on Six</Text>
-                        </View>
-                    </View>
-                    <TouchableOpacity style={styles.shareButton}>
-                        <Text style={styles.shareButtonText}>Share</Text>
-                    </TouchableOpacity>
-                </View>
                 <ProfileDetails />
+                <View style={styles.sharingCardConatiner}>
+                    <SharingCard/>
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -113,47 +103,10 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '400'
     },
-    inviteContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+    sharingCardConatiner: {
         alignItems: 'center',
-        marginTop: 40,
-        marginHorizontal: 20,
-        paddingHorizontal: 24,
-        paddingVertical: 24,
-        backgroundColor: '#F3F4F6',
-        borderRadius: 12,
-    },
-    inviteContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    inviteIconContainer: {
-        marginRight: 15,
-    },
-    inviteTextContainer: {
-        maxWidth: 200,
-        flexDirection: 'column',
-    },
-    inviteTitle: {
-        fontSize: 18,
-        fontFamily: 'TimesNewRomanRegular',
-    },
-    inviteSubtitle: {
-        fontSize: 14,
-        color: '#888',
-        flexWrap: 'wrap',
-        lineHeight: 18,
-    },
-    shareButton: {
-        backgroundColor: '#9191ff',
-        paddingVertical: 10,
-        paddingHorizontal: 25,
-        borderRadius: 8,
-    },
-    shareButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
+        paddingHorizontal: 20,
+        marginBottom: 50,
     },
 });
 

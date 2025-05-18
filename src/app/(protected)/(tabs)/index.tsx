@@ -63,8 +63,8 @@ const HomeScreen: React.FC = () => {
   const toggleCategoryTab = (tab: CategoryTabs) => {
     setCategoryTabs(prev =>
       prev.includes(tab)
-        ? prev.filter(t => t !== tab) // remove if selected
-        : [...prev, tab]              // add if not selected
+        ? prev.filter(t => t !== tab) 
+        : [...prev, tab]              
     );
   };
 
@@ -100,7 +100,7 @@ const HomeScreen: React.FC = () => {
         <HeaderText title='Six' />
         <TouchableOpacity onPress={() => router.push('/profile')}>
           <Image
-            source={require('../../assets/images/pfp.jpg')}
+            source={require('@/src/assets/images/pfp.jpg')}
             style={styles.profileImage}
           />
         </TouchableOpacity>

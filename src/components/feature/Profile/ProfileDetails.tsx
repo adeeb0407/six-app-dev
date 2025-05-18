@@ -23,8 +23,8 @@ const ProfileDetails = () => {
     <View>
       <View style={styles.detailsContainer}>
         <View style={styles.col}>
-          {demoDetails.map((detail) =>
-            <View style={styles.row}>
+          {demoDetails.map((detail, i) =>
+            <View key={i} style={styles.row}>
               <View style={styles.blueBall} />
               <Text style={styles.detailsText}>{detail}</Text>
             </View>
@@ -39,9 +39,9 @@ const ProfileDetails = () => {
 
       <View style={styles.networkConatiner}>
         <View style={styles.networkcol}>
-          {networkDetails.map((detail) =>
-            <View style={styles.networkTextContainer}>
-              <Text style={styles.detailsText}>{detail}</Text>
+          {networkDetails.map((network, i) =>
+            <View key={i} style={styles.networkTextContainer}>
+              <Text style={styles.networkText}>{network}</Text>
             </View>
           )}
         </View>
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 20,
     paddingHorizontal: 24,
-    paddingVertical: 24,
+    marginTop: 24,
     borderRadius: 12,
   },
   networkcol: {
