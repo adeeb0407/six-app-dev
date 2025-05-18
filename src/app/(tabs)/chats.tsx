@@ -1,32 +1,23 @@
+import ChatMessageCard from '@/src/components/feature/Chat/ChatMessageCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
+import { MessageType } from '@/src/constants/types/chat';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import Feather from '@expo/vector-icons/Feather';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect } from 'react';
 import {
-  Image,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Define types for our chat data
-type MessageType = {
-  id: string;
-  name: string;
-  avatar: string;
-  message: string;
-  hasVerification?: boolean;
-  hasDuplicate?: boolean;
-};
+
 
 const ChatsScreen = () => {
-  const router = useRouter();
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
 
@@ -41,7 +32,6 @@ const ChatsScreen = () => {
       name: 'Peter',
       avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
       message: 'Chat over text?',
-      hasVerification: true,
     },
     {
       id: '2',
@@ -132,24 +122,7 @@ const ChatsScreen = () => {
       {/* Messages List */}
       <ScrollView style={styles.messagesContainer}>
         {messages.map(message => (
-          <TouchableOpacity key={message.id} style={styles.messageCard}
-            onPress={() => router.push('/chat/123')}
-          >
-            <Image source={{ uri: message.avatar }} style={styles.avatar} />
-            <View style={styles.messageContent}>
-              <View style={styles.nameContainer}>
-                <Text style={styles.name}>{message.name}</Text>
-                {message.hasVerification && (
-                  <View style={styles.verificationBadge}>
-                    <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>✓</Text>
-                  </View>
-                )}
-              </View>
-              <Text style={styles.messageText} numberOfLines={1}>
-                {message.message}
-              </Text>
-            </View>
-          </TouchableOpacity>
+         <ChatMessageCard key={message.id} message={message} />
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -178,7 +151,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f2f2f2',
-    borderRadius: 25,
+    borderRadius: 16,
     paddingHorizontal: 15,
     paddingVertical: 6,
   },
@@ -215,29 +188,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-  messageCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  messageContent: {
-    flex: 1,
-    marginLeft: 15,
-  },
-  nameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginRight: 5,
-  },
+
   verificationBadge: {
     width: 16,
     height: 16,
@@ -246,11 +197,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  messageText: {
-    fontSize: 14,
-    color: '#999',
-    marginTop: 3,
-  },
+
   bottomNavigation: {
     flexDirection: 'row',
     justifyContent: 'space-around',

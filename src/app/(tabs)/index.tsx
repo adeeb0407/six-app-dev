@@ -122,7 +122,6 @@ const HomeScreen: React.FC = () => {
       }
 
       {isHomePostModalVisible && (
-        <TouchableWithoutFeedback onPress={hideModal}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback onPress={() => { }}>
               <Animated.View
@@ -145,7 +144,6 @@ const HomeScreen: React.FC = () => {
               </Animated.View>
             </TouchableWithoutFeedback>
           </View>
-        </TouchableWithoutFeedback>
       )}
 
       <View style={styles.filterContainer}>
