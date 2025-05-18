@@ -3,6 +3,7 @@ import { Feather, Octicons } from '@expo/vector-icons';
 import React from 'react';
 import {
     Image,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -14,49 +15,52 @@ import ProfileDetails from '../components/feature/Profile/ProfileDetails';
 const Profile = () => {
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Profile</Text>
-                <View style={styles.headerButtons}>
-                    <TouchableOpacity style={styles.iconButton}>
-                        <Feather name="refresh-cw" size={22} color={Theme.secondary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.iconButton}>
-                        <Feather name="edit-2" size={22} color={Theme.secondary} />
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            <View style={styles.profileImageContainer}>
-                <Image
-                    source={require('../assets/images/pfp.jpg')}
-                    style={styles.profileImage}
-                />
-            </View>
-
-            <View style={styles.nameContainer}>
-                <Text style={styles.nameText}>Lilly Rose, 21</Text>
-            </View>
-
-            <View style={styles.infoContainer}>
-                <Text style={styles.infoText}>LSE | Football | Singing</Text>
-            </View>
-
-            <ProfileDetails />
-
-            <View style={styles.inviteContainer}>
-                <View style={styles.inviteContent}>
-                    <View style={styles.inviteIconContainer}>
-                        <Octicons name="person-add" size={24} color="#9191ff" />
-                    </View>
-                    <View style={styles.inviteTextContainer}>
-                        <Text style={styles.inviteTitle}>Invite your contacts</Text>
-                        <Text style={styles.inviteSubtitle}>Help your network grow on Six</Text>
+            <ScrollView>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Profile</Text>
+                    <View style={styles.headerButtons}>
+                        <TouchableOpacity style={styles.iconButton}>
+                            <Feather name="refresh-cw" size={22} color={Theme.secondary} />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.iconButton}>
+                            <Feather name="edit-2" size={22} color={Theme.secondary} />
+                        </TouchableOpacity>
                     </View>
                 </View>
-                <TouchableOpacity style={styles.shareButton}>
-                    <Text style={styles.shareButtonText}>Share</Text>
-                </TouchableOpacity>
-            </View>
+
+                <View style={styles.profileImageContainer}>
+                    <Image
+                        source={require('../assets/images/pfp.jpg')}
+                        style={styles.profileImage}
+                    />
+                </View>
+
+                <View style={styles.nameContainer}>
+                    <Text style={styles.nameText}>Lilly Rose, 21</Text>
+                </View>
+
+                <View style={styles.infoContainer}>
+                    <Text style={styles.infoText}>LSE | Football | Singing</Text>
+                </View>
+
+
+
+                <View style={styles.inviteContainer}>
+                    <View style={styles.inviteContent}>
+                        <View style={styles.inviteIconContainer}>
+                            <Octicons name="person-add" size={24} color="#9191ff" />
+                        </View>
+                        <View style={styles.inviteTextContainer}>
+                            <Text style={styles.inviteTitle}>Invite your contacts</Text>
+                            <Text style={styles.inviteSubtitle}>Help your network grow on Six</Text>
+                        </View>
+                    </View>
+                    <TouchableOpacity style={styles.shareButton}>
+                        <Text style={styles.shareButtonText}>Share</Text>
+                    </TouchableOpacity>
+                </View>
+                <ProfileDetails />
+            </ScrollView>
         </SafeAreaView>
     );
 };
@@ -89,9 +93,9 @@ const styles = StyleSheet.create({
         marginTop: 50,
     },
     profileImage: {
-        width: 200,
-        height: 200,
-        borderRadius: 200,
+        width: 350,
+        height: 350,
+        borderRadius: 50,
     },
     nameContainer: {
         alignItems: 'center',

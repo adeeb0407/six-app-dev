@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   postButtonActive: {
-    backgroundColor: '#8fdfa8'
+    backgroundColor: '#9191ff'
 
   },
   postButtonText: {
