@@ -1,4 +1,4 @@
-import { Theme } from '@/constants/color';
+import { Theme } from '@/src/constants/color';
 import { Feather, Octicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -9,10 +9,9 @@ import {
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ProfileDetails from '../components/feature/Profile/ProfileDetails';
 
 const Profile = () => {
-
-
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -41,6 +40,8 @@ const Profile = () => {
             <View style={styles.infoContainer}>
                 <Text style={styles.infoText}>LSE | Football | Singing</Text>
             </View>
+
+            <ProfileDetails />
 
             <View style={styles.inviteContainer}>
                 <View style={styles.inviteContent}>
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
         paddingBottom: 10,
     },
     headerTitle: {
-        fontSize: 42,
+        fontSize: 38,
         fontFamily: 'TimesNewRomanBold',
     },
     headerButtons: {
@@ -88,9 +89,9 @@ const styles = StyleSheet.create({
         marginTop: 50,
     },
     profileImage: {
-        width: 350,
-        height: 350,
-        borderRadius: 20,
+        width: 200,
+        height: 200,
+        borderRadius: 200,
     },
     nameContainer: {
         alignItems: 'center',

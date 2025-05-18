@@ -1,0 +1,285 @@
+// FlexiblePostComponent.tsx
+import { Feather } from '@expo/vector-icons';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+
+import { CategoryTabs } from '@/src/constants/types/categoryTabs';
+import {
+  ConnectionLevel,
+  PostComponentProps
+} from '@/src/constants/types/post';
+import CategoryDropdown from './CategoryDropdown';
+import ConnectionDropdown from './ConnectionDropdown';
+
+const FlexiblePostComponent: React.FC<PostComponentProps> = ({
+  defaultTab = CategoryTabs.General,
+  onPost,
+  isModal = false,
+  visible = true,
+  onClose,
+  defaultConnectionLevel = ConnectionLevel.First
+}) => {
+  const [activeTab, setActiveTab] = useState<CategoryTabs>(defaultTab);
+  const [connectionLevel, setConnectionLevel] = useState<ConnectionLevel>(defaultConnectionLevel);
+  const [connectionVisibility, setConnectionVisibility] = useState<'Hidden' | 'All'>('All')
+  const [noteText, setNoteText] = useState('');
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!isModal || !visible) return;
+
+    Animated.timing(fadeAnim, {
+      toValue: visible ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [visible, fadeAnim, isModal]);
+
+  const handleTabPress = (tab: CategoryTabs) => {
+    setActiveTab(tab);
+  };
+
+  const handleConnectionLevelChange = (level: ConnectionLevel) => {
+    setConnectionLevel(level);
+  };
+
+  const handleToggleConnectionVisibility = () => {
+    if (connectionVisibility === "All") {
+      setConnectionVisibility('Hidden');
+    } else
+      setConnectionVisibility('All')
+  }
+
+  const handlePost = () => {
+    if (onPost) {
+      onPost(noteText, activeTab);
+    }
+    setNoteText('');
+    if (isModal && onClose) {
+      onClose();
+    }
+  };
+
+  const isPostButtonActive = noteText.trim().length > 0;
+
+  const renderContent = () => (
+    <View style={styles.content}>
+      <View style={styles.header}>
+        <View style={styles.subHeader}>
+          <View style={styles.tagIcon}>
+            <Feather name="tag" size={20} color="#666" />
+          </View>
+          <CategoryDropdown
+            activeTab={activeTab}
+            onTabPress={handleTabPress}
+          />
+        </View>
+
+        <View style={styles.subHeader}>
+          <ConnectionDropdown
+            activeConnectionLevel={connectionLevel}
+            onConnectionLevelChange={handleConnectionLevelChange}
+          />
+          {isModal && onClose && (
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Feather name="x" size={22} color="#666" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.textInput}
+          placeholder="Type your note..."
+          placeholderTextColor="#A0A0A0"
+          multiline
+           scrollEnabled={true}   
+          value={noteText}
+          onChangeText={setNoteText}
+        />
+      </View>
+
+      <View style={styles.bottomSection}>
+        <View style={styles.optionsRow}>
+          <TouchableOpacity style={styles.option}
+            onPress={handleToggleConnectionVisibility}
+          >
+            <Text style={styles.optionText}>{connectionVisibility} connections</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.suggestionButton}>
+            <Feather name="zap" size={18} color="#666" />
+            <Text style={styles.suggestionText}>Suggestion</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.postButton, isPostButtonActive ? styles.postButtonActive : {}]}
+          onPress={handlePost}
+          disabled={!isPostButtonActive}
+        >
+          <Text style={[styles.postButtonText, isPostButtonActive ? styles.postButtonTextActive : {}]}>
+            Post
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  if (!isModal) {
+    return (
+      <View style={styles.container}>
+        {renderContent()}
+      </View>
+    );
+  }
+
+  if (!visible) return null;
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <Animated.View
+          style={[
+            styles.centerModalContainer,
+            { opacity: fadeAnim }
+          ]}
+        >
+          {renderContent()}
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  content: {
+    padding: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centerModalContainer: {
+    width: '85%',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+    maxHeight: '70%',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 16,
+    justifyContent: 'space-between'
+  },
+  subHeader: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  tagIcon: {
+    marginRight: 8,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  inputContainer: {
+    marginBottom: 16,
+    backgroundColor: '#F9F9FB',
+    borderRadius: 12,
+    padding: 8,
+    minHeight: 120,
+  },
+  textInput: {
+    fontSize: 16,
+    color: '#333',
+    textAlignVertical: 'top',
+    maxHeight: 130,
+  },
+  bottomSection: {
+    marginTop: 8,
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9F9FB',
+    borderRadius: 12,
+    padding: 8,
+  },
+  optionText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  suggestionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9F9FB',
+    borderRadius: 12,
+    padding: 8,
+  },
+  suggestionText: {
+    marginLeft: 4,
+    color: '#666',
+    fontSize: 14,
+  },
+  postButton: {
+    backgroundColor: '#F3F4F6',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  postButtonActive: {
+    backgroundColor: '#8B5CF6',
+  },
+  postButtonText: {
+    color: '#A0A0A0',
+    fontWeight: '500',
+  },
+  postButtonTextActive: {
+    color: 'white',
+  },
+});
+
+export default FlexiblePostComponent;
