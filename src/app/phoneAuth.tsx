@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
   Animated,
@@ -12,9 +12,14 @@ import {
 import CountryPicker, { Country, CountryCode } from 'react-native-country-picker-modal';
 import CustomButton from '../components/common/CustomButton';
 import RotatingLogo from '../components/common/RotatingLogo';
+import { AuthType } from '../constants/types/auth';
+import { useAuth } from '../context/AuthContext';
+import { sendOTP, verifyOTP } from '../service/auth.service';
 
 const PhoneAuthScreen = () => {
   const router = useRouter();
+  const { authType } = useLocalSearchParams<{authType: AuthType}>()
+  const { login } = useAuth();
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
@@ -22,7 +27,7 @@ const PhoneAuthScreen = () => {
   const [countryCode, setCountryCode] = useState<CountryCode>('US');
   const [callingCode, setCallingCode] = useState('1');
   const [showCountryPicker, setShowCountryPicker] = useState(false);
-  
+
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -47,8 +52,12 @@ const PhoneAuthScreen = () => {
     setLoading(true);
     Keyboard.dismiss();
 
-    try {
+    const formattedPhone = `+${callingCode}${phone}`;
+    const response = await sendOTP(formattedPhone);
+
+    if (response.success) {
       setIsCodeSent(true);
+      // Start animations
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 1,
@@ -61,36 +70,54 @@ const PhoneAuthScreen = () => {
           useNativeDriver: true,
         }),
       ]).start();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
+    } else {
+      console.error('Failed to send OTP:', response.error);
     }
+
+    setLoading(false);
   };
 
   const handleLogin = async () => {
     setLoading(true);
     Keyboard.dismiss();
 
-    try {
-    router.push('/enterName')
+    const formattedPhone = `+${callingCode}${phone}`;
+    const response = await verifyOTP(formattedPhone, code, authType);
 
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
+    if (response.success) {
+        if (response.data.user?.id) {
+            const userData = {
+                id: response.data.user.id,
+                phone: formattedPhone
+            };
+            login(userData);
+        }
+
+        if (authType === AuthType.SignUp && !response.exists) {
+            router.push('/enterName');
+        } else {
+            if (response.exists) {
+              console.log('User already created')
+            }
+            router.push('/(protected)/(tabs)');
+        }
+    } else {
+        console.error('Failed to verify OTP:', response.error);
     }
+
+    setLoading(false);
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.hexagon} />
-      <RotatingLogo/>
+      <View style={styles.logoContainer}>
+        <RotatingLogo />
+      </View>
 
       <Text style={styles.heading}>Let's Begin</Text>
       <Text style={styles.subheading}>
-        {isCodeSent 
-          ? "Enter the code we sent you" 
+        {isCodeSent
+          ? "Enter the code we sent you"
           : "We'll text you a code to confirm your number"
         }
       </Text>
@@ -98,13 +125,13 @@ const PhoneAuthScreen = () => {
       {!isCodeSent ? (
         <>
           <View style={styles.phoneInputContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.countryPicker}
               onPress={() => setShowCountryPicker(true)}
             >
               <Text style={styles.countryCode}>+{callingCode}</Text>
             </TouchableOpacity>
-            
+
             <TextInput
               style={styles.phoneInput}
               placeholder="Enter your phone number"
@@ -126,7 +153,7 @@ const PhoneAuthScreen = () => {
               containerButtonStyle={styles.invisiblePicker}
             />
           </View>
-          <CustomButton 
+          <CustomButton
             title="Send Code"
             onPress={handleSendCode}
             loading={loading}
@@ -157,7 +184,7 @@ const PhoneAuthScreen = () => {
             onChangeText={handleCodeChange}
             maxLength={6}
           />
-          <CustomButton 
+          <CustomButton
             title="Verify Code"
             onPress={handleLogin}
             loading={loading}
@@ -177,19 +204,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     flex: 1,
   },
-  hexagon: {
-    width: 100,
-    height: 55,
-    backgroundColor: 'transparent',
-    borderColor: 'transparent',
-    borderBottomColor: 'magenta',
-    borderTopColor: 'blue',
-    borderLeftWidth: 50,
-    borderRightWidth: 50,
-    borderBottomWidth: 30,
-    borderTopWidth: 30,
-    transform: [{ rotate: '90deg' }],
-    marginBottom: 30,
+  logoContainer: {
+    paddingVertical: 50
   },
   heading: {
     fontSize: 24,

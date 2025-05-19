@@ -9,11 +9,17 @@ export default function Landing() {
       <Text style={styles.title}>unlock your{'\n'}social network</Text>
       <Text style={styles.subtitle}>every connection starts with a mutual</Text>
 
-      <TouchableOpacity style={styles.createButton} onPress={() => router.push('/enterName')}>
+      <TouchableOpacity style={styles.createButton} onPress={() => router.push({
+        pathname: '/phoneAuth',
+        params: { authType: 'signUp' },
+      })}>
         <Text style={styles.createText}>Create Account</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/enterName')}>
+      <TouchableOpacity style={styles.loginButton} onPress={() => router.push({
+        pathname: '/phoneAuth',
+        params: { authType: 'signIn' },
+      })}>
         <Text style={styles.loginText}>Login</Text>
       </TouchableOpacity>
     </View>

@@ -6,7 +6,9 @@ import { StyleSheet, View } from 'react-native';
 const OnboardingLayout = () => {
   return (
     <View style={styles.container}>
-      <RotatingLogo />
+      <View style={styles.logoContainer}>
+        <RotatingLogo />
+      </View>
       <Slot />
     </View>
   );
@@ -19,6 +21,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: '#fff',
     alignItems: 'center',
+  },
+   logoContainer: {
+    paddingVertical: 50
   },
 });
 

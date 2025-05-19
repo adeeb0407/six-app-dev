@@ -1,4 +1,6 @@
 import NextButton from '@/src/components/common/NextButton';
+import { useAuth } from '@/src/context/AuthContext';
+import { updateUserProfile } from '@/src/service/user.service';
 import { useUserOnboardingStore } from '@/src/store/userOnboardingStore';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -14,7 +16,9 @@ const MAX_CHARS = 30; // Maximum characters per trait
 
 const Traits = () => {
   const router = useRouter();
+  const {user} = useAuth();
   const setTraits = useUserOnboardingStore(state => state.setTraits);
+  const name = useUserOnboardingStore(state => state.name)
   const [traits, setTraitsLocal] = useState(['', '', '']);
   const fadeAnims = [
     useRef(new Animated.Value(0)).current,
@@ -43,9 +47,36 @@ const Traits = () => {
     }
   };
 
-  const handleNext = () => {
-    setTraits(traits);
-    router.push('/share');
+  const handleNext = async () => {
+    try {
+      setTraits(traits);
+
+      if (user && user.id) {
+        const userData = {
+          id: user.id,
+          name: name,
+          keyword_summary: traits.map(trait => trait.trim()).filter(Boolean)
+        };
+
+        console.log('Updating user profile with data:', userData);
+        const response = await updateUserProfile(userData);
+
+        if (!response.success) {
+          console.error('Failed to update profile:', response.error);
+          // Optionally handle error in UI
+          return;
+        }
+
+        console.log('Profile updated successfully:');
+      } else {
+        console.error('No user found in context, skipping profile update');
+      }
+
+      router.push('/share');
+    } catch (error) {
+      console.error('Error in handleNext:', error instanceof Error ? error.message : error);
+      // Optionally handle error in UI
+    }
   };
 
   // Updated validation - check if all three traits are filled
@@ -132,9 +163,9 @@ const styles = StyleSheet.create({
 });
 
 const demoDetails = [
-  'Your University',
-  'Your Passion',
-  'Your Hobbies'
+  `Uni / Work (NYU’24 econ)`,
+  'Interests',
+  'Free time'
 ];
 
 export default Traits;

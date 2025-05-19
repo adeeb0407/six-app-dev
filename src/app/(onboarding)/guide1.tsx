@@ -1,9 +1,8 @@
-import NextButton from '@/src/components/common/NextButton';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const Guide1 = () => {  // Capitalized component name for consistency
+const Guide1 = () => {
     const router = useRouter();
 
     const handleNext = () => {
@@ -11,18 +10,28 @@ const Guide1 = () => {  // Capitalized component name for consistency
     };
 
     return (
-        <View style={styles.container}>
+        <TouchableOpacity 
+            style={styles.container} 
+            activeOpacity={0.8}
+            onPress={handleNext}
+        >
             <View style={styles.content}>
                 <Text style={styles.title}>
-                    You’re in
-                    So here’s how this works.
+                    Six maps your network using your contacts
                 </Text>
+                <View style={styles.degreesContainer}>
+                    <Text style={styles.degreeItem}>
+                        <Text style={styles.degreeHighlight}>1°</Text> - contacts
+                    </Text>
+                    <Text style={styles.degreeItem}>
+                        <Text style={styles.degreeHighlight}>2°</Text> - mutuals
+                    </Text>
+                    <Text style={styles.degreeItem}>
+                        <Text style={styles.degreeHighlight}>3°</Text> - friends of mutuals
+                    </Text>
+                </View>
             </View>
-
-            <NextButton
-                onPress={handleNext}
-            />
-        </View>
+        </TouchableOpacity>
     );
 };
 
@@ -35,7 +44,6 @@ const styles = StyleSheet.create({
     content: {
         marginTop: 60,
         marginBottom: 30
-
     },
     title: {
         fontSize: 28,

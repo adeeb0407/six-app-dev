@@ -1,7 +1,6 @@
-import NextButton from '@/src/components/common/NextButton';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const Guide2 = () => {  
     const router = useRouter();
@@ -11,7 +10,11 @@ const Guide2 = () => {
     };
 
     return (
-        <View style={styles.container}>
+        <TouchableOpacity 
+            style={styles.container} 
+            activeOpacity={0.8}
+            onPress={handleNext}
+        >
             <View style={styles.content}>
                 <Text style={styles.title}>
                     Six maps your network using your contacts
@@ -28,11 +31,7 @@ const Guide2 = () => {
                     </Text>
                 </View>
             </View>
-
-            <NextButton
-                onPress={handleNext}
-            />
-        </View>
+        </TouchableOpacity>
     );
 };
 

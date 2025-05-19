@@ -1,9 +1,8 @@
-import NextButton from '@/src/components/common/NextButton';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const Guide2 = () => {
+const Guide3 = () => {
   const router = useRouter();
 
   const handleNext = () => {
@@ -11,32 +10,31 @@ const Guide2 = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity 
+      style={styles.container} 
+      activeOpacity={0.8}
+      onPress={handleNext}
+    >
       <View style={styles.content}>
         <Text style={styles.title}>
           Scroll anonymous posts from your extended network
         </Text>
         <View style={styles.degreesContainer}>
           <Text style={styles.degreeItem}>
-            “Lunch at Liverpool St?”
+            "Lunch at Liverpool St?"
           </Text>
           <Text style={styles.degreeItem}>
-            “CS study buddy @ NYU?”
+            "CS study buddy @ NYU?"
           </Text>
           <Text style={styles.degreeItem}>
-            “Subletting my flat!”
-
+            "Subletting my flat!"
           </Text>
           <Text style={styles.degreeItem}>
             "Looking for a +1 for a gala tn!"
           </Text>
         </View>
       </View>
-
-      <NextButton
-        onPress={handleNext}
-      />
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -74,4 +72,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Guide2;
+export default Guide3;

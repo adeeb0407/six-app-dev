@@ -8,7 +8,7 @@ const RotatingLogo: React.FC = () => {
     Animated.loop(
       Animated.timing(rotation, {
         toValue: 1,
-        duration: 3000,
+        duration: 5000,
         useNativeDriver: true,
       })
     ).start()
