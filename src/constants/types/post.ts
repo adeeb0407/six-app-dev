@@ -1,15 +1,17 @@
 import { CategoryTabs } from "./categoryTabs";
 
-export type PostType = {
-  id: string;
-  connectionType : ConnectionLevel
-  university: string;
-  title: string;
-  description: string;
-  about: string
-  category: CategoryTabs
-  timeAgo: string;
-};
+export interface Post {
+  id: string; 
+  user_id: string; 
+  content: string;
+  category: CategoryTabs;
+  is_anonymous: boolean;
+  expires_at: string | null; 
+  locked: boolean;
+  created_at: string; 
+  connectionType: ConnectionLevel | null; 
+  keyword_summary: string[];
+}
 
 export enum ConnectionLevel {
   First = '1°',

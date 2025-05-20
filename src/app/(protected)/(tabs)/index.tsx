@@ -4,8 +4,10 @@ import PostTabSelector from '@/src/components/feature/Home/PostTabSelector';
 import PostCard from '@/src/components/feature/Post/PostCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
-import { ConnectionLevel, PostType } from '@/src/constants/types/post';
+import { Post } from '@/src/constants/types/post';
 import { PostTabs } from '@/src/constants/types/postTabs';
+import { useAuth } from '@/src/context/AuthContext';
+import { fetchPostsByDegree } from '@/src/service/post.service';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
@@ -23,31 +25,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const posts: PostType[] = [
-  {
-    id: '1',
-    connectionType: ConnectionLevel.First,
-    university: `NYU'26`,
-    title: 'Grabbing coffee in SoHo - anyone free to join?',
-    description: 'Econ',
-    about: 'Loves matcha and dogs',
-    category: CategoryTabs.Chat,
-    timeAgo: '2h ago',
-  },
-  {
-    id: '2',
-    connectionType: ConnectionLevel.Second,
-    university: `Columbia'25`,
-    title: 'Need to rant about Philosophy 210 - anyone taken it before?',
-    description: `Philosophy`,
-    about: 'Coffee enthusiast and tennis player',
-    category: CategoryTabs.Meet,
-    timeAgo: '2h ago',
-  }
-];
-
 const HomeScreen: React.FC = () => {
   const router = useRouter();
+  const { user } = useAuth();
+  const [posts, setPosts] = useState<Post[]>([]);
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const [postTabs, setPostTabs] = useState<PostTabs>(PostTabs.AllPosts);
   const [categoryTabs, setCategoryTabs] = useState<CategoryTabs[]>([]);
@@ -55,23 +36,37 @@ const HomeScreen: React.FC = () => {
   const modalScaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if(showPostModal) {
+    if (showPostModal) {
       setHomePostModalVisible(true);
     }
   }, [showPostModal]);
 
+  useEffect(() => {
+    try {
+      (async() => {
+        if (user) {
+          const data = await fetchPostsByDegree(user.id)
+          setPosts(data ?? []);
+        }
+      })()
+
+    } catch (e) {
+      console.log(e)
+    }
+  }, []);
+
   const toggleCategoryTab = (tab: CategoryTabs) => {
     setCategoryTabs(prev =>
       prev.includes(tab)
-        ? prev.filter(t => t !== tab) 
-        : [...prev, tab]              
+        ? prev.filter(t => t !== tab)
+        : [...prev, tab]
     );
   };
 
   const showModal = () => {
     setHomePostModalVisible(true);
     Animated.spring(modalScaleAnim, {
-      toValue: 0.95, 
+      toValue: 0.95,
       useNativeDriver: true,
       tension: 40,
       friction: 10,
@@ -122,28 +117,28 @@ const HomeScreen: React.FC = () => {
       }
 
       {isHomePostModalVisible && (
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback onPress={() => { }}>
-              <Animated.View
-                style={[
-                  styles.modalContainer,
-                  {
-                    transform: [{ scale: modalScaleAnim }]
-                  }
-                ]}
-              >
-                <FlexiblePostComponent
-                  isModal={false}
-                  visible={isHomePostModalVisible}
-                  onClose={hideModal}
-                  onPost={() => {
-                    // handle post
-                    hideModal();
-                  }}
-                />
-              </Animated.View>
-            </TouchableWithoutFeedback>
-          </View>
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback onPress={() => { }}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                {
+                  transform: [{ scale: modalScaleAnim }]
+                }
+              ]}
+            >
+              <FlexiblePostComponent
+                isModal={false}
+                visible={isHomePostModalVisible}
+                onClose={hideModal}
+                onPost={() => {
+                  // handle post
+                  hideModal();
+                }}
+              />
+            </Animated.View>
+          </TouchableWithoutFeedback>
+        </View>
       )}
 
       <View style={styles.filterContainer}>

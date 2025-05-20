@@ -1,5 +1,4 @@
-import { CategoryTabs } from '@/src/constants/types/categoryTabs';
-import { ConnectionLevel, PostType } from '@/src/constants/types/post';
+import { ConnectionLevel, Post } from '@/src/constants/types/post';
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -10,7 +9,26 @@ import {
 } from 'react-native';
 
 type props = {
-  post: PostType;
+  post: Post;
+};
+
+const getTimeAgo = (dateString: string): string => {
+  const now = new Date();
+  const postDate = new Date(dateString);
+  const diffInSeconds = Math.floor((now.getTime() - postDate.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return 'just now';
+  
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  
+  return postDate.toLocaleDateString();
 };
 
 const PostCard = ({ post }: props) => {
@@ -30,7 +48,7 @@ const PostCard = ({ post }: props) => {
       ? '1st connection'
       : post.connectionType === ConnectionLevel.Second
         ? '2nd connection'
-        : '3rd+ connection';
+        : '3rd connection';
 
   return (
     <TouchableWithoutFeedback onPress={handleShowDetailsToggle}>
@@ -40,28 +58,32 @@ const PostCard = ({ post }: props) => {
 
             <Text style={styles.postConnectionText}>{connectionText}</Text>
           </View>
-          <Text style={styles.postTimeText}>{post.timeAgo}</Text>
+          <Text style={styles.postTimeText}>{getTimeAgo(post.created_at)}</Text>
         </View>
 
-        <Text style={styles.postTitle}>{post.title}</Text>
-        {post.category !== CategoryTabs.General &&
-        
+        <Text style={styles.postTitle}>{post.content}</Text>
+        {/* {post.category !== CategoryTabs.General && */}
+
           <View style={styles.postActions}>
-                <TouchableOpacity style={styles.meetButton}>
-                    <Text style={styles.meetButtonText}>{post.category}</Text>
-                </TouchableOpacity>
-            </View>
-        }
-
-
+            <TouchableOpacity style={styles.meetButton}>
+              <Text style={styles.meetButtonText}>{post.category}</Text>
+            </TouchableOpacity>
+          </View>
+        {/* } */}
 
         {showDetails && (
           <View>
             {!isReplied ? (
               <View>
-                <Text style={styles.postDescription}>
-                  {post.university} | {post.description} | {post.about}
-                </Text>
+                <View style={{flexDirection: 'row'}}>
+                  {post.keyword_summary.map((info, index) => (
+                    <Text key={index} style={styles.postDescription}>
+                      {info}
+                      {index < post.keyword_summary.length - 1 && " | "}
+                    </Text>
+                  ))}
+                </View>
+
                 <TouchableOpacity
                   style={styles.interestedButton}
                   onPress={handleInterestedClick}

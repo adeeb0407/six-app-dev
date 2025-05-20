@@ -1,5 +1,5 @@
 export enum CategoryTabs {
-  General = 'General',
-  Meet = 'Meet',
-  Chat = 'Chat',
+  General = 'general',
+  Meet = 'meet',
+  Chat = 'chat',
 }
