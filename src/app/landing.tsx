@@ -12,6 +12,7 @@ export default function Landing() {
       <TouchableOpacity style={styles.createButton} onPress={() => router.push({
         pathname: '/phoneAuth',
         params: { authType: 'signUp' },
+        // pathname: '/(onboarding)/share'
       })}>
         <Text style={styles.createText}>Create Account</Text>
       </TouchableOpacity>

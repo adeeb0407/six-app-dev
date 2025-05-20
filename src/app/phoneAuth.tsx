@@ -98,8 +98,9 @@ const PhoneAuthScreen = () => {
         } else {
             if (response.exists) {
               console.log('User already created')
+               router.push('/enterName');
             }
-            router.push('/(protected)/(tabs)');
+            // router.push('/(protected)/(tabs)');
         }
     } else {
         console.error('Failed to verify OTP:', response.error);

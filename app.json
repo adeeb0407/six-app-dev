@@ -53,6 +53,12 @@
             ]
           }
         }
+      ], 
+      [
+         "expo-contacts",
+        {
+          "contactsPermission": "Allow Six to access your contacts."
+        }
       ]
     ],
     "experiments": {

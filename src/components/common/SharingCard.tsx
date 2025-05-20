@@ -2,7 +2,11 @@ import { Octicons } from '@expo/vector-icons';
 import React from 'react';
 import { Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const SharingCard = () => {
+interface SharingCardProps {
+    contactsCount?: number;
+}
+
+const SharingCard: React.FC<SharingCardProps> = ({ contactsCount = 0 }) => {
     const handleShare = async () => {
         try {
             await Share.share({
@@ -24,9 +28,14 @@ const SharingCard = () => {
                 <View style={styles.inviteTextContainer}>
                     <Text style={styles.inviteTitle}>Invite your contacts</Text>
                     <Text style={styles.inviteSubtitle}>
-                        Help your network
+                        Help your network{'\n'}
                         grow on Six
                     </Text>
+                    {contactsCount > 0 && (
+                        <Text style={styles.contactCount}>
+                            {contactsCount} contacts found
+                        </Text>
+                    )}
                 </View>
             </View>
             <TouchableOpacity 
@@ -83,6 +92,11 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '500',
+    },
+    contactCount: {
+        fontSize: 12,
+        color: '#666',
+        marginTop: 4,
     },
 })
 
