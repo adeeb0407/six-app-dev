@@ -1,4 +1,4 @@
-import { Contact, Message } from '@/src/constants/types/chat';
+import { Contact, Message } from '@/src/constants/types/chat.types';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 

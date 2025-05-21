@@ -12,7 +12,7 @@ import {
 import CountryPicker, { Country, CountryCode } from 'react-native-country-picker-modal';
 import CustomButton from '../components/common/CustomButton';
 import RotatingLogo from '../components/common/RotatingLogo';
-import { AuthType } from '../constants/types/auth';
+import { AuthType } from '../constants/types/auth.types';
 import { useAuth } from '../context/AuthContext';
 import { sendOTP, verifyOTP } from '../service/auth.service';
 

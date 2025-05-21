@@ -1,26 +1,45 @@
-import { MessageType } from '@/src/constants/types/chat'
-import { useRouter } from 'expo-router'
-import React from 'react'
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { MessageType } from '@/src/constants/types/chat.types';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-type ChatMessageCardProp = {
-    message: MessageType
-}
+const getTimeAgo = (date: Date): string => {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-const ChatMessageCard = ({ message }: ChatMessageCardProp) => {
+  if (diffInSeconds < 60) return 'just now';
+  
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  
+  return date.toLocaleDateString();
+};
+
+const ChatMessageCard = ({ message }: { message: MessageType }) => {
     const router = useRouter();
 
     return (
-        <TouchableOpacity key={message.id} style={styles.messageCard}
-            onPress={() => router.push('/chat/123')}
+        <TouchableOpacity 
+            key={message.id} 
+            style={styles.messageCard}
+            onPress={() => router.push(`/chat/${message.id}`)}
         >
-            <Image source={{ uri: message.avatar }} style={styles.avatar} />
+            <Image source={{ uri: message.profile_pic }} style={styles.avatar} />
             <View style={styles.messageContent}>
                 <View style={styles.nameContainer}>
                     <Text style={styles.name}>{message.name}</Text>
+                    <Text style={styles.timeText}>
+                        {getTimeAgo(message.timestamp)}
+                    </Text>
                 </View>
                 <Text style={styles.messageText} numberOfLines={1}>
-                    {message.message}
+                    {message.isOwnMessage ? 'You: ' : ''}{message.message}
                 </Text>
             </View>
         </TouchableOpacity>
@@ -49,14 +68,20 @@ const styles = StyleSheet.create({
     },
     messageText: {
         fontSize: 14,
-        color: '#999',
+        color: '#666',
         marginTop: 3,
     },
     nameContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
     },
+    timeText: {
+        fontSize: 12,
+        color: '#999',
+        marginLeft: 'auto',
+    },
+});
 
-})
-
-export default ChatMessageCard
+export default ChatMessageCard;

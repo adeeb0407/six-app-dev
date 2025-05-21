@@ -1,0 +1,15 @@
+export interface UserChat {
+    chat_id: string;
+    last_message: string;
+    last_message_at: string;
+    last_message_sender: string;
+    other_user_id: string;
+    other_user_name: string;
+    other_user_profile_photo: string | null;
+}
+
+export interface ChatResponse {
+    success: boolean;
+    data: UserChat[];
+    error?: string;
+}

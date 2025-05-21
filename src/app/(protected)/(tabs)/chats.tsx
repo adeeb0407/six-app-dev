@@ -1,10 +1,12 @@
 import ChatMessageCard from '@/src/components/feature/Chat/ChatMessageCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
-import { MessageType } from '@/src/constants/types/chat';
+import { UserChat } from '@/src/constants/types/message.types';
+import { useAuth } from '@/src/context/AuthContext';
+import { fetchUserChats } from '@/src/service/message.services';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import Feather from '@expo/vector-icons/Feather';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -15,9 +17,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
-
 const ChatsScreen = () => {
+  const { user } = useAuth();
+  const [chats, setChats] = useState<UserChat[]>([]);
+  const [loading, setLoading] = useState(true);
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
 
@@ -26,51 +29,28 @@ const ChatsScreen = () => {
       setChatPostModalVisible(true);
   }, [showPostModal]);
 
-  const messages: MessageType[] = [
-    {
-      id: '1',
-      name: 'Peter',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-      message: 'Chat over text?',
-    },
-    {
-      id: '2',
-      name: 'Mike',
-      avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
-      message: 'Are you sure?',
-    },
-    {
-      id: '3',
-      name: 'Rahul',
-      avatar: 'https://randomuser.me/api/portraits/men/44.jpg',
-      message: `Let's do drinks June 3rd at 7!`,
-    },
-    {
-      id: '4',
-      name: 'Javi',
-      avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
-      message: 'Do I double text again 🙄',
-      hasDuplicate: true,
-    },
-    {
-      id: '5',
-      name: 'Javi',
-      avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
-      message: 'Do I double text again 🙄',
-    },
-    {
-      id: '6',
-      name: 'Cole',
-      avatar: 'https://randomuser.me/api/portraits/men/36.jpg',
-      message: 'Ugh I am failing to answer your question...',
-    },
-    {
-      id: '7',
-      name: 'Neil',
-      avatar: 'https://randomuser.me/api/portraits/men/15.jpg',
-      message: '',
-    },
-  ];
+  useEffect(() => {
+    loadChats();
+  }, [user]);
+
+  const loadChats = async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoading(true);
+      const response = await fetchUserChats(user.id);
+      
+      if (response.success) {
+        setChats(response.data);
+      } else {
+        console.error('Failed to load chats:', response.error);
+      }
+    } catch (error) {
+      console.error('Error loading chats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -93,37 +73,41 @@ const ChatsScreen = () => {
         </View>
       </View>
 
-      {/* Message Tabs */}
-      {/* <View style={styles.tabContainer}>
-        <TouchableOpacity style={styles.tabButton}>
-          <Text style={styles.tabButtonText}>Direct Messages</Text>
-        </TouchableOpacity>
-        <LinearGradient
-          colors={['#ff66c4', '#5170ff']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.tabButtonActive}
-        >
-          <Text style={styles.tabButtonActiveText}>Group Chats</Text>
-        </LinearGradient>
-      </View> */}
-
       {
         isChatPostModalVisible &&
         <FlexiblePostComponent
           isModal={true}
           visible={isChatPostModalVisible}
           onClose={() => setChatPostModalVisible(false)}
-          onPost={() => { }}
         />
-
       }
 
       {/* Messages List */}
       <ScrollView style={styles.messagesContainer}>
-        {messages.map(message => (
-         <ChatMessageCard key={message.id} message={message} />
-        ))}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading chats...</Text>
+          </View>
+        ) : chats.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No chats yet</Text>
+            <Text style={styles.emptySubText}>Start a conversation to connect!</Text>
+          </View>
+        ) : (
+          chats.map(chat => (
+            <ChatMessageCard
+              key={chat.chat_id}
+              message={{
+                id: chat.chat_id,
+                name: chat.other_user_name,
+                profile_pic: chat.other_user_profile_photo || 'https://picsum.photos/200',
+                message: chat.last_message,
+                timestamp: new Date(chat.last_message_at),
+                isOwnMessage: chat.last_message_sender === user?.id
+              }}
+            />
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -188,7 +172,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-
   verificationBadge: {
     width: 16,
     height: 16,
@@ -197,7 +180,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   bottomNavigation: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -229,7 +211,36 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 2,
-  }
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    fontFamily: 'Regular',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 20,
+    color: '#333',
+    fontFamily: 'TimesNewRomanRegular',
+    marginBottom: 8,
+  },
+  emptySubText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
 });
 
 export default ChatsScreen;

@@ -13,28 +13,35 @@ import {
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
 import {
   ConnectionLevel,
-  PostComponentProps
-} from '@/src/constants/types/post';
+  PostComponentProps,
+  PostInput,
+} from '@/src/constants/types/post.types.';
+import { useAuth } from '@/src/context/AuthContext';
+import { createPost } from '@/src/service/post.service';
 import CategoryDropdown from './CategoryDropdown';
 import ConnectionDropdown from './ConnectionDropdown';
 
+enum PostConnectionVisibility {
+  All = 'All connections',
+  HideChat = 'Hide chat connections'
+}
+
 const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   defaultTab = CategoryTabs.General,
-  onPost,
   isModal = false,
   visible = true,
   onClose,
   defaultConnectionLevel = ConnectionLevel.First
 }) => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<CategoryTabs>(defaultTab);
   const [connectionLevel, setConnectionLevel] = useState<ConnectionLevel>(defaultConnectionLevel);
-  const [connectionVisibility, setConnectionVisibility] = useState<'Hidden' | 'All'>('All')
+  const [connectionVisibility, setConnectionVisibility] = useState<PostConnectionVisibility>(PostConnectionVisibility.All)
   const [noteText, setNoteText] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!isModal || !visible) return;
-
     Animated.timing(fadeAnim, {
       toValue: visible ? 1 : 0,
       duration: 200,
@@ -51,15 +58,26 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   };
 
   const handleToggleConnectionVisibility = () => {
-    if (connectionVisibility === "All") {
-      setConnectionVisibility('Hidden');
+    if (connectionVisibility === PostConnectionVisibility.All) {
+      setConnectionVisibility(PostConnectionVisibility.HideChat);
     } else
-      setConnectionVisibility('All')
+      setConnectionVisibility(PostConnectionVisibility.All)
   }
 
-  const handlePost = () => {
-    if (onPost) {
-      onPost(noteText, activeTab);
+  const handlePost = async () => {
+    if (user) {
+      const post: PostInput = {
+        user_id: user.id,
+        content: noteText,
+        category: activeTab,
+        connectiontype: connectionLevel,
+        hide_from_chat: connectionVisibility === PostConnectionVisibility.All ? false : true
+      }
+
+      const data = await createPost(post);
+      if (!data) console.log('error creating post')
+      else console.log('created post successfully',)
+
     }
     setNoteText('');
     if (isModal && onClose) {
@@ -114,7 +132,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
           <TouchableOpacity style={styles.option}
             onPress={handleToggleConnectionVisibility}
           >
-            <Text style={styles.optionText}>{connectionVisibility} connections</Text>
+            <Text style={styles.optionText}>{connectionVisibility}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.suggestionButton}>

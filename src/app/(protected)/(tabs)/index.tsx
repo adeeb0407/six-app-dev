@@ -4,14 +4,14 @@ import PostTabSelector from '@/src/components/feature/Home/PostTabSelector';
 import PostCard from '@/src/components/feature/Post/PostCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
-import { Post } from '@/src/constants/types/post';
-import { PostTabs } from '@/src/constants/types/postTabs';
+import { ConnectionLevel, Post } from '@/src/constants/types/post.types.';
+import { PostTabs } from '@/src/constants/types/postTabs.types';
 import { useAuth } from '@/src/context/AuthContext';
 import { fetchPostsByDegree } from '@/src/service/post.service';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Image,
@@ -25,11 +25,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const HomeScreen: React.FC = () => {
+const HomeScreen: FC = () => {
   const router = useRouter();
   const { user } = useAuth();
-  const [posts, setPosts] = useState<Post[]>([]);
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
+  const [posts, setPosts] = useState<Post[]>([]);
   const [postTabs, setPostTabs] = useState<PostTabs>(PostTabs.AllPosts);
   const [categoryTabs, setCategoryTabs] = useState<CategoryTabs[]>([]);
   const { isHomePostModalVisible, setHomePostModalVisible } = usePostModalStore();
@@ -45,7 +45,7 @@ const HomeScreen: React.FC = () => {
     try {
       (async() => {
         if (user) {
-          const data = await fetchPostsByDegree(user.id)
+          const data = await fetchPostsByDegree(user.id);
           setPosts(data ?? []);
         }
       })()
@@ -81,6 +81,37 @@ const HomeScreen: React.FC = () => {
     }).start(() => {
       setHomePostModalVisible(false);
     });
+  };
+
+  const getFilteredPosts = () => {
+    let filteredPosts = [...posts];
+
+    // Filter by PostTabs (connection degree)
+    if (postTabs !== PostTabs.AllPosts) {
+      filteredPosts = filteredPosts.filter(post => {
+        console.log(post.connectiontype)
+
+        switch (postTabs) {
+          case PostTabs.FirstDegree:
+            return post.connectiontype == ConnectionLevel.First;
+          case PostTabs.SecondDegree:
+            return post.connectiontype == ConnectionLevel.Second;
+          case PostTabs.ThirdDegree:
+            return post.connectiontype == ConnectionLevel.Third;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Filter by CategoryTabs if any categories are selected
+    if (categoryTabs.length > 0) {
+      filteredPosts = filteredPosts.filter(post =>
+        categoryTabs.includes(post.category)
+      );
+    }
+
+    return filteredPosts;
   };
 
   const tabs = Object.values(CategoryTabs);
@@ -131,10 +162,6 @@ const HomeScreen: React.FC = () => {
                 isModal={false}
                 visible={isHomePostModalVisible}
                 onClose={hideModal}
-                onPost={() => {
-                  // handle post
-                  hideModal();
-                }}
               />
             </Animated.View>
           </TouchableWithoutFeedback>
@@ -159,9 +186,18 @@ const HomeScreen: React.FC = () => {
 
       {/* Posts */}
       <ScrollView style={styles.postsContainer}>
-        {posts.map(post => (
-          <PostCard key={post.id} post={post} />
-        ))}
+        {getFilteredPosts().length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No posts found</Text>
+            {/* <Text style={styles.emptySubText}>
+              Try adjusting your filters or check back later
+            </Text> */}
+          </View>
+        ) : (
+          getFilteredPosts().map(post => (
+            <PostCard key={post.id} post={post} />
+          ))
+        )}
       </ScrollView>
 
     </SafeAreaView>
@@ -216,6 +252,24 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '90%',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 20,
+    color: '#333',
+    fontFamily: 'TimesNewRomanRegular',
+    marginBottom: 8,
+  },
+  emptySubText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
 

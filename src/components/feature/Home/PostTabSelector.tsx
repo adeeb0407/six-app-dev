@@ -1,4 +1,4 @@
-import { PostTabs } from '@/src/constants/types/postTabs';
+import { PostTabs } from '@/src/constants/types/postTabs.types';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';

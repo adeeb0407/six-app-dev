@@ -1,4 +1,4 @@
-import { ConnectionLevel, Post } from '@/src/constants/types/post';
+import { ConnectionLevel, Post } from '@/src/constants/types/post.types.';
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -18,16 +18,16 @@ const getTimeAgo = (dateString: string): string => {
   const diffInSeconds = Math.floor((now.getTime() - postDate.getTime()) / 1000);
 
   if (diffInSeconds < 60) return 'just now';
-  
+
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  
+
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) return `${diffInHours}h ago`;
-  
+
   const diffInDays = Math.floor(diffInHours / 24);
   if (diffInDays < 7) return `${diffInDays}d ago`;
-  
+
   return postDate.toLocaleDateString();
 };
 
@@ -44,11 +44,12 @@ const PostCard = ({ post }: props) => {
   };
 
   const connectionText =
-    post.connectionType === ConnectionLevel.First
+    post.connectiontype === ConnectionLevel.First
       ? '1st connection'
-      : post.connectionType === ConnectionLevel.Second
+      : post.connectiontype === ConnectionLevel.Second
         ? '2nd connection'
-        : '3rd connection';
+        : post.connectiontype === ConnectionLevel.Third
+          ? '3rd connection' : 'your post'
 
   return (
     <TouchableWithoutFeedback onPress={handleShowDetailsToggle}>
@@ -64,25 +65,27 @@ const PostCard = ({ post }: props) => {
         <Text style={styles.postTitle}>{post.content}</Text>
         {/* {post.category !== CategoryTabs.General && */}
 
-          <View style={styles.postActions}>
-            <TouchableOpacity style={styles.meetButton}>
-              <Text style={styles.meetButtonText}>{post.category}</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.postActions}>
+          <TouchableOpacity style={styles.meetButton}>
+            <Text style={styles.meetButtonText}>{post.category}</Text>
+          </TouchableOpacity>
+        </View>
         {/* } */}
 
         {showDetails && (
           <View>
             {!isReplied ? (
               <View>
-                <View style={{flexDirection: 'row'}}>
-                  {post.keyword_summary.map((info, index) => (
-                    <Text key={index} style={styles.postDescription}>
-                      {info}
-                      {index < post.keyword_summary.length - 1 && " | "}
-                    </Text>
-                  ))}
-                </View>
+                {post.keyword_summary &&
+                  <View style={styles.keywordContainer}>
+                    {post.keyword_summary.map((info, index) => (
+                      <Text key={index} style={styles.postDescription}>
+                        {info}
+                        {index < post.keyword_summary.length - 1 && " • "}
+                      </Text>
+                    ))}
+                  </View>
+                }
 
                 <TouchableOpacity
                   style={styles.interestedButton}
@@ -152,8 +155,9 @@ const styles = StyleSheet.create({
   },
   postDescription: {
     color: '#555',
-    marginBottom: 15,
     fontStyle: 'italic',
+    fontSize: 14,
+    lineHeight: 20,
   },
   interestedButton: {
     backgroundColor: '#9191ff',
@@ -194,6 +198,12 @@ const styles = StyleSheet.create({
   meetButtonText: {
     fontSize: 14,
     color: '#333',
+  },
+  keywordContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 15,
+    alignItems: 'center',
   },
 });
 

@@ -2,6 +2,7 @@ import { Session } from '@supabase/supabase-js';
 import { useRouter } from 'expo-router';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { supabase } from '../db/supabase';
+import { storage } from '../storage/session.storage';
 
 type User = {
   id: string;
@@ -22,31 +23,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
+    loadStoredSession();
+  }, []);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+  const loadStoredSession = async () => {
+    try {
+      const storedSession = await storage.getSession();
+      const storedUser = await storage.getUserData();
+
+      if (storedSession) {
+        setSession(storedSession);
+        setUser(storedUser);
+      }
+
+      // Get current session from Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setSession(session);
+        setUser(session.user ?? null);
+        await storage.setSession(session);
+        await storage.setUserData(session.user);
+      }
+    } catch (error) {
+      console.error('Error loading stored session:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Listen for auth changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session) {
+        await storage.setSession(session);
+        await storage.setUserData(session.user);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = (userData: User) => {
+  const login = async (userData: User) => {
     setUser(userData);
+    await storage.setUserData(userData);
     router.replace('/');
   };
 
   const logout = async () => {
     try {
       await supabase.auth.signOut();
+      await storage.clearAuth();
       setUser(null);
       setSession(null);
       router.replace('/landing');
@@ -54,6 +86,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error logging out:', error);
     }
   };
+
+  if (loading) {
+    return null; // or your loading component
+  }
 
   return (
     <AuthContext.Provider value={{ user, session, login, logout, setUser }}>

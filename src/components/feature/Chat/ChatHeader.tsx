@@ -1,4 +1,4 @@
-import { Contact } from '@/src/constants/types/chat'
+import { Contact } from '@/src/constants/types/chat.types'
 import { Feather } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React from 'react'

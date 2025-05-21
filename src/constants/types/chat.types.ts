@@ -1,9 +1,10 @@
 export type MessageType = {
   id: string;
   name: string;
-  avatar: string;
+  profile_pic: string;
   message: string;
-  hasDuplicate?: boolean;
+  timestamp: Date;
+  isOwnMessage?: boolean;
 };
 
 export interface Message {

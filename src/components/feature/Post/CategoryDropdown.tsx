@@ -1,5 +1,5 @@
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
-import { CategorySelectorProps } from '@/src/constants/types/post';
+import { CategorySelectorProps } from '@/src/constants/types/post.types.';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,

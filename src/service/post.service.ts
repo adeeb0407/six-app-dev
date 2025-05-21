@@ -1,4 +1,4 @@
-import { Post } from '../constants/types/post';
+import { Post, PostInput } from '../constants/types/post.types.';
 import { supabase } from '../db/supabase';
 
 export const fetchPostsByDegree = async (userId: string, degreeLimit?: number): Promise<Post[] | null> => {
@@ -21,3 +21,26 @@ export const fetchPostsByDegree = async (userId: string, degreeLimit?: number): 
     return null;
   }
 }
+
+export const createPost = async (input: PostInput) => {
+  try {
+    const { data, error } = await supabase
+      .from("posts")
+      .insert([{
+        user_id: input.user_id,
+        content: input.content,
+        category: input.category,
+        hide_from_chat: input.hide_from_chat ?? false,
+        connection_type: input.connectiontype
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return data;
+  } catch (err) {
+    console.error("Error creating post:", err);
+    return null;
+  }
+};

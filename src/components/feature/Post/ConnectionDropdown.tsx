@@ -1,4 +1,4 @@
-import { ConnectionLevel, ConnectionSelectorProps } from '@/src/constants/types/post';
+import { ConnectionLevel, ConnectionSelectorProps } from '@/src/constants/types/post.types.';
 import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {

@@ -1,6 +1,7 @@
 import SharingCard from '@/src/components/common/SharingCard';
 import { Theme } from '@/src/constants/color';
 import { useAuth } from '@/src/context/AuthContext';
+import { sendMessage } from '@/src/service/message.services';
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -15,14 +16,42 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ProfileDetails from '../../components/feature/Profile/ProfileDetails';
 
 const Profile = () => {
-    const {logout} = useAuth();
+    const { logout } = useAuth();
+
+    const handleSendMessage = async () => {
+        try {
+            const message = {
+                otherUserId: '63aae3f4-d5e5-4686-937c-745a81a21e96',
+                currentUserId: '12aae3f4-d5e5-4686-937c-745a81a21e96',
+                content: 'hey'
+            };
+            
+            const response = await sendMessage(
+                message.currentUserId,
+                message.otherUserId, 
+                message.content
+            );
+
+            if (!response.success) {
+                console.error('Failed to send message:', response.error);
+                return;
+            }
+
+            console.log('Message sent successfully');
+        } catch (error) {
+            console.error('Error in handleSendMessage:', error);
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Profile</Text>
                     <View style={styles.headerButtons}>
-                        <TouchableOpacity style={styles.iconButton}>
+                        <TouchableOpacity style={styles.iconButton}
+                            onPress={handleSendMessage}
+                        >
                             <Feather name="refresh-cw" size={22} color={Theme.secondary} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.iconButton} onPress={logout}>
@@ -48,7 +77,7 @@ const Profile = () => {
 
                 <ProfileDetails />
                 <View style={styles.sharingCardConatiner}>
-                    <SharingCard/>
+                    <SharingCard />
                 </View>
             </ScrollView>
         </SafeAreaView>

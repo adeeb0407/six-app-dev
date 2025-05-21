@@ -38,7 +38,9 @@
       [
         "expo-font",
         {
-          "fonts": ["./src/assets/fonts/TimesNewRoman.ttf"],
+          "fonts": [
+            "./src/assets/fonts/TimesNewRoman.ttf"
+          ],
           "android": {
             "fonts": [
               {
@@ -53,11 +55,19 @@
             ]
           }
         }
-      ], 
+      ],
       [
-         "expo-contacts",
+        "expo-contacts",
         {
           "contactsPermission": "Allow Six to access your contacts."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
         }
       ]
     ],

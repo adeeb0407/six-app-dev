@@ -1,4 +1,4 @@
-import { AuthType } from "../constants/types/auth";
+import { AuthType } from "../constants/types/auth.types";
 import { supabase } from "../db/supabase";
 import { createUser } from "./user.service";
 
@@ -13,6 +13,9 @@ export const sendOTP = async (phoneNumber: string): Promise<OTPResponse> => {
     try {
         const { data, error } = await supabase.auth.signInWithOtp({
             phone: phoneNumber,
+            options: {
+                
+            }
         });
 
         if (error) {
