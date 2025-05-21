@@ -22,27 +22,10 @@ interface MessagesResponse {
 
 export const sendMessage = async (
     currentUserId: string,
-    otherUserId: string,
+    chatId: string,
     content: string
 ): Promise<MessageResponse> => {
     try {
-        const chatId = [currentUserId, otherUserId].sort().join('_');
-
-        // 1. Ensure chat exists
-        const { error: chatError } = await supabase
-            .from('chats')
-            .upsert([
-                {
-                    chat_id: chatId,
-                    user1: [currentUserId, otherUserId].sort()[0],
-                    user2: [currentUserId, otherUserId].sort()[1],
-                },
-            ]);
-
-        if (chatError) {
-            throw new Error(`Failed to create/update chat: ${chatError.message}`);
-        }
-
         // 2. Insert message
         const { error: messageError } = await supabase
             .from('messages')
@@ -118,3 +101,5 @@ export const fetchChatMessages = async (chatId: string): Promise<MessagesRespons
         };
     }
 };
+
+

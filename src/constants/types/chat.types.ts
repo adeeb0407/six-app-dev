@@ -12,13 +12,12 @@ export interface Message {
   text: string;
   sender: 'user' | 'contact';
   timestamp: Date;
-  status?: 'sent' | 'delivered' | 'read';
   showAvatar?: boolean;
 }
 
 export interface Contact {
   id: string;
   name: string;
-  avatar: string;
-  connectionDegree: string;
+  profile_pic: string;
+  connectionDegree?: string;
 }

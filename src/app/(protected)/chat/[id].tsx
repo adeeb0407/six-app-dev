@@ -2,123 +2,180 @@ import ChatHeader from '@/src/components/feature/Chat/ChatHeader';
 import ChatTabs from '@/src/components/feature/Chat/ChatTabs';
 import MessageInput from '@/src/components/feature/Chat/MessageInput';
 import MessageList from '@/src/components/feature/Chat/MessageList';
-import { Contact, Message } from '@/src/constants/types/chat';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useAuth } from '@/src/context/AuthContext';
+import { supabase } from '@/src/db/supabase';
+import { fetchChatMessages, sendMessage } from '@/src/service/message.services';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Demo data
-const DEMO_CONTACT: Contact = {
-  id: '1',
-  name: 'Manaas',
-  avatar: 'https://randomuser.me/api/portraits/men/44.jpg',
-  connectionDegree: '1st° connection'
-};
+interface ChatMessage {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+}
 
-const DEMO_MESSAGES: Message[] = [
-  {
-    id: '1',
-    text: 'yes',
-    sender: 'user',
-    timestamp: new Date('2025-05-18T10:24:00'),
-    status: 'read'
-  },
-  {
-    id: '2',
-    text: 'u and the friend ur w should join sixsocialapp.com',
-    sender: 'user',
-    timestamp: new Date('2025-05-18T10:24:30'),
-    status: 'read'
-  },
-  // Add more demo messages here
-  {
-    id: '3',
-    text: 'thoughts',
-    sender: 'user',
-    timestamp: new Date('2025-05-18T10:25:00'),
-    status: 'read'
-  },
-  {
-    id: '4',
-    text: 'Are you trying to sell me something?',
-    sender: 'contact',
-    timestamp: new Date('2025-05-18T10:26:00'),
-    showAvatar: true
-  }
-];
+interface Message {
+  id: string;
+  text: string;
+  sender: 'user' | 'contact';
+  timestamp: Date;
+  showAvatar: boolean;
+}
 
 const ChatScreen: React.FC = () => {
-  const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>(DEMO_MESSAGES);
-  const [contact] = useState<Contact>(DEMO_CONTACT);
+  const { 
+    id: chatId,
+    name,
+    profile_pic,
+    connectionType 
+  } = useLocalSearchParams<{ 
+    id: string;
+    name: string;
+    profile_pic: string;
+    connectionType: string;
+  }>();
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'chat' | 'profile'>('chat');
+  const supabaseChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // Process messages to determine which ones should show avatars
   useEffect(() => {
-    const processedMessages = [...messages];
-    
-    // Go through messages and mark which ones should show avatars
-    // We only show avatar when it's the first message in a sequence from the contact
-    let prevSender: 'user' | 'contact' | null = null;
-    
-    processedMessages.forEach((message) => {
-      if (message.sender === 'contact') {
-        if (prevSender !== 'contact' || message.showAvatar === true) {
-          message.showAvatar = true;
-        } else {
-          message.showAvatar = false;
-        }
-      }
-      prevSender = message.sender;
-    });
-    
-    setMessages(processedMessages);
-  }, []);
+    if (chatId) {
+      loadMessages();
+    }
+  }, [chatId, user?.id]);
 
-  const handleSend = (messageText: string) => {
-    const newMsg: Message = {
-      id: Date.now().toString(),
-      text: messageText,
-      sender: 'user',
-      timestamp: new Date(),
-      status: 'sent'
+  useEffect(() => {
+    if (!chatId) return;
+
+    console.log('Setting up subscription for chat:', chatId);
+
+    supabaseChannel.current = supabase
+      .channel(`chat-${chatId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `chat_id=eq.${chatId}`
+        },
+        (payload) => {
+          console.log('Received new message:', payload);
+          const newMessage = payload.new as ChatMessage;
+
+          console.log('Current user:', user?.id);
+          console.log('Message sender:', newMessage.sender_id);
+
+          if (newMessage.sender_id !== user?.id) {
+            // Only handling messages from others, not our own
+            const mappedMessage: Message = {
+              id: newMessage.id,
+              text: newMessage.content,
+              sender: 'contact',
+              timestamp: new Date(newMessage.created_at),
+              showAvatar: true
+            };
+            setMessages(prev => [...prev, mappedMessage]);
+          } else {
+            console.log('Skipping own message');
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
+
+    return () => {
+      console.log('Cleaning up subscription');
+      if (supabaseChannel.current) {
+        supabase.removeChannel(supabaseChannel.current);
+      }
     };
-    
-    setMessages([...messages, newMsg]);
-    
-    // Simulate a reply after 1-2 seconds
-    setTimeout(() => {
-      const reply: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Got your message! This is a simulated response.',
-        sender: 'contact',
-        timestamp: new Date(),
-        showAvatar: true
-      };
-      
-      setMessages(prev => [...prev, reply]);
-    }, 1000 + Math.random() * 1000);
+  }, [chatId, user?.id]);
+
+  const loadMessages = async () => {
+    if (!chatId) return;
+
+    try {
+      console.log('Loading messages for chat:', chatId);
+      setLoading(true);
+      const response = await fetchChatMessages(chatId);
+
+      console.log('Messages response:', response);
+
+      if (response.success) {
+        const mappedMessages: Message[] = response.data.map((msg: ChatMessage) => {
+          console.log('Processing message:', msg.id);
+          return {
+            id: msg.id,
+            text: msg.content,
+            sender: msg.sender_id === user?.id ? 'user' : 'contact',
+            timestamp: new Date(msg.created_at),
+            showAvatar: msg.sender_id !== user?.id
+          };
+        });
+
+        console.log('Total messages mapped:', mappedMessages.length);
+        setMessages(mappedMessages);
+      } else {
+        console.error('Failed to load messages:', response.error);
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSend = async (messageText: string) => {
+    if (!user?.id || !chatId) return;
+
+    try {
+      const response = await sendMessage(user.id, chatId, messageText);
+      console.log('Send message response:', response);
+
+      if (response.success) {
+        const myMsg: Message = {
+          id: Date.now().toString(), // temporary ID
+          text: messageText,
+          sender: 'user',
+          timestamp: new Date(),
+          showAvatar: false
+        };
+        setMessages(prev => [...prev, myMsg]);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <ChatHeader contact={contact} />
-
-      {/* Navigation Tabs */}
+      <ChatHeader contact={{id: chatId, name, profile_pic}} />
       <ChatTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Chat Messages and Input */}
       {activeTab === 'chat' && (
         <View style={styles.chatContainer}>
-          <MessageList messages={messages} contact={contact} />
-          <MessageInput onSend={handleSend} />
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <Text>Loading messages...</Text>
+            </View>
+          ) : (
+            <>
+              <MessageList messages={messages} profile_pic={profile_pic} />
+              <MessageInput onSend={handleSend} />
+            </>
+          )}
         </View>
       )}
-      
+
       {activeTab === 'profile' && (
-        // Profile content would go here
         <View style={styles.profileContainer} />
       )}
     </SafeAreaView>
@@ -137,7 +194,12 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     flex: 1,
-  }
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default ChatScreen;

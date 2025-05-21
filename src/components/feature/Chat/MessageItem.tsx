@@ -1,13 +1,13 @@
-import { Contact, Message } from '@/src/constants/types/chat.types';
+import { Message } from '@/src/constants/types/chat.types';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
 type MessageItemProps = {
   message: Message;
-  contact: Contact;
+  profile_pic: string;
 };
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, contact }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ message, profile_pic }) => {
   // Function to format message text with any links
   const formatMessageText = (text: string) => {
     // Simple regex to detect URLs
@@ -31,9 +31,6 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, contact }) => {
             {formatMessageText(message.text)}
           </Text>
         </View>
-        {/* {message.status === 'sent' && (
-          <Text style={styles.sentStatus}>Sent</Text>
-        )} */}
       </View>
     );
   } else {
@@ -41,7 +38,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, contact }) => {
       <View style={styles.receivedMessageContainer}>
         {message.showAvatar ? (
           <Image
-            source={{ uri: contact.avatar }}
+            source={{ uri: profile_pic }}
             style={styles.messageProfilePic}
           />
         ) : (

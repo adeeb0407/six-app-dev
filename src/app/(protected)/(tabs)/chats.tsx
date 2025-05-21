@@ -2,11 +2,12 @@ import ChatMessageCard from '@/src/components/feature/Chat/ChatMessageCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { UserChat } from '@/src/constants/types/message.types';
 import { useAuth } from '@/src/context/AuthContext';
+import { supabase } from '@/src/db/supabase';
 import { fetchUserChats } from '@/src/service/message.services';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import Feather from '@expo/vector-icons/Feather';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -17,12 +18,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const ChatsScreen = () => {
+const ChatsListScreen = () => {
   const { user } = useAuth();
   const [chats, setChats] = useState<UserChat[]>([]);
   const [loading, setLoading] = useState(true);
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
+  const supabaseChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
     if (showPostModal)
@@ -33,15 +35,61 @@ const ChatsScreen = () => {
     loadChats();
   }, [user]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    console.log('Setting up chat subscription for user:', user.id);
+
+    supabaseChannel.current = supabase
+      .channel('chat-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        async (payload) => {
+          console.log('New message received:', payload);
+          const newMessage = payload.new;
+
+          // Check if this chat involves current user
+          const { data: chat } = await supabase
+            .from('chats')
+            .select('*')
+            .eq('chat_id', newMessage.chat_id)
+            .single();
+
+          if (chat && (chat.user1 === user.id || chat.user2 === user.id)) {
+            console.log('Updating chat list with new message');
+            // Reload chats to get latest
+            loadChats();
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
+
+    // Cleanup subscription
+    return () => {
+      console.log('Cleaning up chat subscription');
+      if (supabaseChannel.current) {
+        supabase.removeChannel(supabaseChannel.current);
+      }
+    };
+  }, [user?.id]);
+
   const loadChats = async () => {
     if (!user?.id) return;
 
     try {
       setLoading(true);
       const response = await fetchUserChats(user.id);
-      
+
       if (response.success) {
         setChats(response.data);
+        console.log('Chats loaded:', response.data.length);
       } else {
         console.error('Failed to load chats:', response.error);
       }
@@ -243,4 +291,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChatsScreen;
+export default ChatsListScreen;

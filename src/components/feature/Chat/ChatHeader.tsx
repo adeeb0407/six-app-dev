@@ -17,7 +17,7 @@ const ChatHeader = ({contact}: ChatHeaderProp) => {
           <Feather name="arrow-left" size={24} color="black" />
         </TouchableOpacity>
         <Image
-          source={{ uri: contact.avatar }}
+          source={{ uri: contact.profile_pic }}
           style={styles.profileImage}
         />
         <View style={styles.headerTextContainer}>

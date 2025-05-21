@@ -1,7 +1,16 @@
-import { MessageType } from '@/src/constants/types/chat.types';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+interface MessageType {
+  id: string;
+  name: string;
+  profile_pic: string;
+  message: string;
+  timestamp: Date;
+  isOwnMessage?: boolean;
+  other_user_id?: string;  
+}
 
 const getTimeAgo = (date: Date): string => {
   const now = new Date();
@@ -28,9 +37,22 @@ const ChatMessageCard = ({ message }: { message: MessageType }) => {
         <TouchableOpacity 
             key={message.id} 
             style={styles.messageCard}
-            onPress={() => router.push(`/chat/${message.id}`)}
+            onPress={() => router.push({
+              pathname: '/chat/[id]',
+              params: {
+                id: message.id,
+                name: message.name,
+                profile_pic: message.profile_pic,
+                connectionType: '3'
+              }
+            })}
         >
-            <Image source={{ uri: message.profile_pic }} style={styles.avatar} />
+            <Image 
+              source={{ 
+                uri: message.profile_pic || 'https://via.placeholder.com/60'
+              }} 
+              style={styles.avatar} 
+            />
             <View style={styles.messageContent}>
                 <View style={styles.nameContainer}>
                     <Text style={styles.name}>{message.name}</Text>
