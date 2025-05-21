@@ -8,7 +8,9 @@ import { ConnectionLevel, Post } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
 import { useAuth } from '@/src/context/AuthContext';
 import { fetchPostsByDegree } from '@/src/service/post.service';
+import { fetchUserProfile } from '@/src/service/profile.service';
 import { usePostModalStore } from '@/src/store/postModalStore';
+import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
 import React, { FC, useEffect, useRef, useState } from 'react';
@@ -28,6 +30,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const HomeScreen: FC = () => {
   const router = useRouter();
   const { user } = useAuth();
+  const { user: userProfile, setUser } = useUserStore();
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const [posts, setPosts] = useState<Post[]>([]);
   const [postTabs, setPostTabs] = useState<PostTabs>(PostTabs.AllPosts);
@@ -42,18 +45,26 @@ const HomeScreen: FC = () => {
   }, [showPostModal]);
 
   useEffect(() => {
-    try {
-      (async() => {
+    const loadData = async () => {
+      try {
         if (user) {
-          const data = await fetchPostsByDegree(user.id);
-          setPosts(data ?? []);
-        }
-      })()
+          // Load user profile
+          const profileResponse = await fetchUserProfile(user.id);
+          if (profileResponse.success && profileResponse.data) {
+            setUser(profileResponse.data);
+          }
 
-    } catch (e) {
-      console.log(e)
-    }
-  }, []);
+          // Load posts
+          const postsData = await fetchPostsByDegree(user.id);
+          setPosts(postsData ?? []);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    loadData();
+  }, [user]);
 
   const toggleCategoryTab = (tab: CategoryTabs) => {
     setCategoryTabs(prev =>
@@ -125,7 +136,7 @@ const HomeScreen: FC = () => {
         <HeaderText title='Six' />
         <TouchableOpacity onPress={() => router.push('/profile')}>
           <Image
-            source={require('@/src/assets/images/pfp.jpg')}
+            source={userProfile?.profile_photo ? { uri: userProfile.profile_photo } :  require('@/src/assets/images/pfp.jpg')}
             style={styles.profileImage}
           />
         </TouchableOpacity>
