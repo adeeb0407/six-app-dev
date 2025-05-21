@@ -5,7 +5,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 interface MessageType {
   id: string;
   name: string;
-  profile_pic: string;
+  profile_photo: string;
   message: string;
   timestamp: Date;
   isOwnMessage?: boolean;
@@ -42,14 +42,14 @@ const ChatMessageCard = ({ message }: { message: MessageType }) => {
               params: {
                 id: message.id,
                 name: message.name,
-                profile_pic: message.profile_pic,
+                profile_photo: message.profile_photo,
                 connectionType: '3'
               }
             })}
         >
             <Image 
               source={{ 
-                uri: message.profile_pic || 'https://via.placeholder.com/60'
+                uri: message.profile_photo || 'https://via.placeholder.com/60'
               }} 
               style={styles.avatar} 
             />

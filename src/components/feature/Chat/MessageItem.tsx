@@ -4,10 +4,10 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 
 type MessageItemProps = {
   message: Message;
-  profile_pic: string;
+  profile_photo: string;
 };
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, profile_pic }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ message, profile_photo }) => {
   // Function to format message text with any links
   const formatMessageText = (text: string) => {
     // Simple regex to detect URLs
@@ -38,7 +38,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, profile_pic }) => {
       <View style={styles.receivedMessageContainer}>
         {message.showAvatar ? (
           <Image
-            source={{ uri: profile_pic }}
+            source={{ uri: profile_photo }}
             style={styles.messageProfilePic}
           />
         ) : (

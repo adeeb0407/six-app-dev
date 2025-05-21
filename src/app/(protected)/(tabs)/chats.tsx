@@ -1,9 +1,11 @@
 import ChatMessageCard from '@/src/components/feature/Chat/ChatMessageCard';
+import RequestMessageCard, { RequestType } from '@/src/components/feature/Chat/RequestMessageCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { UserChat } from '@/src/constants/types/message.types';
 import { useAuth } from '@/src/context/AuthContext';
 import { supabase } from '@/src/db/supabase';
 import { fetchUserChats } from '@/src/service/message.services';
+import { fetchPostRequests } from '@/src/service/request.service';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import Feather from '@expo/vector-icons/Feather';
 import { useLocalSearchParams } from 'expo-router';
@@ -18,10 +20,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+
 const ChatsListScreen = () => {
   const { user } = useAuth();
   const [chats, setChats] = useState<UserChat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [requests, setRequests] = useState<RequestType[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
   const supabaseChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -33,6 +38,7 @@ const ChatsListScreen = () => {
 
   useEffect(() => {
     loadChats();
+    loadPostRequests();
   }, [user]);
 
   useEffect(() => {
@@ -100,6 +106,34 @@ const ChatsListScreen = () => {
     }
   };
 
+  const loadPostRequests = async () => {
+    if (!user?.id) return;
+
+    try {
+      setRequestsLoading(true);
+      const response = await fetchPostRequests(user.id);
+
+      if (response.success) {
+        setRequests(response.data);
+        console.log('Requests loaded:', response.data);
+      } else {
+        console.error('Failed to load requests:', response.error);
+      }
+    } catch (error) {
+      console.error('Error loading requests:', error);
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
+
+  const handleAccept = (requestId: string) => {
+    console.log('Accepted request:', requestId);
+  };
+
+  const handleReject = (requestId: string) => {
+    console.log('Rejected request:', requestId);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -132,6 +166,26 @@ const ChatsListScreen = () => {
 
       {/* Messages List */}
       <ScrollView style={styles.messagesContainer}>
+        {requestsLoading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading requests...</Text>
+          </View>
+        ) : requests.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No requests yet</Text>
+            <Text style={styles.emptySubText}>Check back later!</Text>
+          </View>
+        ) : (
+          requests.map((request: RequestType) => (
+            <RequestMessageCard
+              key={request.id}
+              request={request}
+              onAccept={handleAccept}
+              onReject={handleReject}
+            />
+          ))
+        )}
+
         {loading ? (
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading chats...</Text>
@@ -148,7 +202,7 @@ const ChatsListScreen = () => {
               message={{
                 id: chat.chat_id,
                 name: chat.other_user_name,
-                profile_pic: chat.other_user_profile_photo || 'https://picsum.photos/200',
+                profile_photo: chat.other_user_profile_photo || 'https://picsum.photos/200',
                 message: chat.last_message,
                 timestamp: new Date(chat.last_message_at),
                 isOwnMessage: chat.last_message_sender === user?.id

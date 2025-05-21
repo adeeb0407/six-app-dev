@@ -11,6 +11,8 @@ export interface Post {
   created_at: string;
   connectiontype: ConnectionLevel | null;
   keyword_summary: string[];
+  user_interested: boolean
+  user_accepted: boolean
 }
 
 export interface PostInput {

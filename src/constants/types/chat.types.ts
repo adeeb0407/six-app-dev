@@ -1,7 +1,7 @@
 export type MessageType = {
   id: string;
   name: string;
-  profile_pic: string;
+  profile_photo: string;
   message: string;
   timestamp: Date;
   isOwnMessage?: boolean;
@@ -18,6 +18,6 @@ export interface Message {
 export interface Contact {
   id: string;
   name: string;
-  profile_pic: string;
+  profile_photo: string;
   connectionDegree?: string;
 }

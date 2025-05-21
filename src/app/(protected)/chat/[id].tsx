@@ -30,12 +30,12 @@ const ChatScreen: React.FC = () => {
   const { 
     id: chatId,
     name,
-    profile_pic,
+    profile_photo,
     connectionType 
   } = useLocalSearchParams<{ 
     id: string;
     name: string;
-    profile_pic: string;
+    profile_photo: string;
     connectionType: string;
   }>();
   const { user } = useAuth();
@@ -157,7 +157,7 @@ const ChatScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ChatHeader contact={{id: chatId, name, profile_pic}} />
+      <ChatHeader contact={{id: chatId, name, profile_photo}} />
       <ChatTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {activeTab === 'chat' && (
@@ -168,7 +168,7 @@ const ChatScreen: React.FC = () => {
             </View>
           ) : (
             <>
-              <MessageList messages={messages} profile_pic={profile_pic} />
+              <MessageList messages={messages} profile_photo={profile_photo} />
               <MessageInput onSend={handleSend} />
             </>
           )}

@@ -1,4 +1,6 @@
 import { ConnectionLevel, Post } from '@/src/constants/types/post.types.';
+import { useAuth } from '@/src/context/AuthContext';
+import { reactToPost } from '@/src/service/request.service';
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -32,6 +34,7 @@ const getTimeAgo = (dateString: string): string => {
 };
 
 const PostCard = ({ post }: props) => {
+  const { user } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
   const [isReplied, setIsReplied] = useState(false);
 
@@ -39,8 +42,14 @@ const PostCard = ({ post }: props) => {
     setShowDetails(s => !s);
   };
 
-  const handleInterestedClick = () => {
-    setIsReplied(true);
+  const handleInterestedClick = async () => {
+    if (user) {
+      const response = await reactToPost(post.id, user.id);
+      if (!response.success) {
+        console.error('Failed to react:', response.error);
+      } else console.log('Reacted on post successfully')
+      setIsReplied(true);
+    }
   };
 
   const connectionText =

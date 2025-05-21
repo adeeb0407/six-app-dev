@@ -89,7 +89,6 @@ const HomeScreen: FC = () => {
     // Filter by PostTabs (connection degree)
     if (postTabs !== PostTabs.AllPosts) {
       filteredPosts = filteredPosts.filter(post => {
-        console.log(post.connectiontype)
 
         switch (postTabs) {
           case PostTabs.FirstDegree:
