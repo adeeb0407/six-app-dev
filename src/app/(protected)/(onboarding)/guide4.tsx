@@ -1,15 +1,26 @@
 import { useAuth } from '@/src/context/AuthContext';
+import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const Guide2 = () => {
   const router = useRouter();
-  const {login} = useAuth();
+  const { login } = useAuth();
+  const { user } = useUserStore();
 
-  const handleNext = () => {
-    login({id: '1'})
+  const handleNext = async () => {
+    if (user) {
+      console.log('streo user', user)
+       login({
+        id: user.id,
+      });
+      router.push('/');
+    } else {
+      console.error('No user data found at end of onboarding');
+    }
   };
+
 
   return (
     <TouchableOpacity

@@ -1,5 +1,6 @@
+import HeaderText from '@/src/components/common/HeaderText';
 import ChatMessageCard from '@/src/components/feature/Chat/ChatMessageCard';
-import RequestMessageCard, { RequestType } from '@/src/components/feature/Chat/RequestMessageCard';
+import { RequestType } from '@/src/components/feature/Chat/RequestMessageCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { UserChat } from '@/src/constants/types/message.types';
 import { useAuth } from '@/src/context/AuthContext';
@@ -8,28 +9,32 @@ import { fetchUserChats } from '@/src/service/message.services';
 import { fetchPostRequests } from '@/src/service/request.service';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import Feather from '@expo/vector-icons/Feather';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Image,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 
 const ChatsListScreen = () => {
   const { user } = useAuth();
   const [chats, setChats] = useState<UserChat[]>([]);
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<RequestType[]>([]);
-  const [requestsLoading, setRequestsLoading] = useState(true);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [hasUnreadRequests, setHasUnreadRequests] = useState(false);
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
   const supabaseChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (showPostModal)
@@ -38,7 +43,7 @@ const ChatsListScreen = () => {
 
   useEffect(() => {
     loadChats();
-    loadPostRequests();
+    checkForRequests();
   }, [user]);
 
   useEffect(() => {
@@ -106,7 +111,20 @@ const ChatsListScreen = () => {
     }
   };
 
-  const loadPostRequests = async () => {
+  const checkForRequests = async () => {
+    if (!user?.id) return;
+
+    try {
+      const response = await fetchPostRequests(user.id);
+      if (response.success && response.data.length > 0) {
+        setHasUnreadRequests(true);
+      }
+    } catch (error) {
+      console.error('Error checking requests:', error);
+    }
+  };
+
+  const handleNotificationPress = async () => {
     if (!user?.id) return;
 
     try {
@@ -115,7 +133,8 @@ const ChatsListScreen = () => {
 
       if (response.success) {
         setRequests(response.data);
-        console.log('Requests loaded:', response.data);
+        setHasUnreadRequests(false);
+        // router.push('/(protected)/requests');
       } else {
         console.error('Failed to load requests:', response.error);
       }
@@ -140,7 +159,7 @@ const ChatsListScreen = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Mutuals</Text>
+        <HeaderText title="Chats" />
       </View>
 
       {/* Search Bar */}
@@ -155,35 +174,38 @@ const ChatsListScreen = () => {
         </View>
       </View>
 
-      {
-        isChatPostModalVisible &&
+      {isChatPostModalVisible && (
         <FlexiblePostComponent
           isModal={true}
           visible={isChatPostModalVisible}
           onClose={() => setChatPostModalVisible(false)}
         />
-      }
+      )}
 
       {/* Messages List */}
       <ScrollView style={styles.messagesContainer}>
-        {requestsLoading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading requests...</Text>
-          </View>
-        ) : requests.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No requests yet</Text>
-            <Text style={styles.emptySubText}>Check back later!</Text>
-          </View>
-        ) : (
-          requests.map((request: RequestType) => (
-            <RequestMessageCard
-              key={request.id}
-              request={request}
-              onAccept={handleAccept}
-              onReject={handleReject}
-            />
-          ))
+        {true && (
+          <TouchableOpacity 
+            style={styles.sixNotification}
+            onPress={handleNotificationPress}
+            disabled={requestsLoading}
+          >
+            <View style={styles.sixNotificationContent}>
+              <Image 
+                source={require('@/src/assets/images/icon.png')}
+                style={styles.sixAvatar}
+              />
+              <View style={styles.sixMessageContainer}>
+                <Text style={styles.sixName}>Six</Text>
+                <Text style={styles.sixMessage}>
+                  Hey! You have new connection requests waiting for you
+                </Text>
+              </View>
+              {requestsLoading && (
+                <ActivityIndicator size="small" color="#666" style={styles.loadingIndicator} />
+              )}
+            </View>
+          </TouchableOpacity>
         )}
 
         {loading ? (
@@ -342,6 +364,42 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  sixNotification: {
+    backgroundColor: '#f5f5f5',
+    padding: 15,
+    marginHorizontal: 1,
+    marginVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  sixNotificationContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sixAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  sixMessageContainer: {
+    flex: 1,
+  },
+  sixName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    fontFamily: 'TimesNewRomanBold',
+  },
+  sixMessage: {
+    fontSize: 16,
+    color: '#666',
+    fontFamily: 'TimesNewRomanRegular',
+  },
+  loadingIndicator: {
+    marginLeft: 8,
   },
 });
 

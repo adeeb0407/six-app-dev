@@ -31,6 +31,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   isModal = false,
   visible = true,
   onClose,
+  setDidPost,
   defaultConnectionLevel = ConnectionLevel.First
 }) => {
   const { user } = useAuth();
@@ -77,12 +78,18 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       const data = await createPost(post);
       if (!data) console.log('error creating post')
       else console.log('created post successfully',)
+      if (data && setDidPost && !isModal && onClose) {
+        setDidPost(true);
+        onClose();
+      }
+
+      setNoteText('');
+      if (isModal && onClose) {
+        onClose();
+      }
 
     }
-    setNoteText('');
-    if (isModal && onClose) {
-      onClose();
-    }
+
   };
 
   const isPostButtonActive = noteText.trim().length > 0;

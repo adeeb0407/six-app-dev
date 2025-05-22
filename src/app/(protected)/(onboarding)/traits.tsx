@@ -6,6 +6,9 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -83,39 +86,50 @@ const Traits = () => {
   const isValid = traits.every(trait => trait.trim().length > 0);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tell us about yourself</Text>
-      <Text style={styles.subtitle}>Share three interesting things</Text>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.title}>Tell us about yourself</Text>
+        <Text style={styles.subtitle}>Share three interesting things</Text>
 
-      <View style={styles.inputsContainer}>
-        {fadeAnims.map((fadeAnim, index) => (
-          <Animated.View
-            key={index}
-            style={[
-              styles.inputContainer,
-              { opacity: fadeAnim }
-            ]}
-          >
-            <TextInput
-              style={styles.input}
-              value={traits[index]}
-              onChangeText={(text) => handleTraitChange(text, index)}
-              placeholder={`${demoDetails[index]}`}
-              placeholderTextColor="#666"
-              maxLength={MAX_CHARS}
-            />
-            <Text style={styles.charCount}>
-              {traits[index].length}/{MAX_CHARS}
-            </Text>
-          </Animated.View>
-        ))}
-      </View>
+        <View style={styles.inputsContainer}>
+          {fadeAnims.map((fadeAnim, index) => (
+            <Animated.View
+              key={index}
+              style={[
+                styles.inputContainer,
+                { opacity: fadeAnim }
+              ]}
+            >
+              <TextInput
+                style={styles.input}
+                value={traits[index]}
+                onChangeText={(text) => handleTraitChange(text, index)}
+                placeholder={`${demoDetails[index]}`}
+                placeholderTextColor="#666"
+                maxLength={MAX_CHARS}
+              />
+              <Text style={styles.charCount}>
+                {traits[index].length}/{MAX_CHARS}
+              </Text>
+            </Animated.View>
+          ))}
+        </View>
 
-      <NextButton 
-        onPress={handleNext}
-        disabled={!isValid}
-      />
-    </View>
+        <View style={styles.buttonContainer}>
+          <NextButton 
+            onPress={handleNext}
+            disabled={!isValid}
+          />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -123,6 +137,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
   },
   title: {
@@ -159,6 +176,10 @@ const styles = StyleSheet.create({
     bottom: 15,
     fontSize: 12,
     color: '#666',
+  },
+  buttonContainer: {
+    marginTop: 'auto',
+    paddingVertical: 20,
   },
 });
 

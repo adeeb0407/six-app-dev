@@ -12,7 +12,7 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const Share = () => {
   const router = useRouter();
   const [contacts, setContacts] = useState<Contacts.Contact[]>([]);
-  const [permissionStatus, setPermissionStatus] = useState<string>('');
+  const [permissionStatus, setPermissionStatus] = useState<string>('checking'); // Add initial checking state
 
   // Check permissions when screen comes into focus
   useFocusEffect(
@@ -23,7 +23,15 @@ const Share = () => {
 
   const checkAndLoadContacts = async () => {
     try {
-      const { status } = await Contacts.getPermissionsAsync();
+      let { status } = await Contacts.getPermissionsAsync();
+      console.log('Initial permission status:', status);
+
+      if (status === 'undetermined') {
+        const { status: newStatus } = await Contacts.requestPermissionsAsync();
+        console.log('Permission request result:', newStatus);
+        status = newStatus;
+      }
+
       setPermissionStatus(status);
 
       if (status === 'granted') {
@@ -31,6 +39,7 @@ const Share = () => {
       }
     } catch (error) {
       console.error('Error checking permissions:', error);
+      setPermissionStatus('error');
     }
   };
 
@@ -59,6 +68,7 @@ const Share = () => {
   const extractUniqueLast10Digits = (contacts: any[]): string[] => {
     const seen = new Set<string>();
     const numbers: string[] = [];
+
 
     for (const contact of contacts) {
       if (contact.phoneNumbers) {
@@ -99,13 +109,17 @@ const Share = () => {
       <View style={styles.content}>
         <View style={styles.textContainer}>
           <Text style={styles.title}>Almost There</Text>
-          {
-            permissionStatus === 'granted' &&
-            <Text style={styles.subtitle}>
-              Refer six contacts to join
-            </Text>
-          }
-          {permissionStatus !== 'granted' ? (
+          
+          {permissionStatus === 'checking' ? (
+            <Text style={styles.subtitle}>Checking permissions...</Text>
+          ) : permissionStatus === 'granted' ? (
+            <>
+              <Text style={styles.subtitle}>
+                Refer six contacts to join
+              </Text>
+              <SharingCard />
+            </>
+          ) : (
             <View style={styles.permissionContainer}>
               <Text style={styles.permissionText}>
                 Please enable contacts access in settings
@@ -127,8 +141,6 @@ const Share = () => {
                 </TouchableOpacity>
               </View>
             </View>
-          ) : (
-            <SharingCard />
           )}
         </View>
       </View>

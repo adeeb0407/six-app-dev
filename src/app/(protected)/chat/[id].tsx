@@ -59,11 +59,11 @@ const ChatScreen: React.FC = () => {
       .channel(`chat-${chatId}`)
       .on(
         'postgres_changes',
-        {
+        {  
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `chat_id=eq.${chatId}`
+          filter: `chat_id=eq.${chatId}` 
         },
         (payload) => {
           console.log('Received new message:', payload);
@@ -74,7 +74,7 @@ const ChatScreen: React.FC = () => {
 
           if (newMessage.sender_id !== user?.id) {
             // Only handling messages from others, not our own
-            const mappedMessage: Message = {
+            const mappedMessage: Message = { 
               id: newMessage.id,
               text: newMessage.content,
               sender: 'contact',

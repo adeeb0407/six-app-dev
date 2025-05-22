@@ -4,6 +4,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { updateProfilePicture } from '@/src/service/profile.service';
 import { useUserStore } from '@/src/store/userStore';
 import { Feather } from '@expo/vector-icons';
+import * as Burnt from "burnt";
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import {
@@ -19,7 +20,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Profile = () => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const { user: userProfile, setUser } = useUserStore();
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -33,18 +34,25 @@ const Profile = () => {
         try {
             // Generate a unique filename using timestamp
             const fileName = `profile-${Date.now()}.jpeg`;
-            
+
             // Upload the image to Supabase
             const result = await updateProfilePicture(user.id, base64Image, fileName);
-            
+
             if (result.success && result.url) {
                 // Update local state with new profile image
+
                 if (userProfile) {
                     setUser({ ...userProfile, profile_photo: result.url });
                 }
-                Alert.alert('Success', 'Profile picture updated successfully');
+                Burnt.toast({
+                    title: "Profile Photo updated",
+                    preset: "done",
+                });
             } else {
-                Alert.alert('Error', result.error || 'Failed to upload image');
+                Burnt.toast({
+                    title: "Failed to upload profile photo.",
+                    preset: "error",
+                });
             }
         } catch (error) {
             console.error('Image upload error:', error);
@@ -59,7 +67,7 @@ const Profile = () => {
             mediaTypes: 'images',
             allowsEditing: true,
             aspect: [4, 4],
-            quality: 0.7, 
+            quality: 0.7,
             base64: true
         });
 
@@ -76,7 +84,7 @@ const Profile = () => {
                     <Text style={styles.headerTitle}>Profile</Text>
                     <View style={styles.headerButtons}>
                         <TouchableOpacity style={styles.iconButton}
-                            onPress={pickImage}
+                            onPress={logout}
                             disabled={isLoading}
                         >
                             <Feather name="edit-2" size={22} color={Theme.secondary} />
@@ -112,9 +120,9 @@ const Profile = () => {
                 </View>
 
                 <View style={styles.infoContainer}>
-                    {userProfile?.keyword_summary?.map((keyword, i) => (
+                    {(userProfile?.keyword_summary ?? []).map((keyword, i, arr) => (
                         <Text key={i} style={styles.infoText}>
-                            {keyword} {i === userProfile.keyword_summary.length - 1 ? '' : '|'} 
+                            {keyword} {i === arr.length - 1 ? '' : '| '}
                         </Text>
                     ))}
                 </View>

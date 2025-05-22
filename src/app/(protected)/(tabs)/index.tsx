@@ -27,6 +27,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+
 const HomeScreen: FC = () => {
   const router = useRouter();
   const { user } = useAuth();
@@ -37,6 +38,7 @@ const HomeScreen: FC = () => {
   const [categoryTabs, setCategoryTabs] = useState<CategoryTabs[]>([]);
   const { isHomePostModalVisible, setHomePostModalVisible } = usePostModalStore();
   const modalScaleAnim = useRef(new Animated.Value(1)).current;
+  const [didPost, setDidPost] = useState(false);
 
   useEffect(() => {
     if (showPostModal) {
@@ -49,14 +51,13 @@ const HomeScreen: FC = () => {
       try {
         if (user) {
           // Load user profile
+          console.log('user profile id from index tsx', user.id)
           const profileResponse = await fetchUserProfile(user.id);
           if (profileResponse.success && profileResponse.data) {
             setUser(profileResponse.data);
           }
 
-          // Load posts
-          const postsData = await fetchPostsByDegree(user.id);
-          setPosts(postsData ?? []);
+          loadPosts();
         }
       } catch (e) {
         console.log(e);
@@ -65,6 +66,14 @@ const HomeScreen: FC = () => {
 
     loadData();
   }, [user]);
+
+  const loadPosts = async () => {
+    if (user) {
+      // Load posts
+      const postsData = await fetchPostsByDegree(user.id);
+      setPosts(postsData ?? []);
+    }
+  }
 
   const toggleCategoryTab = (tab: CategoryTabs) => {
     setCategoryTabs(prev =>
@@ -91,6 +100,11 @@ const HomeScreen: FC = () => {
       useNativeDriver: true,
     }).start(() => {
       setHomePostModalVisible(false);
+      if (didPost) {
+        console.log('should load the post again ')
+        loadPosts();
+        setDidPost(false)
+      }
     });
   };
 
@@ -134,9 +148,9 @@ const HomeScreen: FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <HeaderText title='Six' />
-        <TouchableOpacity onPress={() => router.push('/profile')}>
+        <TouchableOpacity onPress={() => router.push('/')}>
           <Image
-            source={userProfile?.profile_photo ? { uri: userProfile.profile_photo } :  require('@/src/assets/images/pfp.jpg')}
+            source={userProfile?.profile_photo ? { uri: userProfile.profile_photo } : require('@/src/assets/images/pfp.jpg')}
             style={styles.profileImage}
           />
         </TouchableOpacity>
@@ -168,10 +182,11 @@ const HomeScreen: FC = () => {
                 }
               ]}
             >
-              <FlexiblePostComponent
+              <FlexiblePostComponent  
                 isModal={false}
                 visible={isHomePostModalVisible}
                 onClose={hideModal}
+                setDidPost={setDidPost}
               />
             </Animated.View>
           </TouchableWithoutFeedback>

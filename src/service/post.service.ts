@@ -18,7 +18,7 @@ export const fetchPostsByDegree = async (userId: string, degreeLimit?: number): 
     return data ?? [];
 
   } catch (error) {
-    console.error('Error in fetchPostsByDegree:', error);
+    console.log('Error in fetchPostsByDegree:', error);
     return null;
   }
 };

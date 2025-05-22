@@ -34,13 +34,11 @@ export interface PostComponentProps {
   defaultTab?: CategoryTabs;
   onPost?: (text: string, activeTab: CategoryTabs) => void;
 
-  // Modal specific props
   isModal?: boolean;
   modalPosition?: 'center' | 'bottom';
   visible?: boolean;
+  setDidPost?: (state: boolean) => void
   onClose?: () => void;
-
-  // New props
   defaultConnectionLevel?: ConnectionLevel;
 }
 

@@ -15,11 +15,13 @@ import RotatingLogo from '../components/common/RotatingLogo';
 import { AuthType } from '../constants/types/auth.types';
 import { useAuth } from '../context/AuthContext';
 import { sendOTP, verifyOTP } from '../service/auth.service';
+import { useUserStore } from '../store/userStore';
 
 const PhoneAuthScreen = () => {
   const router = useRouter();
-  const { authType } = useLocalSearchParams<{authType: AuthType}>()
+  const { authType } = useLocalSearchParams<{ authType: AuthType }>()
   const { login } = useAuth();
+  const { setUser } = useUserStore();
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
@@ -85,25 +87,31 @@ const PhoneAuthScreen = () => {
     const response = await verifyOTP(formattedPhone, code, authType);
 
     if (response.success) {
-        if (response.data.user?.id) {
-            const userData = {
-                id: response.data.user.id,
-                phone: formattedPhone
-            };
-            login(userData);
+      if (response.data.user?.id) {
+        const userData = {
+          id: response.data.user.id,
+          phone: formattedPhone
+        };
+        if(authType === AuthType.SignIn) {
+        login(userData);
         }
+        setUser({id: userData.id})
+        console.log('seted user if ', userData.id)
+      }
 
-        if (authType === AuthType.SignUp && !response.exists) {
-            router.push('/enterName');
-        } else {
-            if (response.exists) {
-              console.log('User already created')
-               router.push('/enterName');
-            }
-            // router.push('/(protected)/(tabs)');
+      if (authType === AuthType.SignUp && !response.exists) {
+        router.push('/enterName');
+      } else {
+        if(authType === AuthType.SignIn) {
+
+          router.push('/')
+        }else if (response.exists) {
+          console.log('User already created')
+          router.push('/enterName');
         }
+      }
     } else {
-        console.error('Failed to verify OTP:', response.error);
+      console.error('Failed to verify OTP:', response.error);
     }
 
     setLoading(false);

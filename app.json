@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sagardxd.six",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +21,12 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.sagardxd.six"
+      "package": "com.sagardxd.six",
+      "permissions": [
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -39,7 +48,7 @@
         "expo-font",
         {
           "fonts": [
-            "./src/assets/fonts/TimesNewRoman.ttf"
+            "./src/assets/fonts/TimesNewRomanRegular.ttf"
           ],
           "android": {
             "fonts": [
@@ -47,7 +56,7 @@
                 "fontFamily": "TimesNewRoman",
                 "fontDefinitions": [
                   {
-                    "path": "./src/assets/fonts/TimesNewRoman.ttf",
+                    "path": "./src/assets/fonts/TimesNewRomanRegular.ttf",
                     "weight": 400
                   }
                 ]
@@ -79,6 +88,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c708ce0a-58ce-4444-8b1f-b1ce5f5f3b33"
+      }
     }
   }
 }
