@@ -81,7 +81,7 @@ const PostCard = ({ post }: props) => {
         </View>
         {/* } */}
 
-        {showDetails && (
+        {showDetails && user && post.user_id != user.id && (
           <View>
             {!isReplied ? (
               <View>

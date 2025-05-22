@@ -69,7 +69,7 @@ export default function TabLayout() {
         options={{
           title: 'Chats',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="chatbox-outline" size={32} color={color} /> // ⬆️ bigger icon
+            <Ionicons name="chatbox-outline" size={32} color={color} /> 
           ),
         }}
       />
@@ -79,7 +79,7 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   icon: {
-    width: 36,   // ⬆️ bigger PNG icon
+    width: 36,  
     height: 36,
     resizeMode: 'contain',
   },

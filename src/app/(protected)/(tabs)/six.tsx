@@ -1,12 +1,5 @@
-import React from 'react'
-import { Text, View } from 'react-native'
-
 const six = () => {
-  return (
-    <View>
-      <Text>six</Text>
-    </View>
-  )
+  return null
 }
 
 export default six

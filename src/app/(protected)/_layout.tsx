@@ -11,10 +11,9 @@ export default function RootLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      {/* <Stack.Screen name="(onboarding)" options={{ headerShown: false }} /> */}
       <Stack.Screen name='profile' />
-      <Stack.Screen name="chat/[id]" options={{ title: 'chat' }} />
       <Stack.Screen name="request"/>
+      <Stack.Screen name="chat/[id]" options={{ title: 'chat' }} />
     </Stack>
   )
 }

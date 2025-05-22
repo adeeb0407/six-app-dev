@@ -26,7 +26,6 @@ export const sendMessage = async (
     content: string
 ): Promise<MessageResponse> => {
     try {
-        // 2. Insert message
         const { error: messageError } = await supabase
             .from('messages')
             .insert([
@@ -41,6 +40,7 @@ export const sendMessage = async (
             throw new Error(`Failed to send message: ${messageError.message}`);
         }
 
+        console.log('msg created ', content)
         return { success: true };
     } catch (error) {
         console.error('Error sending message:', error);

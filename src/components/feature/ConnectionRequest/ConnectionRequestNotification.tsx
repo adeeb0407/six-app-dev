@@ -1,16 +1,15 @@
 import { fetchPostRequests } from '@/src/service/request.service';
+import { useConnectionRequestStore } from '@/src/store/connectionRequest';
 import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { RequestType } from '../Chat/RequestMessageCard';
 
 const ConnectionRequestNotification = () => {
     const router = useRouter();
     const { user } = useUserStore();
-    const [requests, setRequests] = useState<RequestType[]>([]);
+    const {requests, setRequests} = useConnectionRequestStore()
     const [isLoading, setIsLoading] = useState(false);
-    const [hasUnreadRequests, setHasUnreadRequests] = useState(false);
 
     useEffect(() => {
         loadRequests();
@@ -25,7 +24,6 @@ const ConnectionRequestNotification = () => {
             
             if (response.success) {
                 setRequests(response.data);
-                setHasUnreadRequests(response.data.length > 0);
             }
         } catch (error) {
             console.error('Error loading requests:', error);
@@ -34,12 +32,10 @@ const ConnectionRequestNotification = () => {
         }
     };
 
-    // if (!hasUnreadRequests) return null;
-
     return (
         <TouchableOpacity
             style={styles.container}
-            onPress={() => router.push('/(protected)/request')}
+            onPress={() => router.push('/request')}
             disabled={isLoading}
         >
             <View style={styles.content}>
