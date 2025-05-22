@@ -3,6 +3,7 @@ import CategoryTabSelector from '@/src/components/feature/Home/CategoryTabSelect
 import PostTabSelector from '@/src/components/feature/Home/PostTabSelector';
 import PostCard from '@/src/components/feature/Post/PostCard';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
+import ProfileImage from '@/src/components/feature/Profile/ProfileImage';
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
 import { ConnectionLevel, Post } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
@@ -16,7 +17,6 @@ import { useLocalSearchParams } from 'expo-router/build/hooks';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import {
   Animated,
-  Image,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -148,10 +148,11 @@ const HomeScreen: FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <HeaderText title='Six' />
-        <TouchableOpacity onPress={() => router.push('/')}>
-          <Image
-            source={userProfile?.profile_photo ? { uri: userProfile.profile_photo } : require('@/src/assets/images/pfp.jpg')}
-            style={styles.profileImage}
+        <TouchableOpacity onPress={() => router.push('/(protected)/profile')}>
+          <ProfileImage
+            imageUrl={userProfile?.profile_photo}
+            name={userProfile?.name || 'User'}
+            size={40}
           />
         </TouchableOpacity>
       </View>
@@ -159,7 +160,6 @@ const HomeScreen: FC = () => {
 
 
       {/* Share input */}
-
       {!isHomePostModalVisible &&
         <TouchableOpacity
           style={styles.shareContainer}

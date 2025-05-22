@@ -1,36 +1,29 @@
 import HeaderText from '@/src/components/common/HeaderText';
 import ChatMessageCard from '@/src/components/feature/Chat/ChatMessageCard';
-import { RequestType } from '@/src/components/feature/Chat/RequestMessageCard';
+import ConnectionRequestNotification from '@/src/components/feature/ConnectionRequest/ConnectionRequestNotification';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { UserChat } from '@/src/constants/types/message.types';
-import { useAuth } from '@/src/context/AuthContext';
 import { supabase } from '@/src/db/supabase';
 import { fetchUserChats } from '@/src/service/message.services';
-import { fetchPostRequests } from '@/src/service/request.service';
 import { usePostModalStore } from '@/src/store/postModalStore';
+import { useUserStore } from '@/src/store/userStore';
 import Feather from '@expo/vector-icons/Feather';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Image,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ChatsListScreen = () => {
-  const { user } = useAuth();
+  const { user } = useUserStore();
   const [chats, setChats] = useState<UserChat[]>([]);
   const [loading, setLoading] = useState(true);
-  const [requests, setRequests] = useState<RequestType[]>([]);
-  const [requestsLoading, setRequestsLoading] = useState(false);
-  const [hasUnreadRequests, setHasUnreadRequests] = useState(false);
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
   const supabaseChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -43,7 +36,6 @@ const ChatsListScreen = () => {
 
   useEffect(() => {
     loadChats();
-    checkForRequests();
   }, [user]);
 
   useEffect(() => {
@@ -111,47 +103,7 @@ const ChatsListScreen = () => {
     }
   };
 
-  const checkForRequests = async () => {
-    if (!user?.id) return;
 
-    try {
-      const response = await fetchPostRequests(user.id);
-      if (response.success && response.data.length > 0) {
-        setHasUnreadRequests(true);
-      }
-    } catch (error) {
-      console.error('Error checking requests:', error);
-    }
-  };
-
-  const handleNotificationPress = async () => {
-    if (!user?.id) return;
-
-    try {
-      setRequestsLoading(true);
-      const response = await fetchPostRequests(user.id);
-
-      if (response.success) {
-        setRequests(response.data);
-        setHasUnreadRequests(false);
-        // router.push('/(protected)/requests');
-      } else {
-        console.error('Failed to load requests:', response.error);
-      }
-    } catch (error) {
-      console.error('Error loading requests:', error);
-    } finally {
-      setRequestsLoading(false);
-    }
-  };
-
-  const handleAccept = (requestId: string) => {
-    console.log('Accepted request:', requestId);
-  };
-
-  const handleReject = (requestId: string) => {
-    console.log('Rejected request:', requestId);
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -184,29 +136,9 @@ const ChatsListScreen = () => {
 
       {/* Messages List */}
       <ScrollView style={styles.messagesContainer}>
-        {true && (
-          <TouchableOpacity 
-            style={styles.sixNotification}
-            onPress={handleNotificationPress}
-            disabled={requestsLoading}
-          >
-            <View style={styles.sixNotificationContent}>
-              <Image 
-                source={require('@/src/assets/images/icon.png')}
-                style={styles.sixAvatar}
-              />
-              <View style={styles.sixMessageContainer}>
-                <Text style={styles.sixName}>Six</Text>
-                <Text style={styles.sixMessage}>
-                  Hey! You have new connection requests waiting for you
-                </Text>
-              </View>
-              {requestsLoading && (
-                <ActivityIndicator size="small" color="#666" style={styles.loadingIndicator} />
-              )}
-            </View>
-          </TouchableOpacity>
-        )}
+
+        <ConnectionRequestNotification/>
+
 
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -365,42 +297,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
   },
-  sixNotification: {
-    backgroundColor: '#f5f5f5',
-    padding: 15,
-    marginHorizontal: 1,
-    marginVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  sixNotificationContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sixAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  sixMessageContainer: {
-    flex: 1,
-  },
-  sixName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    fontFamily: 'TimesNewRomanBold',
-  },
-  sixMessage: {
-    fontSize: 16,
-    color: '#666',
-    fontFamily: 'TimesNewRomanRegular',
-  },
-  loadingIndicator: {
-    marginLeft: 8,
-  },
+
 });
 
 export default ChatsListScreen;
