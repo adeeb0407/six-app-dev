@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.sagardxd.six'
+    namespace 'com.sixai.six'
     defaultConfig {
-        applicationId 'com.sagardxd.six'
+        applicationId 'com.sixai.six'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

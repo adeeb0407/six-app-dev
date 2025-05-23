@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sagardxd.six",
+      "bundleIdentifier": "com.sixai.six",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
@@ -24,11 +24,10 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.sagardxd.six",
+      "package": "com.sixai.six",
       "permissions": [
         "android.permission.READ_CONTACTS",
-        "android.permission.WRITE_CONTACTS",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.WRITE_CONTACTS"
       ]
     },
     "web": {
@@ -95,8 +94,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c708ce0a-58ce-4444-8b1f-b1ce5f5f3b33"
+        "projectId": "1b0f9bd1-5ad7-434c-9b1b-b811cc1ddb13"
       }
-    }
+    },
+    "owner": "sixai"
   }
 }
