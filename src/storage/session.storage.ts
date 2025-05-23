@@ -1,3 +1,4 @@
+import { log } from '@/src/service/logger.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEYS = {
@@ -11,16 +12,16 @@ export const storage = {
       const jsonValue = JSON.stringify(session);
       await AsyncStorage.setItem(STORAGE_KEYS.USER_SESSION, jsonValue);
     } catch (error) {
-      console.error('Error saving session:', error);
+      log('setSession', 'Error saving session:', error as string);
     }
-  },
+  },  
 
   async getSession(): Promise<any | null> {
     try {
       const jsonValue = await AsyncStorage.getItem(STORAGE_KEYS.USER_SESSION);
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (error) {
-      console.error('Error getting session:', error);
+      log('getSession', 'Error getting session:', error as string);
       return null;
     }
   },
@@ -30,7 +31,7 @@ export const storage = {
       const jsonValue = JSON.stringify(userData);
       await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, jsonValue);
     } catch (error) {
-      console.error('Error saving user data:', error);
+      log('setUserData', 'Error saving user data:', error as string);
     }
   },
 
@@ -39,7 +40,7 @@ export const storage = {
       const jsonValue = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (error) {
-      console.error('Error getting user data:', error);
+      log('getUserData', 'Error getting user data:', error as string);
       return null;
     }
   },
@@ -51,7 +52,7 @@ export const storage = {
         STORAGE_KEYS.USER_DATA
       ]);
     } catch (error) {
-      console.error('Error clearing auth data:', error);
+      log('clearAuth', 'Error clearing auth data:', error as string);
     }
   }
 };

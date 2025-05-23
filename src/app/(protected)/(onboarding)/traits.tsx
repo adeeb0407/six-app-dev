@@ -1,5 +1,6 @@
 import NextButton from '@/src/components/common/NextButton';
 import { useAuth } from '@/src/context/AuthContext';
+import { log } from '@/src/service/logger.service';
 import { updateUserProfile } from '@/src/service/user.service';
 import { useUserOnboardingStore } from '@/src/store/userOnboardingStore';
 import { useRouter } from 'expo-router';
@@ -61,23 +62,18 @@ const Traits = () => {
           keyword_summary: traits.map(trait => trait.trim()).filter(Boolean)
         };
 
-        console.log('Updating user profile with data:', userData);
         const response = await updateUserProfile(userData);
 
         if (!response.success) {
-          console.error('Failed to update profile:', response.error);
+          log('updateUserProfile', 'Failed to update profile:', response.error);
           // Optionally handle error in UI
           return;
         }
-
-        console.log('Profile updated successfully:');
-      } else {
-        console.error('No user found in context, skipping profile update');
-      }
+      } 
 
       router.push('/share');
     } catch (error) {
-      console.error('Error in handleNext:', error instanceof Error ? error.message : error);
+      log('handleNext', 'Error in handleNext:', error instanceof Error ? error.message : error as string);
       // Optionally handle error in UI
     }
   };

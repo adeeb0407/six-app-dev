@@ -1,18 +1,24 @@
 import Constants from 'expo-constants';
+import type { AppConfigExtra } from '../constants/types/env.types';
 import { supabase } from '../db/supabase';
 
-const APP_ENV = (Constants.expoConfig?.extra as { Appenv: string }).Appenv;
+const extra = Constants.expoConfig?.extra as AppConfigExtra;
 
-type LogLevel = 'info' | 'warn' | 'error';
+const LOG_ENV = extra.APP_ENV;
 
-export const log = async (
+type LogFunction = (
   functionName: string,
   message: string,
-  level: LogLevel = 'info',
-  details: any = {}
+  details?: string
+) => Promise<void>;
+  
+export const log: LogFunction = async (
+  functionName,
+  message,
+  details
 ) => {
-  if (APP_ENV === 'local') {
-    console[level](`[${functionName}] ${message}`, details);
+  if (LOG_ENV === 'local') {
+    console.error(`[${functionName}] ${message}`);
     return;
   }
 
@@ -20,12 +26,12 @@ export const log = async (
     await supabase.from('logs').insert([
       {
         function_name: functionName,
-        log_level: level,
         message,
         details,
       },
     ]);
   } catch (err) {
-    console.error('Failed to log to Supabase', err);
+    console.log('Failed to log to Supabase', err);
   }
 };
+

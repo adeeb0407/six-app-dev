@@ -1,5 +1,5 @@
 import { supabase } from "../db/supabase";
-
+import { log } from "./logger.service";
 interface RequestUser {
   id: string;
   name: string;
@@ -69,7 +69,7 @@ interface RequestResponse {
     };
 
   } catch (error) {
-    console.error('Error fetching post requests:', error);
+    log('fetchPostRequests', 'Error fetching post requests:', error as string);
     return {
       success: false,
       data: [],
@@ -108,7 +108,7 @@ export const reactToPost = async (
       success: true
     };
   } catch (error) {
-    console.error("Error reacting to post:", error);
+    log('reactToPost', 'Error reacting to post:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to react to post'
@@ -132,7 +132,7 @@ export const deleteReaction = async (reactionId: string): Promise<DeleteReaction
 
     return { success: true };
   } catch (error) {
-    console.error('Error deleting reaction:', error);
+    log('deleteReaction', 'Error deleting reaction:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to delete reaction'

@@ -1,5 +1,6 @@
 import { ChatResponse, UserChat } from "../constants/types/message.types";
 import { supabase } from "../db/supabase";
+import { log } from "./logger.service";
 
 interface MessageResponse {
     success: boolean;
@@ -40,10 +41,9 @@ export const sendMessage = async (
             throw new Error(`Failed to send message: ${messageError.message}`);
         }
 
-        console.log('msg created ', content)
         return { success: true };
     } catch (error) {
-        console.error('Error sending message:', error);
+        log('sendMessage', 'Error sending message:', error as string);
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Failed to send message'
@@ -66,7 +66,7 @@ export const fetchUserChats = async (userId: string): Promise<ChatResponse> => {
         };
 
     } catch (error) {
-        console.error('Error in fetchUserChats:', error);
+        log('fetchUserChats', 'Error fetching user chats:', error as string);
         return {
             success: false,
             data: [],
@@ -89,11 +89,12 @@ export const fetchChatMessages = async (chatId: string): Promise<MessagesRespons
 
         return {
             success: true,
-            data: data as Message[]
+            data: data as Message[],
+            error: undefined
         };
 
     } catch (error) {
-        console.error('Error in fetchChatMessages:', error);
+        log('fetchChatMessages', 'Error fetching chat messages:', error as string);
         return {
             success: false,
             data: [],

@@ -1,5 +1,6 @@
 import { AuthType } from "../constants/types/auth.types";
 import { supabase } from "../db/supabase";
+import { log } from "./logger.service";
 import { createUser } from "./user.service";
 
 interface OTPResponse {
@@ -14,20 +15,17 @@ export const sendOTP = async (phoneNumber: string): Promise<OTPResponse> => {
         const { data, error } = await supabase.auth.signInWithOtp({
             phone: phoneNumber,
             options: {
-                
+
             }
         });
 
         if (error) {
-            console.log('error message aaya h', error)
+            log("sendOTP", 'Error while sending otp to the user', error.message);
             return {
                 success: false,
                 error: error.message
             };
         }
-
-        console.log('data aaya h', data)
-
 
         return {
             success: true,
@@ -42,7 +40,6 @@ export const sendOTP = async (phoneNumber: string): Promise<OTPResponse> => {
 };
 
 export const verifyOTP = async (phoneNumber: string, token: string, authType: AuthType): Promise<OTPResponse> => {
-    console.log('reached in the verify otp function')
     try {
         const { data, error } = await supabase.auth.verifyOtp({
             phone: phoneNumber,
@@ -51,6 +48,7 @@ export const verifyOTP = async (phoneNumber: string, token: string, authType: Au
         });
 
         if (error) {
+            log("verifyOTP", 'Error while verifying otp of the user', error.message);
             return {
                 success: false,
                 error: error.message
@@ -64,7 +62,6 @@ export const verifyOTP = async (phoneNumber: string, token: string, authType: Au
             });
 
             if (result.success) {
-                console.log('user created successfully');
                 return {
                     success: true,
                     data,

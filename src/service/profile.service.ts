@@ -1,6 +1,7 @@
 import { decode } from "base64-arraybuffer";
 import { UserProfile } from "../constants/types/user.types";
 import { supabase } from "../db/supabase";
+import { log } from "./logger.service";
 
 interface ProfileResponse {
   success: boolean;
@@ -35,7 +36,7 @@ export const fetchUserProfile = async (userId: string): Promise<ProfileResponse>
     };
 
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    log('fetchUserProfile', 'Error fetching user profile:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch user profile'
@@ -47,27 +48,26 @@ export const fetchUserProfile = async (userId: string): Promise<ProfileResponse>
 export const updateProfilePicture = async (
   userId: string,
   base64Image: string,
-  fileName: string
 ): Promise<UploadResponse> => {
   try {
     // Remove the data:image/jpeg;base64, prefix if present
-   const base64Str = base64Image.includes("base64,")
-			? base64Image.substring(
-					base64Image.indexOf("base64,") + "base64,".length
-			  )
-			: base64Image;
-		const res = decode(base64Str);
+    const base64Str = base64Image.includes("base64,")
+      ? base64Image.substring(
+        base64Image.indexOf("base64,") + "base64,".length
+      )
+      : base64Image;
+    const res = decode(base64Str);
 
     if (!(res.byteLength > 0)) {
-			console.error("[uploadToSupabase] ArrayBuffer is null");
-		}
+      log('updateProfilePicture', 'ArrayBuffer is null');
+    }
 
 
     // Upload to storage
     const { data: uploadData, error: uploadError } = await supabase
       .storage
       .from('pfp')
-      .upload(`${userId}/${fileName}`, res, {
+      .upload(`${userId}/profile-pic`, res, {
         contentType: 'image/jpeg',
         cacheControl: '3600',
         upsert: true,
@@ -79,7 +79,7 @@ export const updateProfilePicture = async (
     const { data: { publicUrl } } = supabase
       .storage
       .from('pfp')
-      .getPublicUrl(`${userId}/${fileName}`);
+      .getPublicUrl(`${userId}/profile-pic`);
 
     // Update user profile with new photo URL
     const { error: updateError } = await supabase
@@ -91,7 +91,7 @@ export const updateProfilePicture = async (
 
     return { success: true, url: publicUrl };
   } catch (error) {
-    console.error('Profile picture update error:', error);
+    log('updateProfilePicture', 'Profile picture update error:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update profile picture'

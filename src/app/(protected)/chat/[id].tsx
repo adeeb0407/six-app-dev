@@ -4,6 +4,7 @@ import MessageInput from '@/src/components/feature/Chat/MessageInput';
 import MessageList from '@/src/components/feature/Chat/MessageList';
 import { useAuth } from '@/src/context/AuthContext';
 import { supabase } from '@/src/db/supabase';
+import { log } from '@/src/service/logger.service';
 import { fetchChatMessages, sendMessage } from '@/src/service/message.services';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -53,8 +54,6 @@ const ChatScreen: React.FC = () => {
   useEffect(() => {
     if (!chatId) return;
 
-    console.log('Setting up subscription for chat:', chatId);
-
     supabaseChannel.current = supabase
       .channel(`chat-${chatId}`)
       .on(
@@ -66,11 +65,7 @@ const ChatScreen: React.FC = () => {
           filter: `chat_id=eq.${chatId}` 
         },
         (payload) => {
-          console.log('Received new message:', payload);
           const newMessage = payload.new as ChatMessage;
-
-          console.log('Current user:', user?.id);
-          console.log('Message sender:', newMessage.sender_id);
 
           if (newMessage.sender_id !== user?.id) {
             // Only handling messages from others, not our own
@@ -82,17 +77,12 @@ const ChatScreen: React.FC = () => {
               showAvatar: true
             };
             setMessages(prev => [...prev, mappedMessage]);
-          } else {
-            console.log('Skipping own message');
-          }
+          } 
         }
       )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('Cleaning up subscription');
       if (supabaseChannel.current) {
         supabase.removeChannel(supabaseChannel.current);
       }
@@ -103,15 +93,11 @@ const ChatScreen: React.FC = () => {
     if (!chatId) return;
 
     try {
-      console.log('Loading messages for chat:', chatId);
       setLoading(true);
       const response = await fetchChatMessages(chatId);
 
-      console.log('Messages response:', response);
-
       if (response.success) {
         const mappedMessages: Message[] = response.data.map((msg: ChatMessage) => {
-          console.log('Processing message:', msg.id);
           return {
             id: msg.id,
             text: msg.content,
@@ -121,13 +107,12 @@ const ChatScreen: React.FC = () => {
           };
         });
 
-        console.log('Total messages mapped:', mappedMessages.length);
         setMessages(mappedMessages);
       } else {
-        console.error('Failed to load messages:', response.error);
+        log('loadMessages', 'Failed to load messages:', response.error);
       }
     } catch (error) {
-      console.error('Error loading messages:', error);
+      log('loadMessages', 'Error loading messages:', error as string);
     } finally {
       setLoading(false);
     }
@@ -138,12 +123,11 @@ const ChatScreen: React.FC = () => {
 
     try {
       const response = await sendMessage(user.id, chatId, messageText);
-      console.log('Send message response:', response);
 
       if (response.success) {
         const myMsg: Message = {
           id: Date.now().toString(), // temporary ID
-          text: messageText,
+          text: messageText,  
           sender: 'user',
           timestamp: new Date(),
           showAvatar: false
@@ -151,7 +135,7 @@ const ChatScreen: React.FC = () => {
         setMessages(prev => [...prev, myMsg]);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      log('ChatScreen: handleSend', 'Error sending message:', error as string);
     }
   };
 

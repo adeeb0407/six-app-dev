@@ -1,5 +1,6 @@
 import HeaderText from '@/src/components/common/HeaderText';
 import { createChat } from '@/src/service/chat.service';
+import { log } from '@/src/service/logger.service';
 import { deleteReaction } from '@/src/service/request.service';
 import { useConnectionRequestStore } from '@/src/store/connectionRequest';
 import { useUserStore } from '@/src/store/userStore';
@@ -22,10 +23,9 @@ const RequestScreen = () => {
   const { user } = useUserStore();
   const [loading, setLoading] = useState(false);
 
-  const handleAccept = async (requestUserId: string, requestId: string) => {
+  const handleAcceptRequest = async (requestUserId: string, requestId: string) => {
     setLoading(true);
     try {
-      console.log('Accepted request:', requestUserId);
       if (user) {
         const response = await createChat(user.id, requestUserId);
         if (response.success) {
@@ -34,13 +34,13 @@ const RequestScreen = () => {
         }
       }
     } catch (error) {
-      console.error('Error accepting request:', error);
+      log('handleAcceptRequest', 'Error accepting request:', error as string);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDecline = async (requestId: string) => {
+  const handleDeclineRequest = async (requestId: string) => {
     setLoading(true);
     try {
       // Delete from backend
@@ -51,7 +51,7 @@ const RequestScreen = () => {
         router.navigate('/(protected)/(tabs)/chats');
       }
     } catch (error) {
-      console.error('Error declining request:', error);
+      log('handleDeclineRequest', 'Error declining request:', error as string);
     } finally {
       setLoading(false);
     }
@@ -86,13 +86,13 @@ const RequestScreen = () => {
                 <View style={styles.actions}>
                   <TouchableOpacity
                     style={[styles.actionButton, styles.acceptButton]}
-                    onPress={() => handleAccept(request.users.id, request.id)}
+                    onPress={() => handleAcceptRequest(request.users.id, request.id)}
                   >
                     <Ionicons name="checkmark" size={24} color="#fff" />
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.actionButton, styles.declineButton]}
-                    onPress={() => handleDecline(request.id)}
+                    onPress={() => handleDeclineRequest(request.id)}
                   >
                     <Ionicons name="close" size={24} color="#fff" />
                   </TouchableOpacity>

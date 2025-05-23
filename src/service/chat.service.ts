@@ -1,4 +1,5 @@
 import { supabase } from "../db/supabase";
+import { log } from "./logger.service";
 import { sendMessage } from "./message.services";
 
 export async function createChat(userId1: string, userId2: string): Promise<{
@@ -8,8 +9,6 @@ export async function createChat(userId1: string, userId2: string): Promise<{
 }> {
     try {
         const chatId = [userId1, userId2].sort().join('_');
-        console.log(chatId)
-        console.log(userId2)
 
         const { data, error } = await supabase.from('chats').insert([
             {
@@ -25,19 +24,19 @@ export async function createChat(userId1: string, userId2: string): Promise<{
         const msg2 = await sendMessage(userId2, chatId, 'Hi!');
 
 
-        if (!msg1.success) console.error('Failed to send message from user1:', msg1.error);
-        if (!msg2.success) console.error('Failed to send message from user2:', msg2.error);
+        if (!msg1.success) log("createChat", 'Error while creating message for user 1', `userId: ${userId1}, chatId: ${chatId}, error: ${msg1.error}`);
+        if (!msg2.success) log("createChat", 'Error while creating message for user 2', `userId: ${userId2}, chatId: ${chatId}, error: ${msg2.error}`);
 
         return {
             success: true,
             error: null,
             data: { chat_id: chatId },
         };
-    } catch (err) {
-        console.log(err)
+    } catch (error) {
+        log("createChat", 'Error while creating chat', error as string);
         return {
             success: false,
-            error: err,
+            error: error,
             data: null,
         };
     }

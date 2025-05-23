@@ -1,4 +1,5 @@
 import { useAuth } from '@/src/context/AuthContext';
+import { log } from '@/src/service/logger.service';
 import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -11,13 +12,12 @@ const Guide2 = () => {
 
   const handleNext = async () => {
     if (user) {
-      console.log('streo user', user)
        login({
         id: user.id,
       });
       router.push('/');
     } else {
-      console.error('No user data found at end of onboarding');
+      log('Guide2: handleNext', 'No user data found at end of onboarding');
     }
   };
 

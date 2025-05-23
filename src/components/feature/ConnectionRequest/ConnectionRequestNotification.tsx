@@ -1,3 +1,4 @@
+import { log } from '@/src/service/logger.service';
 import { fetchPostRequests } from '@/src/service/request.service';
 import { useConnectionRequestStore } from '@/src/store/connectionRequest';
 import { useUserStore } from '@/src/store/userStore';
@@ -26,8 +27,8 @@ const ConnectionRequestNotification = () => {
                 setRequests(response.data);
             }
         } catch (error) {
-            console.error('Error loading requests:', error);
-        } finally {
+            log('loadRequests', 'Error loading requests:', error as string);
+        } finally { 
             setIsLoading(false);
         }
     };

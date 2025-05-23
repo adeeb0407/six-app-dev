@@ -1,5 +1,6 @@
 import { Post, PostInput } from '../constants/types/post.types.';
 import { supabase } from '../db/supabase';
+import { log } from './logger.service';
 
 export const fetchPostsByDegree = async (userId: string, degreeLimit?: number): Promise<Post[] | null> => {
   try {
@@ -10,15 +11,14 @@ export const fetchPostsByDegree = async (userId: string, degreeLimit?: number): 
       });
 
     if (error) {
-      console.error('Error fetching posts:', error);
+      log('fetchPostsByDegree', 'Error fetching posts:', error.message);
       return null;
     }
 
-    console.log('posts', data);
     return data ?? [];
 
   } catch (error) {
-    console.log('Error in fetchPostsByDegree:', error);
+    log('fetchPostsByDegree', 'Error fetching posts:', error as string);
     return null;
   }
 };
@@ -41,7 +41,7 @@ export const createPost = async (input: PostInput) => {
 
     return data;
   } catch (err) {
-    console.error("Error creating post:", err);
+    log('createPost', 'Error creating post:', err as string);
     return null;
   }
 };

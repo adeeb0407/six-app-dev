@@ -1,13 +1,14 @@
 import NextButton from '@/src/components/common/NextButton';
 import SharingCard from '@/src/components/common/SharingCard';
 import { syncContactsWithSupabase } from '@/src/service/contact.service';
+import { log } from '@/src/service/logger.service';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Contacts from 'expo-contacts';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const Share = () => {
   const router = useRouter();
@@ -24,11 +25,9 @@ const Share = () => {
   const checkAndLoadContacts = async () => {
     try {
       let { status } = await Contacts.getPermissionsAsync();
-      console.log('Initial permission status:', status);
 
       if (status === 'undetermined') {
         const { status: newStatus } = await Contacts.requestPermissionsAsync();
-        console.log('Permission request result:', newStatus);
         status = newStatus;
       }
 
@@ -38,7 +37,7 @@ const Share = () => {
         await loadContacts();
       }
     } catch (error) {
-      console.error('Error checking permissions:', error);
+      log('checkAndLoadContacts', 'Error checking permissions:', error as string);
       setPermissionStatus('error');
     }
   };
@@ -60,7 +59,7 @@ const Share = () => {
 
       await syncContactsWithSupabase(phoneNumbers);
     } catch (error) {
-      console.error('Error loading contacts:', error);
+      log('loadContacts', 'Error loading contacts:', error as string);
     }
   };
 
@@ -86,7 +85,7 @@ const Share = () => {
       }
     }
 
-    console.log('Total unique phone numbers extracted:', numbers.length);
+    log('extractUniqueLast10Digits', 'Total unique phone numbers extracted:' + numbers.length);
     return numbers;
   };
   const openSettings = async () => {
@@ -100,7 +99,7 @@ const Share = () => {
     if (status === 'granted') {
       loadContacts();
     } else {
-      Alert.alert('Permission Required', 'Contact access is still not enabled');
+      log('handleReload', 'Permission Required', 'Contact access is still not enabled');
     }
   };
 

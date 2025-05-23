@@ -3,14 +3,9 @@ import { createClient } from '@supabase/supabase-js'
 import Constants from 'expo-constants'
 import { AppState } from 'react-native'
 import 'react-native-url-polyfill/auto'
+import { AppConfigExtra } from '../constants/types/env.types'
 
-type ExtraConfig = {
-  SUPABASE_URL: string;
-  SUPABASE_ANON_KEY: string;
-};
-
-
-const { SUPABASE_URL, SUPABASE_ANON_KEY } = Constants.expoConfig?.extra as ExtraConfig;
+const { SUPABASE_URL, SUPABASE_ANON_KEY } = Constants.expoConfig?.extra as AppConfigExtra
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {

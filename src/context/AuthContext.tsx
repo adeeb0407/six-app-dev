@@ -1,9 +1,9 @@
+import { log } from '@/src/service/logger.service';
 import { Session } from '@supabase/supabase-js';
 import { useRouter } from 'expo-router';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { supabase } from '../db/supabase';
 import { storage } from '../storage/session.storage';
-
 type User = {
   id: string;
   phone?: string;
@@ -48,10 +48,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await storage.setUserData(session.user);
       }
     } catch (error) {
-      console.error('Error loading stored session:', error);
+      log('loadStoredSession', 'Error loading stored session:', error as string);
     } finally {
       setLoading(false);
-    }
+    }     
   };
 
   // Listen for auth changes
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(null);
       router.replace('/landing');
     } catch (error) {
-      console.error('Error logging out:', error);
+      log('logout', 'Error logging out:', error as string);
     }
   };
 

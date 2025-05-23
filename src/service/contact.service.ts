@@ -1,28 +1,27 @@
 import { supabase } from "../db/supabase";
+import { log } from "./logger.service";
 
 export const syncContactsWithSupabase = async (phoneNumbers: string[]) => {
   try {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError || !sessionData?.session?.user?.id) {
-      console.error('User session error or no user signed in:', sessionError);
+      log('syncContactsWithSupabase', 'User session error or no user signed in:');
       return;
     }
 
     const currentUserId = sessionData.session.user.id;
 
     // Call RPC to match contacts
-    const { data: matchedUsers, error: rpcError } = await supabase.rpc('match_contacts_by_last10', {
+    const { data: matchedUsers, error } = await supabase.rpc('match_contacts_by_last10', {
       contact_last10s: phoneNumbers,
       requesting_user: currentUserId,
     });
 
-    if (rpcError) {
-      console.error('Error matching contacts via RPC:', rpcError);
+    if (error) {
+      log('syncContactsWithSupabase', 'Error matching contacts via RPC:', error.message);
       return;
     }
-
-    console.log('Matched users from Supabase:', matchedUsers);
 
     if (!matchedUsers || matchedUsers.length === 0) return;
 
@@ -37,9 +36,9 @@ export const syncContactsWithSupabase = async (phoneNumbers: string[]) => {
     .upsert(inserts, { ignoreDuplicates: true });
 
     if (insertError) {
-      console.error('Error inserting contacts into Supabase:', insertError);
+      log('syncContactsWithSupabase', 'Error inserting contacts into Supabase:', insertError.message);
     }
   } catch (error) {
-    console.error('Unexpected error syncing contacts:', error);
+    log('syncContactsWithSupabase', 'Unexpected error syncing contacts:', error as string);
   }
 };

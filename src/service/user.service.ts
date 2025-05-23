@@ -1,4 +1,5 @@
 import { supabase } from '../db/supabase';
+import { log } from './logger.service';
 
 type CreateUserParams = {
   id: string;
@@ -21,16 +22,16 @@ export const checkUserExists = async (id: string): Promise<boolean> => {
       .single();
 
     if (error) {
-      console.log('Error checking user existence:', error);
+      log('checkUserExists', 'Error checking user existence:', error.message);
       return false;
     }
 
     return !!data;
   } catch (error) {
-    console.log('Exception checking user existence:', error);
+    log('checkUserExists', 'Exception checking user existence:', error as string);
     return false;
   }
-};
+};  
 
 // Modify createUser to check existence first
 export const createUser = async ({ id, phone }: CreateUserParams) => {
@@ -39,7 +40,7 @@ export const createUser = async ({ id, phone }: CreateUserParams) => {
     const exists = await checkUserExists(id);
     
     if (exists) {
-      console.log('User already exists:', id);
+      log('createUser', 'User already exists:', id);
       return {
         success: true,
         exists: true,
@@ -59,7 +60,7 @@ export const createUser = async ({ id, phone }: CreateUserParams) => {
       .single();
 
     if (error) {
-      console.log('Error creating user:', error);
+      log('createUser', 'Error creating user:', error.message);
       return {
         success: false,
         exists: false,
@@ -73,7 +74,7 @@ export const createUser = async ({ id, phone }: CreateUserParams) => {
       data,
     };
   } catch (error) {
-    console.log('Exception creating user:', error);
+    log('createUser', 'Exception creating user:', error as string);
     return {
       success: false,
       exists: false,
@@ -99,6 +100,7 @@ export const updateUserProfile = async ({
       .single();
 
     if (error) {
+      log('updateUserProfile', 'Error updating user profile:', error.message);
       return {
         success: false,
         error: error.message,
@@ -110,6 +112,7 @@ export const updateUserProfile = async ({
       data,
     };
   } catch (error) {
+    log('updateUserProfile', 'Exception updating user profile:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update user profile',

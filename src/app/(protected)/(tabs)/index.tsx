@@ -8,6 +8,7 @@ import { CategoryTabs } from '@/src/constants/types/categoryTabs';
 import { ConnectionLevel, Post } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
 import { useAuth } from '@/src/context/AuthContext';
+import { log } from '@/src/service/logger.service';
 import { fetchPostsByDegree } from '@/src/service/post.service';
 import { fetchUserProfile } from '@/src/service/profile.service';
 import { usePostModalStore } from '@/src/store/postModalStore';
@@ -53,7 +54,6 @@ const HomeScreen: FC = () => {
       try {
         if (user) {
           // Load user profile
-          console.log('user profile id from index tsx', user.id)
           const profileResponse = await fetchUserProfile(user.id);
           if (profileResponse.success && profileResponse.data) {
             setUser(profileResponse.data);
@@ -62,7 +62,7 @@ const HomeScreen: FC = () => {
           loadPosts();
         }
       } catch (e) {
-        console.log(e);
+        log('loadData useEffect: Index.tsx', 'Error loading data:', e as string);
       }
     };
 
@@ -107,7 +107,6 @@ const HomeScreen: FC = () => {
     }).start(() => {
       setHomePostModalVisible(false);
       if (didPost) {
-        console.log('should load the post again ')
         loadPosts();
         setDidPost(false)
       }

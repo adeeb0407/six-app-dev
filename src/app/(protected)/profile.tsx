@@ -1,6 +1,7 @@
 import SharingCard from '@/src/components/common/SharingCard';
 import { Theme } from '@/src/constants/color';
 import { useAuth } from '@/src/context/AuthContext';
+import { log } from '@/src/service/logger.service';
 import { updateProfilePicture } from '@/src/service/profile.service';
 import { useUserStore } from '@/src/store/userStore';
 import { Feather } from '@expo/vector-icons';
@@ -9,7 +10,6 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Image,
     ScrollView,
     StyleSheet,
@@ -26,7 +26,6 @@ const Profile = () => {
 
     const handleImageUpload = async (base64Image: string) => {
         if (!user?.id) {
-            Alert.alert('Error', 'You must be logged in to upload a profile picture');
             return;
         }
 
@@ -36,7 +35,7 @@ const Profile = () => {
             const fileName = `profile-${Date.now()}.jpeg`;
 
             // Upload the image to Supabase
-            const result = await updateProfilePicture(user.id, base64Image, fileName);
+            const result = await updateProfilePicture(user.id, base64Image);
 
             if (result.success && result.url) {
                 // Update local state with new profile image
@@ -55,8 +54,7 @@ const Profile = () => {
                 });
             }
         } catch (error) {
-            console.error('Image upload error:', error);
-            Alert.alert('Error', 'Failed to upload image');
+            log('handleImageUpload', 'Image upload error:', error as string);
         } finally {
             setIsLoading(false);
         }

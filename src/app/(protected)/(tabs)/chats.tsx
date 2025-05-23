@@ -4,6 +4,7 @@ import ConnectionRequestNotification from '@/src/components/feature/ConnectionRe
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { UserChat } from '@/src/constants/types/message.types';
 import { supabase } from '@/src/db/supabase';
+import { log } from '@/src/service/logger.service';
 import { fetchUserChats } from '@/src/service/message.services';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import { useUserStore } from '@/src/store/userStore';
@@ -41,8 +42,6 @@ const ChatsListScreen = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    console.log('Setting up chat subscription for user:', user.id);
-
     supabaseChannel.current = supabase
       .channel('chat-updates')
       .on(
@@ -53,7 +52,6 @@ const ChatsListScreen = () => {
           table: 'messages',
         },
         async (payload) => {
-          console.log('New message received:', payload);
           const newMessage = payload.new;
 
           // Check if this chat involves current user
@@ -64,19 +62,15 @@ const ChatsListScreen = () => {
             .single();
 
           if (chat && (chat.user1 === user.id || chat.user2 === user.id)) {
-            console.log('Updating chat list with new message');
-            // Reload chats to get latest
             loadChats();
           }
         }
       )
       .subscribe((status) => {
-        console.log('Subscription status:', status);
       });
 
     // Cleanup subscription
     return () => {
-      console.log('Cleaning up chat subscription');
       if (supabaseChannel.current) {
         supabase.removeChannel(supabaseChannel.current);
       }
@@ -92,18 +86,15 @@ const ChatsListScreen = () => {
 
       if (response.success) {
         setChats(response.data);
-        console.log('Chats loaded:', response.data.length);
       } else {
-        console.error('Failed to load chats:', response.error);
+        log('loadChats', 'Failed to load chats:', response.error);
       }
     } catch (error) {
-      console.error('Error loading chats:', error);
+      log('loadChats', 'Error loading chats:', error as string);
     } finally {
       setLoading(false);
     }
   };
-
-
 
   return (
     <SafeAreaView style={styles.container}>

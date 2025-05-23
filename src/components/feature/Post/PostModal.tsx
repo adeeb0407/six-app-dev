@@ -17,10 +17,10 @@ import {
   PostInput,
 } from '@/src/constants/types/post.types.';
 import { useAuth } from '@/src/context/AuthContext';
+import { log } from '@/src/service/logger.service';
 import { createPost } from '@/src/service/post.service';
 import CategoryDropdown from './CategoryDropdown';
 import ConnectionDropdown from './ConnectionDropdown';
-
 enum PostConnectionVisibility {
   All = 'All connections',
   HideChat = 'Hide chat connections'
@@ -76,8 +76,8 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       }
 
       const data = await createPost(post);
-      if (!data) console.log('error creating post')
-      else console.log('created post successfully',)
+      if (!data) log('handlePost', 'error creating post') 
+      else log('handlePost', 'created post successfully')
       if (data && setDidPost && !isModal && onClose) {
         setDidPost(true);
         onClose();
@@ -87,9 +87,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       if (isModal && onClose) {
         onClose();
       }
-
     }
-
   };
 
   const isPostButtonActive = noteText.trim().length > 0;

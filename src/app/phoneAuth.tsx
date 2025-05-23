@@ -15,6 +15,7 @@ import RotatingLogo from '../components/common/RotatingLogo';
 import { AuthType } from '../constants/types/auth.types';
 import { useAuth } from '../context/AuthContext';
 import { sendOTP, verifyOTP } from '../service/auth.service';
+import { log } from '../service/logger.service';
 import { useUserStore } from '../store/userStore';
 
 const PhoneAuthScreen = () => {
@@ -73,7 +74,7 @@ const PhoneAuthScreen = () => {
         }),
       ]).start();
     } else {
-      console.error('Failed to send OTP:', response.error);
+      log('handleSendCode', 'Failed to send OTP:', response.error);
     }
 
     setLoading(false);
@@ -96,7 +97,6 @@ const PhoneAuthScreen = () => {
         login(userData);
         }
         setUser({id: userData.id})
-        console.log('seted user if ', userData.id)
       }
 
       if (authType === AuthType.SignUp && !response.exists) {
@@ -106,12 +106,11 @@ const PhoneAuthScreen = () => {
 
           router.push('/')
         }else if (response.exists) {
-          console.log('User already created')
           router.push('/enterName');
         }
       }
     } else {
-      console.error('Failed to verify OTP:', response.error);
+      log('handleLogin', 'Failed to verify OTP:', response.error);
     }
 
     setLoading(false);

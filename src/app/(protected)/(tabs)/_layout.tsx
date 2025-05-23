@@ -58,7 +58,6 @@ export default function TabLayout() {
         listeners={({ navigation }) => ({
           tabPress: e => {
             e.preventDefault();
-            console.log('idhar kyu ara bro')
             navigation.navigate(currentTab, { showPostModal: Date.now().toString() });
           },
         })}
