@@ -4,7 +4,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { log } from '@/src/service/logger.service';
 import { updateProfilePicture } from '@/src/service/profile.service';
 import { useUserStore } from '@/src/store/userStore';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import * as Burnt from "burnt";
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
@@ -85,7 +85,7 @@ const Profile = () => {
                             onPress={logout}
                             disabled={isLoading}
                         >
-                            <Feather name="edit-2" size={22} color={Theme.secondary} />
+                            <Ionicons name="log-out-outline" size={22} color={Theme.secondary} />
                         </TouchableOpacity>
                     </View>
                 </View>

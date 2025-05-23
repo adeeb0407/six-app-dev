@@ -84,7 +84,14 @@ const PostCard = ({ post }: props) => {
 
         {showDetails && user && post.user_id != user.id && (
           <View>
-            {!isReplied ? (
+            {post.user_interested ? (
+              <TouchableOpacity
+                style={[styles.interestedButton, styles.interestedButtonLocked]}
+                disabled={true}
+              >
+                <Text style={styles.interestedButtonText}>Interested</Text>
+              </TouchableOpacity>
+            ) : !isReplied ? (
               <View>
                 {post.keyword_summary &&
                   <View style={styles.keywordContainer}>
@@ -96,7 +103,6 @@ const PostCard = ({ post }: props) => {
                     ))}
                   </View>
                 }
-
                 <TouchableOpacity
                   style={styles.interestedButton}
                   onPress={handleInterestedClick}
@@ -214,6 +220,25 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginBottom: 15,
     alignItems: 'center',
+  },
+  interestedButtonPending: {
+    backgroundColor: '#F0F0F0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  interestedButtonTextPending: {
+    color: '#999',
+    fontSize: 14,
+    fontWeight: '400',
+  },
+  lockIcon: {
+    marginLeft: 4,
+  },
+  interestedButtonLocked: {
+    backgroundColor: '#b3b3ff',
+    opacity: 0.8,
   },
 });
 
