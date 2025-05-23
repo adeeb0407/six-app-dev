@@ -116,4 +116,28 @@ export const reactToPost = async (
   }
 };
 
+interface DeleteReactionResponse {
+  success: boolean;
+  error?: string;
+}
+
+export const deleteReaction = async (reactionId: string): Promise<DeleteReactionResponse> => {
+  try {
+    const { error } = await supabase
+      .from('post_reactions')
+      .delete()
+      .eq('id', reactionId);
+
+    if (error) throw error;
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting reaction:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete reaction'
+    };
+  }
+};
+
 
