@@ -147,7 +147,7 @@ const ChatsListScreen = () => {
               message={{
                 id: chat.chat_id,
                 name: chat.other_user_name,
-                profile_photo: chat.other_user_profile_photo || 'https://picsum.photos/200',
+                profile_photo: chat.other_user_profile_photo || undefined,
                 message: chat.last_message,
                 timestamp: new Date(chat.last_message_at),
                 isOwnMessage: chat.last_message_sender === user?.id

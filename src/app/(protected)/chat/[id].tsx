@@ -1,5 +1,4 @@
 import ChatHeader from '@/src/components/feature/Chat/ChatHeader';
-import ChatTabs from '@/src/components/feature/Chat/ChatTabs';
 import MessageInput from '@/src/components/feature/Chat/MessageInput';
 import MessageList from '@/src/components/feature/Chat/MessageList';
 import { useAuth } from '@/src/context/AuthContext';
@@ -142,7 +141,7 @@ const ChatScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ChatHeader contact={{id: chatId, name, profile_photo}} />
-      <ChatTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* <ChatTabs activeTab={activeTab} onTabChange={setActiveTab} /> */}
 
       {activeTab === 'chat' && (
         <View style={styles.chatContainer}>
@@ -159,9 +158,11 @@ const ChatScreen: React.FC = () => {
         </View>
       )}
 
-      {activeTab === 'profile' && (
-        <View style={styles.profileContainer} />
-      )}
+      {/* {activeTab === 'profile' && (
+        <View style={styles.profileContainer}>
+          
+        </View>
+      )} */}
     </SafeAreaView>
   );
 };

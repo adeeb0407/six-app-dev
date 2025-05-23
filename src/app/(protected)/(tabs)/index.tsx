@@ -40,7 +40,6 @@ const HomeScreen: FC = () => {
   const [categoryTabs, setCategoryTabs] = useState<CategoryTabs[]>([]);
   const { isHomePostModalVisible, setHomePostModalVisible } = usePostModalStore();
   const modalScaleAnim = useRef(new Animated.Value(1)).current;
-  const [didPost, setDidPost] = useState(false);
   const [postsLoading, setPostsLoading] = useState(false);
 
   useEffect(() => {
@@ -99,7 +98,7 @@ const HomeScreen: FC = () => {
     }).start();
   };
 
-  const hideModal = () => {
+  const hideModal = (didPost?: boolean) => {
     Animated.timing(modalScaleAnim, {
       toValue: 1,
       duration: 100,
@@ -107,8 +106,8 @@ const HomeScreen: FC = () => {
     }).start(() => {
       setHomePostModalVisible(false);
       if (didPost) {
+        console.log('didPost', didPost);
         loadPosts();
-        setDidPost(false)
       }
     });
   };
@@ -191,7 +190,6 @@ const HomeScreen: FC = () => {
                 isModal={false}
                 visible={isHomePostModalVisible}
                 onClose={hideModal}
-                setDidPost={setDidPost}
               />
             </Animated.View>
           </TouchableWithoutFeedback>

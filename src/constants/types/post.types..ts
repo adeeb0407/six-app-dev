@@ -38,7 +38,7 @@ export interface PostComponentProps {
   modalPosition?: 'center' | 'bottom';
   visible?: boolean;
   setDidPost?: (state: boolean) => void
-  onClose?: () => void;
+  onClose?: (didPost?: boolean) => void;
   defaultConnectionLevel?: ConnectionLevel;
 }
 

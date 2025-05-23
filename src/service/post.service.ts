@@ -36,7 +36,6 @@ export const createPost = async (input: PostInput) => {
       }])
       .select()
       .single();
-
     if (error) throw error;
 
     return data;

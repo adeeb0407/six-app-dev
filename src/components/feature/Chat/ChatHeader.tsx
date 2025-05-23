@@ -2,7 +2,8 @@ import { Contact } from '@/src/constants/types/chat.types'
 import { Feather } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React from 'react'
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import ProfileImage from '../Profile/ProfileImage'
 
 type ChatHeaderProp = {
     contact: Contact
@@ -16,9 +17,10 @@ const ChatHeader = ({contact}: ChatHeaderProp) => {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="black" />
         </TouchableOpacity>
-        <Image
-          source={{ uri: contact.profile_photo }}
-          style={styles.profileImage}
+        <ProfileImage
+          imageUrl={contact.profile_photo}
+          name={contact.name}
+          size={90}
         />
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerName}>{contact.name}</Text>
@@ -35,6 +37,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
   backButton: {
     marginRight: 20,

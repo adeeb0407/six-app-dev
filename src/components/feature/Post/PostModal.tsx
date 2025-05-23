@@ -31,7 +31,6 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   isModal = false,
   visible = true,
   onClose,
-  setDidPost,
   defaultConnectionLevel = ConnectionLevel.First
 }) => {
   const { user } = useAuth();
@@ -76,17 +75,13 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       }
 
       const data = await createPost(post);
-      if (!data) log('handlePost', 'error creating post') 
-      else log('handlePost', 'created post successfully')
-      if (data && setDidPost && !isModal && onClose) {
-        setDidPost(true);
-        onClose();
+      if (!data) log('handlePost', 'error creating post');
+
+      if (data && onClose) {
+        onClose(true);
       }
 
       setNoteText('');
-      if (isModal && onClose) {
-        onClose();
-      }
     }
   };
 
@@ -111,7 +106,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
             onConnectionLevelChange={handleConnectionLevelChange}
           />
           {onClose && (
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => onClose(false)}>
               <Feather name="x" size={22} color="#666" />
             </TouchableOpacity>
           )}
@@ -174,12 +169,12 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={() => onClose && onClose(false)}
     >
       <TouchableOpacity
         activeOpacity={1}
         style={styles.modalOverlay}
-        onPress={onClose}
+        onPress={() => onClose && onClose(false)}
       >
         <TouchableOpacity
           activeOpacity={1}

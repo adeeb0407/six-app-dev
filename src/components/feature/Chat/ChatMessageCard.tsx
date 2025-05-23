@@ -1,57 +1,57 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import ProfileImage from '../Profile/ProfileImage';
 
 interface MessageType {
-  id: string;
-  name: string;
-  profile_photo: string;
-  message: string;
-  timestamp: Date;
-  isOwnMessage?: boolean;
-  other_user_id?: string;  
+    id: string;
+    name: string;
+    profile_photo?: string;
+    message: string;
+    timestamp: Date;
+    isOwnMessage?: boolean;
+    other_user_id?: string;
 }
 
 const getTimeAgo = (date: Date): string => {
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return 'just now';
-  
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours}h ago`;
-  
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays}d ago`;
-  
-  return date.toLocaleDateString();
+    if (diffInSeconds < 60) return 'just now';
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+
+    return date.toLocaleDateString();
 };
 
 const ChatMessageCard = ({ message }: { message: MessageType }) => {
     const router = useRouter();
 
     return (
-        <TouchableOpacity 
-            key={message.id} 
+        <TouchableOpacity
+            key={message.id}
             style={styles.messageCard}
             onPress={() => router.push({
-              pathname: '/chat/[id]',
-              params: {
-                id: message.id,
-                name: message.name,
-                profile_photo: message.profile_photo,
-                connectionType: '3'
-              }
+                pathname: '/chat/[id]',
+                params: {
+                    id: message.id,
+                    name: message.name,
+                    profile_photo: message.profile_photo,
+                    connectionType: '3'
+                }
             })}
         >
-            <Image 
-              source={{ 
-                uri: message.profile_photo || 'https://via.placeholder.com/60'
-              }} 
-              style={styles.avatar} 
+            <ProfileImage
+                imageUrl={message.profile_photo}
+                name={message.name || 'User'}
+                size={60}
             />
             <View style={styles.messageContent}>
                 <View style={styles.nameContainer}>

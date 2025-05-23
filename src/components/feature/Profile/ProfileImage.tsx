@@ -34,7 +34,7 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
       width: size, 
       height: size, 
       borderRadius: size / 2,
-      backgroundColor: '#000'
+      backgroundColor: '#9191ff'
     }]}>
       <Text style={[styles.initials, { fontSize: size * 0.4 }]}>
         {getInitials(name)}
