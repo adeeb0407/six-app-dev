@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "six",
+    "name": "Six",
     "slug": "six",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/images/icon.png",
+    "icon": "./src/assets/icons/ios-light.png",
     "scheme": "six",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,11 +13,14 @@
       "bundleIdentifier": "com.sagardxd.six",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "icon": {
+        "light": "./src/assets/icons/ios-light.png"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/images/adaptive-icon.png",
+        "foregroundImage": "./src/assets/icons/android-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -38,7 +41,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./src/assets/images/splash-icon.png",
+          "image": "./src/assets/icons/splash-icon-dark.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

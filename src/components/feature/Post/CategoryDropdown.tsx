@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 20,
-    marginBottom: 8,
+    marginBottom: 2,
   },
   activeCategoryOption: {
     borderWidth: 1,

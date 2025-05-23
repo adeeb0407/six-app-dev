@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   ScrollView,
   StatusBar,
@@ -39,6 +40,7 @@ const HomeScreen: FC = () => {
   const { isHomePostModalVisible, setHomePostModalVisible } = usePostModalStore();
   const modalScaleAnim = useRef(new Animated.Value(1)).current;
   const [didPost, setDidPost] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(false);
 
   useEffect(() => {
     if (showPostModal) {
@@ -69,9 +71,13 @@ const HomeScreen: FC = () => {
 
   const loadPosts = async () => {
     if (user) {
-      // Load posts
-      const postsData = await fetchPostsByDegree(user.id);
-      setPosts(postsData ?? []);
+      setPostsLoading(true);
+      try {
+        const postsData = await fetchPostsByDegree(user.id);
+        setPosts(postsData ?? []);
+      } finally {
+        setPostsLoading(false);
+      }
     }
   }
 
@@ -211,12 +217,13 @@ const HomeScreen: FC = () => {
 
       {/* Posts */}
       <ScrollView style={styles.postsContainer}>
-        {getFilteredPosts().length === 0 ? (
+        {postsLoading ? (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
+            <ActivityIndicator size="large" color="#333" />
+          </View>
+        ) : getFilteredPosts().length === 0 && !postsLoading ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No posts found</Text>
-            {/* <Text style={styles.emptySubText}>
-              Try adjusting your filters or check back later
-            </Text> */}
           </View>
         ) : (
           getFilteredPosts().map(post => (

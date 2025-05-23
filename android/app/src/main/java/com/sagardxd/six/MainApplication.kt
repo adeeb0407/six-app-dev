@@ -1,4 +1,5 @@
 package com.sagardxd.six
+import com.facebook.react.common.assets.ReactFontManager
 
 import android.app.Application
 import android.content.res.Configuration
@@ -42,6 +43,9 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    // @generated begin xml-fonts-init - expo prebuild (DO NOT MODIFY) sync-671b6d3d8f7aacc2a3f1248d2be9eaf3ae0777c4
+    ReactFontManager.getInstance().addCustomFont(this, "TimesNewRoman", R.font.xml_times_new_roman)
+    // @generated end xml-fonts-init
     SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
