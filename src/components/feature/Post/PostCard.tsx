@@ -4,11 +4,11 @@ import { log } from '@/src/service/logger.service';
 import { reactToPost } from '@/src/service/request.service';
 import React, { useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 
 type props = {

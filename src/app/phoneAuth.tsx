@@ -3,6 +3,8 @@ import React, { useRef, useState } from 'react';
 import {
   Animated,
   Keyboard,
+  Linking,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -14,8 +16,9 @@ import CustomButton from '../components/common/CustomButton';
 import RotatingLogo from '../components/common/RotatingLogo';
 import { AuthType } from '../constants/types/auth.types';
 import { useAuth } from '../context/AuthContext';
-import { sendOTP, verifyOTP } from '../service/auth.service';
+import { verifyOTP } from '../service/auth.service';
 import { log } from '../service/logger.service';
+import { createUser } from '../service/user.service';
 import { useUserStore } from '../store/userStore';
 
 const PhoneAuthScreen = () => {
@@ -56,26 +59,27 @@ const PhoneAuthScreen = () => {
     Keyboard.dismiss();
 
     const formattedPhone = `+${callingCode}${phone}`;
-    const response = await sendOTP(formattedPhone);
 
-    if (response.success) {
-      setIsCodeSent(true);
-      // Start animations
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      log('handleSendCode', 'Failed to send OTP:', response.error);
-    }
+    const sendiMessage = (message: string) => {
+      const url = `sms:${`sixmessage@a.imsg.co`}${Platform.OS === 'ios' ? '&' : '?'}body=${encodeURIComponent(message)}`;
+      Linking.openURL(url).catch(err => console.error('Error opening iMessage:', err));
+    };
+
+    setIsCodeSent(true);
+    sendiMessage(`Send this message to get otp from Six`)
+    // Start animations
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
     setLoading(false);
   };
@@ -88,31 +92,23 @@ const PhoneAuthScreen = () => {
     const response = await verifyOTP(formattedPhone, code, authType);
 
     if (response.success) {
-      if (response.data.user?.id) {
-        const userData = {
-          id: response.data.user.id,
-          phone: formattedPhone
-        };
-        if(authType === AuthType.SignIn) {
-        login(userData);
-        }
-        setUser({id: userData.id})
-      }
+      const userData = {
+        id: response.data.id,
+        phone: response.data.phone
+      };
+      console.log('userData', userData)
+      setUser({ id: userData.id })
 
-      if (authType === AuthType.SignUp && !response.exists) {
-        router.push('/enterName');
+      if (authType === AuthType.SignUp) {
+        const user = await createUser(userData);
+        if (user.success) router.push('/enterName');
       } else {
-        if(authType === AuthType.SignIn) {
-
-          router.push('/')
-        }else if (response.exists) {
-          router.push('/enterName');
-        }
+        login(userData);
+        router.push('/')
       }
     } else {
       log('handleLogin', 'Failed to verify OTP:', response.error);
     }
-
     setLoading(false);
   };
 
@@ -162,7 +158,7 @@ const PhoneAuthScreen = () => {
             />
           </View>
           <CustomButton
-            title="Send Code"
+            title="Join Six"
             onPress={handleSendCode}
             loading={loading}
             disabled={phone.length < 10}

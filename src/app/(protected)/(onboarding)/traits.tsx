@@ -66,7 +66,6 @@ const Traits = () => {
 
         if (!response.success) {
           log('updateUserProfile', 'Failed to update profile:', response.error);
-          // Optionally handle error in UI
           return;
         }
       } 
@@ -74,7 +73,6 @@ const Traits = () => {
       router.push('/share');
     } catch (error) {
       log('handleNext', 'Error in handleNext:', error instanceof Error ? error.message : error as string);
-      // Optionally handle error in UI
     }
   };
 
