@@ -1,7 +1,9 @@
 import { supabase } from "../db/supabase";
 import { log } from "./logger.service";
+import { addConnection } from "./neo4j.service";
 
 export const syncContactsWithSupabase = async (phoneNumbers: string[]) => {
+  console.log('synicing contacts')
   try {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
@@ -22,22 +24,26 @@ export const syncContactsWithSupabase = async (phoneNumbers: string[]) => {
       log('syncContactsWithSupabase', 'Error matching contacts via RPC:', error.message);
       return;
     }
-
-    if (!matchedUsers || matchedUsers.length === 0) return;
-
-    // Prepare insert objects
-    const inserts = matchedUsers.map((u: { contact_user_id: string }) => ({
-      owner_id: currentUserId,
-      contact_user_id: u.contact_user_id,
-    }));
-
-    // Insert matched contacts, ignoring duplicates
-    const { error: insertError } = await supabase.from('contacts')
-    .upsert(inserts, { ignoreDuplicates: true });
-
-    if (insertError) {
-      log('syncContactsWithSupabase', 'Error inserting contacts into Supabase:', insertError.message);
+   if (!matchedUsers || matchedUsers.length === 0) {
+      console.log('syncContactsWithSupabase', 'No matching users found');
+      return;
     }
+
+    for (const user of matchedUsers) {
+      const { contact_user_id, name, phone } = user;
+
+      console.log('Matched contact', `Name: ${name}, Phone: ${phone}, ID: ${contact_user_id}`);
+
+      if (contact_user_id && contact_user_id !== currentUserId) {
+        try {
+          await addConnection(currentUserId, contact_user_id);
+          log('Connection created', `${currentUserId} -> ${contact_user_id}`);
+        } catch (neoError) {
+          log('syncContactsWithSupabase', `Failed to add Neo4j connection for ${currentUserId} -> ${contact_user_id}`);
+        }
+      }
+    }
+
   } catch (error) {
     log('syncContactsWithSupabase', 'Unexpected error syncing contacts:', error as string);
   }

@@ -1,0 +1,39 @@
+import axios from 'axios';
+import Constants from 'expo-constants';
+import { AppConfigExtra } from '../constants/types/env.types';
+
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://3f82-103-185-242-105.ngrok-free.app/api'
+
+export async function addConnection(userId1: string, userId2: string) {
+  try {
+    const response = await fetch(`${BACKEND_URL}/users/connect`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId1, userId2 }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error(`Failed to add connection: ${error}`);
+    }
+  } catch (err) {
+    console.error('Error calling add-connection API:', err);
+  }
+}
+
+export async function createUserNode(userId: string, name: string, phone: string) {
+  try {
+    const response = await axios(`${BACKEND_URL}/users/create-node`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: { userId, name, phone },
+    });
+
+  } catch (err) {
+    console.error('Error calling create-user-node API:', err);
+  }
+}

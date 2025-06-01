@@ -1,5 +1,7 @@
 import NextButton from '@/src/components/common/NextButton';
+import { createUserNode } from '@/src/service/neo4j.service';
 import { useUserOnboardingStore } from '@/src/store/userOnboardingStore';
+import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -14,6 +16,7 @@ import {
 const EnterName = () => {
   const router = useRouter();
   const setName = useUserOnboardingStore(state => state.setName);
+  const {user} = useUserStore();
   const [inputName, setInputName] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -33,9 +36,15 @@ const EnterName = () => {
     ]).start();
   }, []);
 
-  const handleNext = () => {
+  const handleNext = async() => {
     Keyboard.dismiss();
     setName(inputName.trim());
+    if(user && user.id && user.phone) {
+      console.log('trying to create user node', user.id, inputName, user.phone);
+      await createUserNode(user?.id, inputName, user?.phone);
+    }else {
+      console.log('nhu aaya idhar')
+    }
     router.push('/traits');
   };
 

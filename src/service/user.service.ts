@@ -12,7 +12,6 @@ type UpdateUserProfileParams = {
   keyword_summary: string[];
 };
 
-// Add this new function to check user existence
 export const checkUserExists = async (id: string): Promise<boolean> => {
   try {
     const { data, error } = await supabase
@@ -22,21 +21,29 @@ export const checkUserExists = async (id: string): Promise<boolean> => {
       .single();
 
     if (error) {
-      log('checkUserExists', 'Error checking user existence:', error.message);
+      log(
+        'checkUserExists',
+        'Error checking user existence:',
+        error.message || error.details || JSON.stringify(error)
+      );
       return false;
     }
 
     return !!data;
   } catch (error) {
-    log('checkUserExists', 'Exception checking user existence:', error as string);
+    log(
+      'checkUserExists',
+      'Exception checking user existence:',
+      (error as Error).message || JSON.stringify(error)
+    );
     return false;
   }
-};  
+};
 
-// Modify createUser to check existence first
+
 export const createUser = async ({ id, phone }: CreateUserParams) => {
   try {
-    // Check if user exists first
+    // Step 1: Check if user already exists
     const exists = await checkUserExists(id);
     
     if (exists) {
@@ -48,40 +55,42 @@ export const createUser = async ({ id, phone }: CreateUserParams) => {
       };
     }
 
+    // Step 2: Insert user into Supabase
     const { data, error } = await supabase
       .from('users')
-      .insert([
-        {
-          id,
-          phone,
-        },
-      ])
+      .insert([{ id, phone }])
       .select()
       .single();
 
     if (error) {
-      log('createUser', 'Error creating user:', error.message);
+      log('createUser', 'Error creating user:', error.message || error.details || JSON.stringify(error));
       return {
         success: false,
         exists: false,
-        error: error.message,
+        error: error.message || 'Error inserting user'
       };
     }
 
+    // Step 3: Return success
     return {
       success: true,
       exists: false,
-      data,
+      data
     };
   } catch (error) {
-    log('createUser', 'Exception creating user:', error as string);
+    log(
+      'createUser',
+      'Exception creating user:',
+      error instanceof Error ? error.message : JSON.stringify(error)
+    );
     return {
       success: false,
       exists: false,
-      error: error instanceof Error ? error.message : 'Failed to create user',
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 };
+
 
 export const updateUserProfile = async ({
   id,

@@ -97,7 +97,7 @@ const PhoneAuthScreen = () => {
         phone: response.data.phone
       };
       console.log('userData', userData)
-      setUser({ id: userData.id })
+      setUser({ id: userData.id, phone: userData.phone });
 
       if (authType === AuthType.SignUp) {
         const user = await createUser(userData);

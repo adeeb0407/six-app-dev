@@ -44,6 +44,7 @@ const Share = () => {
 
   // Load contacts from device, extract unique last 10-digit phone numbers, then sync with Supabase
   const loadContacts = async () => {
+    console.log('trying to load contacts')
     try {
       const { data } = await Contacts.getContactsAsync({
         fields: [Contacts.Fields.PhoneNumbers, Contacts.Fields.Name],

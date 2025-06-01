@@ -155,7 +155,7 @@ const HomeScreen: FC = () => {
         <TouchableOpacity onPress={() => router.push('/(protected)/profile')}>
           <ProfileImage
             imageUrl={userProfile?.profile_photo}
-            name={userProfile?.name || 'User'}
+            name={userProfile?.name || ''}
             size={40}
           />
         </TouchableOpacity>

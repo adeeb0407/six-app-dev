@@ -5,7 +5,7 @@ import { AppConfigExtra } from "../constants/types/env.types";
 import { supabase } from "../db/supabase";
 import { log } from "./logger.service";
 
-const BACKEND_URL = "https://47a1-103-185-242-246.ngrok-free.app/api";
+const BACKEND_URL = "https://3f82-103-185-242-105.ngrok-free.app/api";
 
 interface OTPResponse {
     success: boolean;
