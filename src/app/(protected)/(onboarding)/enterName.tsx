@@ -40,10 +40,7 @@ const EnterName = () => {
     Keyboard.dismiss();
     setName(inputName.trim());
     if(user && user.id && user.phone) {
-      console.log('trying to create user node', user.id, inputName, user.phone);
       await createUserNode(user?.id, inputName, user?.phone);
-    }else {
-      console.log('nhu aaya idhar')
     }
     router.push('/traits');
   };

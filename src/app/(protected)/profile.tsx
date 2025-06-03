@@ -31,16 +31,11 @@ const Profile = () => {
 
         setIsLoading(true);
         try {
-            // Generate a unique filename using timestamp
-            const fileName = `profile-${Date.now()}.jpeg`;
-
-            // Upload the image to Supabase
             const result = await updateProfilePicture(user.id, base64Image);
 
             if (result.success && result.url) {
-                // Update local state with new profile image
-
                 if (userProfile) {
+                    console.log(';result.url', result.url);
                     setUser({ ...userProfile, profile_photo: result.url });
                 }
                 Burnt.toast({
