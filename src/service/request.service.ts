@@ -1,11 +1,12 @@
 import axios from "axios";
 import { supabase } from "../db/supabase";
 import { log } from "./logger.service";
+
 interface RequestUser {
   keyword_summary: string[]
 }
 interface RequestPost {
-  user_id: string;
+  id: string;
   content: string;
 }
 

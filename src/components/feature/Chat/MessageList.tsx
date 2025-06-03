@@ -5,10 +5,9 @@ import MessageItem from './MessageItem';
 
 type MessageListProps = {
   messages: Message[];
-  profile_photo: string;
 };
 
-const MessageList: React.FC<MessageListProps> = ({ messages, profile_photo }) => {
+const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Scroll to bottom when messages change
@@ -17,7 +16,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, profile_photo }) =>
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
     
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timer); 
   }, [messages]);
 
   return (
@@ -31,7 +30,6 @@ const MessageList: React.FC<MessageListProps> = ({ messages, profile_photo }) =>
           <MessageItem 
             key={message.id} 
             message={message} 
-            profile_photo={profile_photo} 
           />
         ))}
       </ScrollView>

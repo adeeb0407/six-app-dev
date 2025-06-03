@@ -1,5 +1,5 @@
 import HeaderText from '@/src/components/common/HeaderText';
-import { createChat } from '@/src/service/chat.service';
+import { createChatRequest } from '@/src/service/chat.service';
 import { log } from '@/src/service/logger.service';
 import { deleteReaction } from '@/src/service/request.service';
 import { useConnectionRequestStore } from '@/src/store/connectionRequest';
@@ -23,11 +23,11 @@ const RequestScreen = () => {
   const { user } = useUserStore();
   const [loading, setLoading] = useState(false);
 
-  const handleAcceptRequest = async (requestUserId: string, requestId: string) => {
+  const handleAcceptRequest = async (requestUserId: string, requestId: string, postId: string) => {
     setLoading(true);
     try {
       if (user) {
-        const response = await createChat(user.id, requestUserId);
+        const response = await createChatRequest(user.id, requestUserId, postId, requestId);
         if (response.success) {
           setRequests(requests.filter(r => r.id !== requestId));
           router.navigate('/(protected)/(tabs)/chats')
@@ -89,7 +89,7 @@ const RequestScreen = () => {
                 <View style={styles.actions}>
                   <TouchableOpacity
                     style={[styles.actionButton, styles.acceptButton]}
-                    onPress={() => handleAcceptRequest(request.reactor_id, request.id)}
+                    onPress={() => handleAcceptRequest(request.reactor_id, request.id, request.posts.id)}
                   >
                     <Ionicons name="checkmark" size={24} color="#fff" />
                   </TouchableOpacity>

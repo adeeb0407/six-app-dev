@@ -10,9 +10,10 @@ export type MessageType = {
 export interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'contact';
+  sender: 'user' | 'contact'| 'sixai';
   timestamp: Date;
-  showAvatar?: boolean;
+  sender_name?: string;
+  profile_photo?: string | null;
 }
 
 export interface Contact {

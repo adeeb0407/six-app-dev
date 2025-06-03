@@ -1,6 +1,7 @@
 import ChatHeader from '@/src/components/feature/Chat/ChatHeader';
 import MessageInput from '@/src/components/feature/Chat/MessageInput';
 import MessageList from '@/src/components/feature/Chat/MessageList';
+import { Message } from '@/src/constants/types/chat.types';
 import { useAuth } from '@/src/context/AuthContext';
 import { supabase } from '@/src/db/supabase';
 import { log } from '@/src/service/logger.service';
@@ -15,24 +16,15 @@ interface ChatMessage {
   chat_id: string;
   sender_id: string;
   content: string;
-  created_at: string;
-}
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'contact';
-  timestamp: Date;
-  showAvatar: boolean;
+  created_at: string; 
 }
 
 const ChatScreen: React.FC = () => {
-  const { 
+  const {
     id: chatId,
     name,
     profile_photo,
-    connectionType 
-  } = useLocalSearchParams<{ 
+  } = useLocalSearchParams<{
     id: string;
     name: string;
     profile_photo: string;
@@ -57,26 +49,27 @@ const ChatScreen: React.FC = () => {
       .channel(`chat-${chatId}`)
       .on(
         'postgres_changes',
-        {  
+        {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `chat_id=eq.${chatId}` 
+          filter: `chat_id=eq.${chatId}`
         },
         (payload) => {
           const newMessage = payload.new as ChatMessage;
 
+          console.log('new message received:', newMessage);
+
           if (newMessage.sender_id !== user?.id) {
             // Only handling messages from others, not our own
-            const mappedMessage: Message = { 
+            const mappedMessage: Message = {
               id: newMessage.id,
               text: newMessage.content,
-              sender: 'contact',
+              sender: newMessage.sender_id === '81dde3f4-d5e5-4686-937c-745a81a21e9a' ? 'sixai' : 'contact',
               timestamp: new Date(newMessage.created_at),
-              showAvatar: true
             };
             setMessages(prev => [...prev, mappedMessage]);
-          } 
+          }
         }
       )
       .subscribe();
@@ -97,12 +90,23 @@ const ChatScreen: React.FC = () => {
 
       if (response.success) {
         const mappedMessages: Message[] = response.data.map((msg: ChatMessage) => {
+          let sender: 'user' | 'contact' | 'sixai';
+
+          if (msg.sender_id === '81dde3f4-d5e5-4686-937c-745a81a21e9a') {
+            sender = 'sixai';
+          } else if (msg.sender_id === user?.id) {
+            sender = 'user';
+          } else {
+            sender = 'contact';
+          }
+
           return {
             id: msg.id,
             text: msg.content,
-            sender: msg.sender_id === user?.id ? 'user' : 'contact',
+            sender,
+            sender_name: name,
+            profile_photo: profile_photo,
             timestamp: new Date(msg.created_at),
-            showAvatar: msg.sender_id !== user?.id
           };
         });
 
@@ -125,11 +129,10 @@ const ChatScreen: React.FC = () => {
 
       if (response.success) {
         const myMsg: Message = {
-          id: Date.now().toString(), // temporary ID
-          text: messageText,  
+          id: Date.now().toString(), 
+          text: messageText,
           sender: 'user',
           timestamp: new Date(),
-          showAvatar: false
         };
         setMessages(prev => [...prev, myMsg]);
       }
@@ -140,7 +143,7 @@ const ChatScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ChatHeader contact={{id: chatId, name, profile_photo}} />
+      <ChatHeader contact={{ id: chatId, name, profile_photo }} />
       {/* <ChatTabs activeTab={activeTab} onTabChange={setActiveTab} /> */}
 
       {activeTab === 'chat' && (
@@ -151,7 +154,7 @@ const ChatScreen: React.FC = () => {
             </View>
           ) : (
             <>
-              <MessageList messages={messages} profile_photo={profile_photo} />
+              <MessageList messages={messages} />
               <MessageInput onSend={handleSend} />
             </>
           )}

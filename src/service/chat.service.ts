@@ -1,8 +1,9 @@
+import axios from "axios";
 import { supabase } from "../db/supabase";
 import { log } from "./logger.service";
-import { sendMessage } from "./message.services";
+import { deleteReaction } from "./request.service";
 
-export async function createChat(userId1: string, userId2: string): Promise<{
+export async function createChatRequest(userId1: string, userId2: string, postId: string, requestId: string): Promise<{
     success: boolean;
     error: any;
     data: any;
@@ -31,12 +32,14 @@ export async function createChat(userId1: string, userId2: string): Promise<{
             if (error) throw error;
         }
 
-        const msg1 = await sendMessage(userId1, chatId, 'Hey 👋');
-        const msg2 = await sendMessage(userId2, chatId, 'Hi!');
+        const msg = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/sixai/introduce`, {
+            userId1,
+            userId2,
+            postId,
+            chatId
+        });
 
-
-        if (!msg1.success) log("createChat", 'Error while creating message for user 1', `userId: ${userId1}, chatId: ${chatId}, error: ${msg1.error}`);
-        if (!msg2.success) log("createChat", 'Error while creating message for user 2', `userId: ${userId2}, chatId: ${chatId}, error: ${msg2.error}`);
+        deleteReaction(requestId);
 
         return {
             success: true,

@@ -1,23 +1,34 @@
 import { Message } from '@/src/constants/types/chat.types';
+import * as Clipboard from 'expo-clipboard';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import ProfileImage from '../Profile/ProfileImage';
 
 type MessageItemProps = {
   message: Message;
-  profile_photo: string;
 };
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, profile_photo }) => {
-  // Function to format message text with any links
+const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   const formatMessageText = (text: string) => {
-    // Simple regex to detect URLs
     const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.[^\s]+)/g;
-    
+
     const parts = text.split(urlRegex);
-    
+
+    const handleLinkPress = async (url: string) => {
+      await Clipboard.setStringAsync(url);
+    };
+
     return parts.map((part, index) => {
       if (part && urlRegex.test(part)) {
-        return <Text key={index} style={styles.linkText}>{part}</Text>;
+        return (
+          <TouchableOpacity
+            key={index}
+            onPress={() => handleLinkPress(part)}
+          >
+            <Text style={styles.linkText}>{part}</Text>
+          </TouchableOpacity>
+        )
       }
       return part ? <Text key={index}>{part}</Text> : null;
     });
@@ -36,17 +47,33 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, profile_photo }) => 
   } else {
     return (
       <View style={styles.receivedMessageContainer}>
-        {message.showAvatar ? (
-          <Image
-            source={{ uri: profile_photo }}
-            style={styles.messageProfilePic}
-          />
+        {message.sender === 'contact' ? (
+          <>
+            <ProfileImage
+              imageUrl={message.profile_photo}
+              name={message.sender_name}
+              size={40}
+            />
+            <View style={styles.receivedMessage}>
+              <Text style={styles.messageText}>{message.text}</Text>
+            </View>
+          </>
         ) : (
-          <View style={styles.avatarPlaceholder} />
+          <>
+            <Image
+              source={require('@/src/assets/images/icon.png')}
+              style={styles.avatarPlaceholder}
+            />
+            <LinearGradient
+              colors={['#ff66c4', '#5170ff']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.receivedMessage}
+            >
+              <Text style={styles.sixMessageText}>{message.text}</Text>
+            </LinearGradient>
+          </>
         )}
-        <View style={message.showAvatar ? styles.receivedMessage : styles.receivedMessageNoAvatar}>
-          <Text style={styles.messageText}>{message.text}</Text>
-        </View>
       </View>
     );
   }
@@ -59,11 +86,12 @@ const styles = StyleSheet.create({
   },
   receivedMessageContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
     marginBottom: 10,
   },
   sentMessage: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#9191ff',
     borderRadius: 18,
     maxWidth: '70%',
     paddingHorizontal: 15,
@@ -86,9 +114,13 @@ const styles = StyleSheet.create({
     maxWidth: '70%',
     paddingHorizontal: 15,
     paddingVertical: 10,
-    marginLeft: 50, // Align with messages that have avatar
+    marginLeft: 50,
   },
   messageText: {
+    fontSize: 16,
+  },
+  sixMessageText: {
+    color: '#fff',
     fontSize: 16,
   },
   sentStatus: {
@@ -105,12 +137,10 @@ const styles = StyleSheet.create({
   avatarPlaceholder: {
     width: 30,
     height: 30,
-    marginRight: 5,
-    opacity: 0, // Invisible but takes up space
   },
   linkText: {
     textDecorationLine: 'underline',
-    color: '#3B82F6',
+    color: '#ffffff',
   },
 });
 

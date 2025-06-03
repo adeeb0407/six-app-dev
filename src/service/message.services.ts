@@ -86,7 +86,7 @@ export const fetchChatMessages = async (chatId: string): Promise<MessagesRespons
         if (error) {
             throw new Error(`Failed to fetch messages: ${error.message}`);
         }
-
+        console.log(data)
         return {
             success: true,
             data: data as Message[],
