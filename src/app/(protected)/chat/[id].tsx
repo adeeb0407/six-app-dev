@@ -1,11 +1,12 @@
 import ChatHeader from '@/src/components/feature/Chat/ChatHeader';
 import MessageInput from '@/src/components/feature/Chat/MessageInput';
 import MessageList from '@/src/components/feature/Chat/MessageList';
-import { Message } from '@/src/constants/types/chat.types';
+import { Contact, Message } from '@/src/constants/types/chat.types';
 import { useAuth } from '@/src/context/AuthContext';
 import { supabase } from '@/src/db/supabase';
 import { log } from '@/src/service/logger.service';
 import { fetchChatMessages, sendMessage } from '@/src/service/message.services';
+import { getConnectionDetails } from '@/src/service/neo4j.service';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -16,7 +17,7 @@ interface ChatMessage {
   chat_id: string;
   sender_id: string;
   content: string;
-  created_at: string; 
+  created_at: string;
 }
 
 const ChatScreen: React.FC = () => {
@@ -24,21 +25,32 @@ const ChatScreen: React.FC = () => {
     id: chatId,
     name,
     profile_photo,
+    sender_id
   } = useLocalSearchParams<{
     id: string;
     name: string;
     profile_photo: string;
-    connectionType: string;
+    sender_id: string;
   }>();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
+  const [connectionDetails, setConnectionDetails] = useState<Contact>({
+    id: '',
+    name: '',
+    profile_photo: '',
+    sender_id: '',
+    connectionDegree: '',
+    mutualCount: 0
+  });
   const [loading, setLoading] = useState(true);
+  const [loadingConnectionDetails, setLoadingConnectionDetails] = useState(true);
   const [activeTab, setActiveTab] = useState<'chat' | 'profile'>('chat');
   const supabaseChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
     if (chatId) {
       loadMessages();
+      loadConnectionDetails();
     }
   }, [chatId, user?.id]);
 
@@ -121,6 +133,43 @@ const ChatScreen: React.FC = () => {
     }
   };
 
+  const loadConnectionDetails = async () => {
+    if (user?.id) {
+      try {
+        setLoadingConnectionDetails(true);
+        
+        // Set initial contact data with what we have from params
+        const initialContact: Contact = {
+          id: sender_id,
+          name: name || 'Unknown',
+          profile_photo: profile_photo || '',
+          sender_id: sender_id,
+          connectionDegree: '',
+          mutualCount: 0
+        };
+        setConnectionDetails(initialContact);
+
+        const details = await getConnectionDetails(user.id, sender_id);
+        
+        // Update with complete contact object including connection details
+        const contact: Contact = {
+          id: sender_id,
+          name: name || 'Unknown',
+          profile_photo: profile_photo || '',
+          sender_id: sender_id,
+          connectionDegree: details?.connectionDegree ? `${details.connectionDegree}° connection` : 'connection',
+          mutualCount: details?.mutualCount || 0
+        };
+        
+        setConnectionDetails(contact);
+      } catch (error) {
+        log('loadConnectionDetails', 'Error fetching connection details:', error as string);
+      } finally {
+        setLoadingConnectionDetails(false);
+      }
+    }
+  };
+
   const handleSend = async (messageText: string) => {
     if (!user?.id || !chatId) return;
 
@@ -129,7 +178,7 @@ const ChatScreen: React.FC = () => {
 
       if (response.success) {
         const myMsg: Message = {
-          id: Date.now().toString(), 
+          id: Date.now().toString(),
           text: messageText,
           sender: 'user',
           timestamp: new Date(),
@@ -143,7 +192,10 @@ const ChatScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ChatHeader contact={{ id: chatId, name, profile_photo }} />
+      <ChatHeader 
+        contact={connectionDetails} 
+        isLoadingConnectionDetails={loadingConnectionDetails}
+      />
       {/* <ChatTabs activeTab={activeTab} onTabChange={setActiveTab} /> */}
 
       {activeTab === 'chat' && (

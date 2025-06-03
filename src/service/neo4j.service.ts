@@ -37,3 +37,26 @@ export async function createUserNode(userId: string, name: string, phone: string
     console.error('Error calling create-user-node API:', err);
   }
 }
+
+export const getConnectionDetails = async (userId1: string, userId2: string) => {
+
+  console.log(`Getting connection details for ${userId1} and ${userId2}`);
+  try {
+    const response = await axios.post(`${BACKEND_URL}/users/connection-details`, {
+     userId1, userId2
+    });
+
+    console.log('reponse of connection details:', response.data);
+
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      console.error(`Failed to get connection details: ${response.statusText}`);
+      return null;
+    }
+  }
+  catch (err) {
+    console.error('Error calling get-connection-details API:', err);
+    return null;
+  }
+};

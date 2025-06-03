@@ -10,7 +10,7 @@ export type MessageType = {
 export interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'contact'| 'sixai';
+  sender: 'user' | 'contact' | 'sixai';
   timestamp: Date;
   sender_name?: string;
   profile_photo?: string | null;
@@ -20,5 +20,7 @@ export interface Contact {
   id: string;
   name: string;
   profile_photo: string;
-  connectionDegree?: string;
+  sender_id: string;
+  connectionDegree: string
+  mutualCount: number
 }

@@ -5,6 +5,7 @@ import ProfileImage from '../Profile/ProfileImage';
 
 interface MessageType {
     id: string;
+    sender_id: string;
     name: string;
     profile_photo?: string;
     message: string;
@@ -44,7 +45,7 @@ const ChatMessageCard = ({ message }: { message: MessageType }) => {
                     id: message.id,
                     name: message.name,
                     profile_photo: message.profile_photo,
-                    connectionType: '3'
+                    sender_id: message.sender_id,
                 }
             })}
         >

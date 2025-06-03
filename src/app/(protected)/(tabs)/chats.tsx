@@ -9,7 +9,7 @@ import { fetchUserChats } from '@/src/service/message.services';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import { useUserStore } from '@/src/store/userStore';
 import Feather from '@expo/vector-icons/Feather';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ScrollView,
@@ -28,7 +28,6 @@ const ChatsListScreen = () => {
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
   const supabaseChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (showPostModal)
@@ -145,6 +144,7 @@ const ChatsListScreen = () => {
               key={chat.chat_id}
               message={{
                 id: chat.chat_id,
+                sender_id: chat.other_user_id,
                 name: chat.other_user_name,
                 profile_photo: chat.other_user_profile_photo || undefined,
                 message: chat.last_message,

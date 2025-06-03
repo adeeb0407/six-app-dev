@@ -2,36 +2,46 @@ import { Contact } from '@/src/constants/types/chat.types'
 import { Feather } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import ProfileImage from '../Profile/ProfileImage'
 
 type ChatHeaderProp = {
-    contact: Contact
+  contact: Contact
+  isLoadingConnectionDetails?: boolean
 }
 
-const ChatHeader = ({contact}: ChatHeaderProp) => {
-    const router = useRouter();
+const ChatHeader = ({ contact, isLoadingConnectionDetails = false }: ChatHeaderProp) => {
+  const router = useRouter();
 
   return (
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color="black" />
-        </TouchableOpacity>
-        <ProfileImage
-          imageUrl={contact.profile_photo}
-          name={contact.name}
-          size={90}
-        />
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerName}>{contact.name}</Text>
-          <Text style={styles.connectionText}>{contact.connectionDegree}</Text>
-        </View>
+    <View style={styles.header}>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <Feather name="arrow-left" size={24} color="black" />
+      </TouchableOpacity>
+      <ProfileImage
+        imageUrl={contact.profile_photo}
+        name={contact.name}
+        size={90}
+      />
+      <View style={styles.headerTextContainer}>
+        <Text style={styles.headerName}>{contact.name}</Text>
+        {isLoadingConnectionDetails ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#9CA3AF" />
+          </View>
+        ) : (
+          <>
+            <Text style={styles.connectionText}>{contact.connectionDegree}</Text>
+            <Text style={styles.connectionText}>{contact.mutualCount} mutuals</Text>
+          </>
+        )}
       </View>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-     header: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -56,8 +66,18 @@ const styles = StyleSheet.create({
     fontFamily: 'TimesNewRomanBold',
   },
   connectionText: {
-    fontSize: 17,
+    fontSize: 16,
     color: '#9CA3AF',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginLeft: 8,
   },
 })
 

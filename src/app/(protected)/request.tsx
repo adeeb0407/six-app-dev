@@ -4,7 +4,7 @@ import { log } from '@/src/service/logger.service';
 import { deleteReaction } from '@/src/service/request.service';
 import { useConnectionRequestStore } from '@/src/store/connectionRequest';
 import { useUserStore } from '@/src/store/userStore';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -60,6 +60,9 @@ const RequestScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Feather name="arrow-left" size={24} color="black" />
+        </TouchableOpacity>
         <HeaderText title="Requests" />
       </View>
 
@@ -75,7 +78,7 @@ const RequestScreen = () => {
               <View style={styles.userInfo}>
                 <View style={styles.textContainer}>
                   <Text style={styles.name}>
-                    Your {request.degree}° connection showed interest in 
+                    Your {request.degree}° connection showed interest in
                   </Text>
                   <Text style={styles.postContent} numberOfLines={2}>
                     Post: {request.posts.content}
@@ -121,6 +124,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+   backButton: {
+    marginRight: 10,
   },
   headerTitle: {
     fontSize: 24,

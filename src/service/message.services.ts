@@ -60,6 +60,8 @@ export const fetchUserChats = async (userId: string): Promise<ChatResponse> => {
             throw new Error(`Failed to fetch chats: ${error.message}`);
         }
 
+        console.log('chats data', data)
+
         return {
             success: true,
             data: data as UserChat[]
