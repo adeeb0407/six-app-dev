@@ -52,22 +52,33 @@ export const updateProfilePicture = async (
   try {
     // Remove the data:image/jpeg;base64, prefix if present
     const base64Str = base64Image.includes("base64,")
-      ? base64Image.substring(
-        base64Image.indexOf("base64,") + "base64,".length
-      )
+      ? base64Image.substring(base64Image.indexOf("base64,") + "base64,".length)
       : base64Image;
     const res = decode(base64Str);
 
     if (!(res.byteLength > 0)) {
-      log('updateProfilePicture', 'ArrayBuffer is null');
+      return { success: false, error: 'Invalid image data' };
     }
 
-
-    // Upload to storage
-    const { data: uploadData, error: uploadError } = await supabase
+    // Clean up old profile pictures
+    const { data: filesList } = await supabase
       .storage
       .from('pfp')
-      .upload(`${userId}/profile-pic`, res, {
+      .list(`${userId}`);
+
+    if (filesList && filesList.length > 0) {
+      const filesToDelete = filesList.map(file => `${userId}/${file.name}`);
+      await supabase.storage.from('pfp').remove(filesToDelete);
+    }
+
+    // Upload new profile picture
+    const timestamp = Date.now();
+    const fileName = `${userId}/profile-pic-${timestamp}`;
+
+    const { error: uploadError } = await supabase
+      .storage
+      .from('pfp')
+      .upload(fileName, res, {
         contentType: 'image/jpeg',
         cacheControl: '3600',
         upsert: true,
@@ -79,17 +90,19 @@ export const updateProfilePicture = async (
     const { data: { publicUrl } } = supabase
       .storage
       .from('pfp')
-      .getPublicUrl(`${userId}/profile-pic`);
+      .getPublicUrl(fileName);
 
-    // Update user profile with new photo URL
+    const cacheBustedUrl = `${publicUrl}?t=${timestamp}`;
+
+    // Update user profile
     const { error: updateError } = await supabase
       .from('users')
-      .update({ profile_photo: publicUrl })
+      .update({ profile_photo: cacheBustedUrl })
       .eq('id', userId);
 
     if (updateError) throw updateError;
 
-    return { success: true, url: publicUrl };
+    return { success: true, url: cacheBustedUrl };
   } catch (error) {
     log('updateProfilePicture', 'Profile picture update error:', error as string);
     return {
