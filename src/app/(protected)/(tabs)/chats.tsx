@@ -130,7 +130,6 @@ const ChatsListScreen = () => {
 
         <ConnectionRequestNotification/>
 
-
         {loading ? (
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading chats...</Text>

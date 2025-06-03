@@ -45,7 +45,7 @@ const PostCard = ({ post }: props) => {
 
   const handleInterestedClick = async () => {
     if (user) {
-      const response = await reactToPost(post.id, user.id);
+      const response = await reactToPost(post.id, post.user_id,  user.id);
       if (!response.success) {
         log('handleInterestedClick', 'Failed to react:', response.error);
       }

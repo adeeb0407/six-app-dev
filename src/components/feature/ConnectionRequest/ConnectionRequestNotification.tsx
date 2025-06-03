@@ -1,3 +1,4 @@
+import { supabase } from '@/src/db/supabase';
 import { log } from '@/src/service/logger.service';
 import { fetchPostRequests } from '@/src/service/request.service';
 import { useConnectionRequestStore } from '@/src/store/connectionRequest';
@@ -12,9 +13,34 @@ const ConnectionRequestNotification = () => {
     const {requests, setRequests} = useConnectionRequestStore()
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        loadRequests();
-    }, [user?.id]);
+  useEffect(() => {
+    if (!user?.id) return;
+
+    loadRequests();
+
+    // Subscribe to post_reactions changes where post_owner_id === user.id
+    const subscription = supabase
+      .channel('public:post_reactions') 
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'post_reactions',
+          filter: `post_owner_id=eq.${user.id}`, 
+        },
+        (payload) => {
+          loadRequests(); 
+          console.log('aaya hai', payload);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [user?.id]);
+    
 
     const loadRequests = async () => {
         if (!user?.id) return;

@@ -29,7 +29,7 @@ const RequestScreen = () => {
       if (user) {
         const response = await createChat(user.id, requestUserId);
         if (response.success) {
-        setRequests(requests.filter(r => r.id !== requestId));
+          setRequests(requests.filter(r => r.id !== requestId));
           router.navigate('/(protected)/(tabs)/chats')
         }
       }
@@ -74,10 +74,13 @@ const RequestScreen = () => {
             <View key={request.id} style={styles.requestCard}>
               <View style={styles.userInfo}>
                 <View style={styles.textContainer}>
-                  <Text style={styles.name}>{request.users.name}</Text>
-                  <Text style={styles.postContent} numberOfLines={2}>
-                    Interested in: {request.posts.content}
+                  <Text style={styles.name}>
+                    Your {request.degree}° connection showed interest in 
                   </Text>
+                  <Text style={styles.postContent} numberOfLines={2}>
+                    Post: {request.posts.content}
+                  </Text>
+
                 </View>
               </View>
 
@@ -86,7 +89,7 @@ const RequestScreen = () => {
                 <View style={styles.actions}>
                   <TouchableOpacity
                     style={[styles.actionButton, styles.acceptButton]}
-                    onPress={() => handleAcceptRequest(request.users.id, request.id)}
+                    onPress={() => handleAcceptRequest(request.reactor_id, request.id)}
                   >
                     <Ionicons name="checkmark" size={24} color="#fff" />
                   </TouchableOpacity>

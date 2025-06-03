@@ -10,15 +10,26 @@ export async function createChat(userId1: string, userId2: string): Promise<{
     try {
         const chatId = [userId1, userId2].sort().join('_');
 
-        const { data, error } = await supabase.from('chats').insert([
-            {
-                chat_id: chatId,
-                user1: userId1,
-                user2: userId2
-            },
-        ]);
+        const { data: existingChat, error: checkError } = await supabase
+            .from('chats')
+            .select('chat_id')
+            .eq('chat_id', chatId)
+            .single();
 
-        if (error) throw error;
+        if (checkError && checkError.code !== 'PGRST116') {
+            throw checkError;
+        }
+
+        if (!existingChat) {
+            const { data, error } = await supabase.from('chats').insert([
+                {
+                    chat_id: chatId,
+                    user1: userId1,
+                    user2: userId2
+                },
+            ]);
+            if (error) throw error;
+        }
 
         const msg1 = await sendMessage(userId1, chatId, 'Hey 👋');
         const msg2 = await sendMessage(userId2, chatId, 'Hi!');

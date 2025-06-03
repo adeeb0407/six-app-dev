@@ -144,7 +144,7 @@ export const PostsList: React.FC<PostsListProps> = ({
   if (pagination.isLoading && posts.length === 0) {
     return (
       <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#333" />
+        <ActivityIndicator size="large" color="#999" />
       </View>
     );
   }

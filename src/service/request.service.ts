@@ -1,68 +1,34 @@
+import axios from "axios";
 import { supabase } from "../db/supabase";
 import { log } from "./logger.service";
 interface RequestUser {
-  id: string;
-  name: string;
-  profile_photo: string | null;
+  keyword_summary: string[]
 }
-
 interface RequestPost {
-  id: string;
+  user_id: string;
   content: string;
 }
 
-interface PostRequest {
+export interface ConnectionRequest {
   id: string;
-  user_id: string;
-  post_id: string;
-  interest: boolean;
-  accepted: boolean;
-  users: RequestUser;
+  reactor_id: string;
+  post_owner_id: string;
   posts: RequestPost;
+  user: RequestUser
+  degree: number
 }
 
 interface RequestResponse {
   success: boolean;
-  data: PostRequest[];
+  data: ConnectionRequest[];
   error?: string;
 }
 
- export const fetchPostRequests = async (userId: string): Promise<any> => {
+export const fetchPostRequests = async (userId: string): Promise<any> => {
+  console.log(`https://0ad0-103-185-242-167.ngrok-free.app/api/users/connection-requests/${userId}`);
   try {
-    // Step 1: Get all your post IDs
-    const { data: posts, error: postsError } = await supabase
-      .from('posts')
-      .select('id')
-      .eq('user_id', userId);
-
-    if (postsError) throw postsError;
-
-    const postIds = posts.map(post => post.id);
-
-    // Step 2: Get all post reactions on your posts
-    const { data, error } = await supabase
-      .from('post_reactions')
-      .select(`
-        id,
-        interest,
-        accepted,
-        created_at,
-        users:user_id (
-          id,
-          name,
-          profile_photo
-        ),
-        posts (
-          id,
-          content
-        )
-      `)
-      .in('post_id', postIds)
-      .eq('interest', true)
-      .eq('accepted', false);
-
-    if (error) throw error;
-
+    const { data } = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connection-requests/${userId}`)
+    console.log(data)
     return {
       success: true,
       data: data,
@@ -86,19 +52,23 @@ interface ReactionResponse {
 
 export const reactToPost = async (
   postId: string,
-  userId: string,
+  post_owner_id: string,
+  reactor_id: string,
 ): Promise<ReactionResponse> => {
   try {
+    console.log('reactToPost', 'postId:', postId, 'post_owner_id:', post_owner_id, 'reactor_id:', reactor_id);
+
     const { error } = await supabase
       .from("post_reactions")
       .upsert(
         {
           post_id: postId,
-          user_id: userId,
+          post_owner_id: post_owner_id,
+          reactor_id: reactor_id,
           interest: true
         },
         {
-          onConflict: 'post_id,user_id'
+          onConflict: 'post_id,reactor_id'
         }
       );
 
