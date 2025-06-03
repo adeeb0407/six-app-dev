@@ -9,10 +9,23 @@ export interface Post {
   expires_at: string | null;
   locked: boolean;
   created_at: string;
-  connectiontype: ConnectionLevel | null;
+  connection_type: ConnectionLevel | null;
+  connection_degree: ConnectionLevel
   keyword_summary: string[];
   user_interested: boolean
   user_accepted: boolean
+}
+
+export interface PaginatedPostsResponse {
+  posts: Post[];
+  pagination: {
+    currentPage: number;
+    limit: number;
+    hasMore: boolean;
+    totalFetched: number;
+    isUpToDate: boolean;
+    nextPage?: number;
+  };
 }
 
 export interface PostInput {
@@ -24,6 +37,7 @@ export interface PostInput {
 }
 
 export enum ConnectionLevel {
+  You = '0',
   First = '1',
   Second = '2',
   Third = '3',

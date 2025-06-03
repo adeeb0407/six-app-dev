@@ -1,25 +1,47 @@
-import { Post, PostInput } from '../constants/types/post.types.';
+import axios from 'axios';
+import Constants from 'expo-constants';
+import { ApiResponse } from '../constants/types/api.types';
+import { AppConfigExtra } from '../constants/types/env.types';
+import { PaginatedPostsResponse, PostInput } from '../constants/types/post.types.';
 import { supabase } from '../db/supabase';
 import { log } from './logger.service';
 
-export const fetchPostsByDegree = async (userId: string, degreeLimit?: number): Promise<Post[] | null> => {
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://0ad0-103-185-242-167.ngrok-free.app/api'
+
+export const fetchPostsByDegree = async (
+  userId: string,
+  degreeFilter: number = 0,
+  page: number = 1,
+  limit: number = 20
+
+): Promise<ApiResponse<PaginatedPostsResponse> | null> => {
+    console.log(`${BACKEND_URL}/users/posts/${userId}`)
+
   try {
-    const { data, error } = await supabase
-      .rpc('get_posts_by_degree', {
-        _input_user_id: userId,
-        _input_degree_limit: degreeLimit ?? null,
-      });
+    const response = await axios.get(`${BACKEND_URL}/users/posts/${userId}`, {
+      params: {
+        degreeFilter,
+        page,
+        limit
+      }
+    })
 
-    if (error) {
-      log('fetchPostsByDegree', 'Error fetching posts:', error.message);
-      return null;
+
+    if (response.data) {
+      const paginatedData: PaginatedPostsResponse = response.data;
+      return {
+        success: true,
+        data: paginatedData
+      };
     }
-
-    return data ?? [];
+    return null;
 
   } catch (error) {
     log('fetchPostsByDegree', 'Error fetching posts:', error as string);
-    return null;
+    return {
+      success: false,
+      error: (error as Error).message || 'Failed to fetch posts'
+    };
   }
 };
 

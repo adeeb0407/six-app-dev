@@ -4,7 +4,7 @@ import { supabase } from '../db/supabase';
 
 const extra = Constants.expoConfig?.extra as AppConfigExtra;
 
-const LOG_ENV = extra.APP_ENV;
+const LOG_ENV = extra.APP_ENV || 'local';
 
 type LogFunction = (
   functionName: string,
@@ -18,7 +18,7 @@ export const log: LogFunction = async (
   details
 ) => {
   if (LOG_ENV === 'local') {
-    console.error(`[${functionName}] ${message}`);
+    console.log(`[${functionName}] ${message}`);
     return;
   }
 

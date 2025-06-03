@@ -5,7 +5,7 @@ import { AppConfigExtra } from "../constants/types/env.types";
 import { supabase } from "../db/supabase";
 import { log } from "./logger.service";
 
-const BACKEND_URL = "https://3f82-103-185-242-105.ngrok-free.app/api";
+const BACKEND_URL = "https://0ad0-103-185-242-167.ngrok-free.app/api";
 
 interface OTPResponse {
     success: boolean;
@@ -52,10 +52,7 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
             otp: otp,
             isSignup: authType === AuthType.SignUp ? true : false
         }
-        console.log(body)
         const response = await axios.post(`${BACKEND_URL}/otp/verify`, body)
-
-        console.log("refresh token", response.data.session.refresh_token);
 
         const { data } = await supabase.auth.setSession({
             access_token: response.data.session.access_token,

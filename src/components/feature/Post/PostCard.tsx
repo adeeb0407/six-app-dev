@@ -4,11 +4,11 @@ import { log } from '@/src/service/logger.service';
 import { reactToPost } from '@/src/service/request.service';
 import React, { useState } from 'react';
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 type props = {
@@ -48,17 +48,17 @@ const PostCard = ({ post }: props) => {
       const response = await reactToPost(post.id, user.id);
       if (!response.success) {
         log('handleInterestedClick', 'Failed to react:', response.error);
-      } 
+      }
       setIsReplied(true);
     }
   };
 
   const connectionText =
-    post.connectiontype === ConnectionLevel.First
+    post.connection_degree == ConnectionLevel.First
       ? '1st connection'
-      : post.connectiontype === ConnectionLevel.Second
+      : post.connection_degree == ConnectionLevel.Second
         ? '2nd connection'
-        : post.connectiontype === ConnectionLevel.Third
+        : post.connection_degree == ConnectionLevel.Third
           ? '3rd connection' : 'your post'
 
   return (

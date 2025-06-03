@@ -2,7 +2,7 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { AppConfigExtra } from '../constants/types/env.types';
 
-const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://3f82-103-185-242-105.ngrok-free.app/api'
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://0ad0-103-185-242-167.ngrok-free.app/api'
 
 export async function addConnection(userId1: string, userId2: string) {
   try {

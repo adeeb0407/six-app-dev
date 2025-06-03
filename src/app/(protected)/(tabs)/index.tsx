@@ -1,15 +1,13 @@
 import HeaderText from '@/src/components/common/HeaderText';
 import CategoryTabSelector from '@/src/components/feature/Home/CategoryTabSelector';
 import PostTabSelector from '@/src/components/feature/Home/PostTabSelector';
-import PostCard from '@/src/components/feature/Post/PostCard';
+import { PostsList } from '@/src/components/feature/Post/PostList';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import ProfileImage from '@/src/components/feature/Profile/ProfileImage';
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
-import { ConnectionLevel, Post } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
 import { useAuth } from '@/src/context/AuthContext';
 import { log } from '@/src/service/logger.service';
-import { fetchPostsByDegree } from '@/src/service/post.service';
 import { fetchUserProfile } from '@/src/service/profile.service';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import { useUserStore } from '@/src/store/userStore';
@@ -17,9 +15,7 @@ import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -35,12 +31,11 @@ const HomeScreen: FC = () => {
   const { user } = useAuth();
   const { user: userProfile, setUser } = useUserStore();
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
-  const [posts, setPosts] = useState<Post[]>([]);
   const [postTabs, setPostTabs] = useState<PostTabs>(PostTabs.AllPosts);
+  const [refreshing, setRefreshing] = useState(false);
   const [categoryTabs, setCategoryTabs] = useState<CategoryTabs[]>([]);
   const { isHomePostModalVisible, setHomePostModalVisible } = usePostModalStore();
   const modalScaleAnim = useRef(new Animated.Value(1)).current;
-  const [postsLoading, setPostsLoading] = useState(false);
 
   useEffect(() => {
     if (showPostModal) {
@@ -52,13 +47,10 @@ const HomeScreen: FC = () => {
     const loadData = async () => {
       try {
         if (user) {
-          // Load user profile
           const profileResponse = await fetchUserProfile(user.id);
           if (profileResponse.success && profileResponse.data) {
             setUser(profileResponse.data);
           }
-
-          loadPosts();
         }
       } catch (e) {
         log('loadData useEffect: Index.tsx', 'Error loading data:', e as string);
@@ -68,17 +60,6 @@ const HomeScreen: FC = () => {
     loadData();
   }, [user]);
 
-  const loadPosts = async () => {
-    if (user) {
-      setPostsLoading(true);
-      try {
-        const postsData = await fetchPostsByDegree(user.id);
-        setPosts(postsData ?? []);
-      } finally {
-        setPostsLoading(false);
-      }
-    }
-  }
 
   const toggleCategoryTab = (tab: CategoryTabs) => {
     setCategoryTabs(prev =>
@@ -106,40 +87,14 @@ const HomeScreen: FC = () => {
     }).start(() => {
       setHomePostModalVisible(false);
       if (didPost) {
-        console.log('didPost', didPost);
-        loadPosts();
+        handleRefresh();
       }
     });
   };
 
-  const getFilteredPosts = () => {
-    let filteredPosts = [...posts];
-
-    // Filter by PostTabs (connection degree)
-    if (postTabs !== PostTabs.AllPosts) {
-      filteredPosts = filteredPosts.filter(post => {
-
-        switch (postTabs) {
-          case PostTabs.FirstDegree:
-            return post.connectiontype == ConnectionLevel.First;
-          case PostTabs.SecondDegree:
-            return post.connectiontype == ConnectionLevel.Second;
-          case PostTabs.ThirdDegree:
-            return post.connectiontype == ConnectionLevel.Third;
-          default:
-            return true;
-        }
-      });
-    }
-
-    // Filter by CategoryTabs if any categories are selected
-    if (categoryTabs.length > 0) {
-      filteredPosts = filteredPosts.filter(post =>
-        categoryTabs.includes(post.category)
-      );
-    }
-
-    return filteredPosts;
+  const handleRefresh = () => {
+    console.log('handle refresh called on HomeScreen');
+    setRefreshing(true); 
   };
 
   const tabs = Object.values(CategoryTabs);
@@ -186,7 +141,7 @@ const HomeScreen: FC = () => {
                 }
               ]}
             >
-              <FlexiblePostComponent  
+              <FlexiblePostComponent
                 isModal={false}
                 visible={isHomePostModalVisible}
                 onClose={hideModal}
@@ -212,23 +167,14 @@ const HomeScreen: FC = () => {
         />
       </View>
 
-      {/* Posts */}
-      <ScrollView style={styles.postsContainer}>
-        {postsLoading ? (
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
-            <ActivityIndicator size="large" color="#333" />
-          </View>
-        ) : getFilteredPosts().length === 0 && !postsLoading ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No posts found</Text>
-          </View>
-        ) : (
-          getFilteredPosts().map(post => (
-            <PostCard key={post.id} post={post} />
-          ))
-        )}
-      </ScrollView>
-
+      {user &&
+        <PostsList
+          userId={user?.id}
+          postTabs={postTabs}
+          categoryTabs={categoryTabs}
+          setRefreshing={setRefreshing}
+          refreshing={refreshing}
+        />}
     </SafeAreaView>
   );
 };
@@ -270,10 +216,6 @@ const styles = StyleSheet.create({
     gap: 5,
     paddingVertical: 16
   },
-  postsContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
   modalOverlay: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -281,25 +223,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '90%',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyText: {
-    fontSize: 20,
-    color: '#333',
-    fontFamily: 'TimesNewRomanRegular',
-    marginBottom: 8,
-  },
-  emptySubText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
+  }
 });
 
 export default HomeScreen;
