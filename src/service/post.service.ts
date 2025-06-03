@@ -6,7 +6,7 @@ import { PaginatedPostsResponse, PostInput } from '../constants/types/post.types
 import { supabase } from '../db/supabase';
 import { log } from './logger.service';
 
-const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://0ad0-103-185-242-167.ngrok-free.app/api'
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://58af-103-185-242-167.ngrok-free.app/api'
 
 export const fetchPostsByDegree = async (
   userId: string,
@@ -24,8 +24,9 @@ export const fetchPostsByDegree = async (
         page,
         limit
       }
-    })
+    })  
 
+    console.log(response.data)
 
     if (response.data) {
       const paginatedData: PaginatedPostsResponse = response.data;

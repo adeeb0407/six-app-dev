@@ -66,8 +66,10 @@ const PostCard = ({ post }: props) => {
       <View key={post.id} style={styles.postCard}>
         <View style={styles.postHeader}>
           <View style={styles.subPostHeader}>
-
             <Text style={styles.postConnectionText}>{connectionText}</Text>
+            {post.mutual_count > 0 &&
+            <Text style={styles.postConnectionText}>mutuals {post.mutual_count}</Text>
+            }
           </View>
           <Text style={styles.postTimeText}>{getTimeAgo(post.created_at)}</Text>
         </View>
@@ -80,7 +82,6 @@ const PostCard = ({ post }: props) => {
             <Text style={styles.meetButtonText}>{post.category}</Text>
           </TouchableOpacity>
         </View>
-        {/* } */}
 
         {showDetails && user && post.user_id != user.id && (
           <View>
@@ -141,7 +142,8 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    gap: 6,
   },
   postConnectionText: {
     color: '#888',

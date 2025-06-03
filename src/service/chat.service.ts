@@ -30,9 +30,15 @@ export async function createChatRequest(userId1: string, userId2: string, postId
                 },
             ]);
             if (error) throw error;
+
+            // create connection between users
+            await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connect`, {
+                userId1: userId2,
+                userId2: userId1,
+            });
         }
 
-        const msg = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/sixai/introduce`, {
+        await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/sixai/introduce`, {
             userId1,
             userId2,
             postId,

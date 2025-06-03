@@ -71,7 +71,7 @@ const ConnectionRequestNotification = () => {
                     style={styles.avatar}
                 />
                 <View style={styles.messageContainer}>
-                    <Text style={styles.title}>New Requests</Text>
+                    <Text style={styles.title}>Six</Text>
                     <Text style={styles.message}>
                         You have {requests.length} new connection {requests.length === 1 ? 'request' : 'requests'}
                     </Text>

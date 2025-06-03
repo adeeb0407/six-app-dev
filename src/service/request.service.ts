@@ -26,7 +26,7 @@ interface RequestResponse {
 }
 
 export const fetchPostRequests = async (userId: string): Promise<any> => {
-  console.log(`https://0ad0-103-185-242-167.ngrok-free.app/api/users/connection-requests/${userId}`);
+  console.log(`https://58af-103-185-242-167.ngrok-free.app/api/users/connection-requests/${userId}`);
   try {
     const { data } = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connection-requests/${userId}`)
     console.log(data)

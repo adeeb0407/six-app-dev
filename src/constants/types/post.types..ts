@@ -14,6 +14,7 @@ export interface Post {
   keyword_summary: string[];
   user_interested: boolean
   user_accepted: boolean
+  mutual_count: number;
 }
 
 export interface PaginatedPostsResponse {
