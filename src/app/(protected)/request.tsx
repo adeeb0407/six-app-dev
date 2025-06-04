@@ -63,49 +63,47 @@ const RequestScreen = () => {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="black" />
         </TouchableOpacity>
-        <HeaderText title="Requests" />
+        <HeaderText title="Six" />
       </View>
 
       <ScrollView style={styles.content}>
         {requests.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="people-outline" size={48} color="#666" />
+            <View style={styles.aiAvatar}>
+              <Text style={styles.aiAvatarText}>AI</Text>
+            </View>
             <Text style={styles.emptyText}>No pending requests</Text>
           </View>
         ) : (
           requests.map((request) => (
             <View key={request.id} style={styles.requestCard}>
-              <View style={styles.userInfo}>
-                <View style={styles.textContainer}>
-                  <Text style={styles.name}>
-                    Your {request.degree}° connection showed interest in
-                  </Text>
-                  <Text style={styles.postContent} numberOfLines={2}>
-                    Post: {request.posts.content}
-                  </Text>
-
-                </View>
+              <View style={styles.messageBubble}>
+                <Text style={styles.messageText}>
+                  Your {request.degree}° connection with {request.mutuals} mutuals showed interest in 
+                </Text>
+                <Text style={styles.postContent} numberOfLines={2}>
+                  Post: {request.posts.content}
+                </Text>
               </View>
 
-
-              {!loading ?
+              {!loading ? (
                 <View style={styles.actions}>
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.declineButton]}
+                    onPress={() => handleDeclineRequest(request.id)}
+                  >
+                    <Ionicons name="close" size={24} color="#666" />
+                  </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.actionButton, styles.acceptButton]}
                     onPress={() => handleAcceptRequest(request.reactor_id, request.id, request.posts.id)}
                   >
                     <Ionicons name="checkmark" size={24} color="#fff" />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.actionButton, styles.declineButton]}
-                    onPress={() => handleDeclineRequest(request.id)}
-                  >
-                    <Ionicons name="close" size={24} color="#fff" />
-                  </TouchableOpacity>
                 </View>
-                :
+              ) : (
                 <ActivityIndicator style={styles.actions} />
-              }
+              )}
             </View>
           ))
         )}
@@ -127,13 +125,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-   backButton: {
+  backButton: {
     marginRight: 10,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    fontFamily: 'TimesNewRomanBold',
   },
   content: {
     flex: 1,
@@ -150,16 +143,47 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  userInfo: {
+  messageHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
-  textContainer: {
-    flex: 1,
-    marginLeft: 12,
+  aiAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#8B5CF6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  name: {
+  aiAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+    fontFamily: 'TimesNewRomanBold',
+  },
+  messageInfo: {
+    flex: 1,
+  },
+  aiName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    fontFamily: 'TimesNewRomanBold',
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#666',
+    fontFamily: 'TimesNewRomanRegular',
+  },
+  messageBubble: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  messageText: {
     fontSize: 18,
     fontWeight: '600',
     fontFamily: 'TimesNewRomanBold',
@@ -182,10 +206,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   acceptButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#8B5CF6',
   },
   declineButton: {
-    backgroundColor: '#F44336',
+    backgroundColor: '#9CA3AF',
   },
   emptyState: {
     flex: 1,
