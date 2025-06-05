@@ -69,9 +69,6 @@ const RequestScreen = () => {
       <ScrollView style={styles.content}>
         {requests.length === 0 ? (
           <View style={styles.emptyState}>
-            <View style={styles.aiAvatar}>
-              <Text style={styles.aiAvatarText}>AI</Text>
-            </View>
             <Text style={styles.emptyText}>No pending requests</Text>
           </View>
         ) : (
@@ -137,11 +134,8 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     backgroundColor: '#fff',
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+     borderWidth: 1,
+    borderColor: '#eee',
   },
   messageHeader: {
     flexDirection: 'row',

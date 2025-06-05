@@ -4,6 +4,7 @@ import ConnectionRequestNotification from '@/src/components/feature/ConnectionRe
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { UserChat } from '@/src/constants/types/message.types';
 import { supabase } from '@/src/db/supabase';
+import { removeChatAndConnection } from '@/src/service/chat.service';
 import { log } from '@/src/service/logger.service';
 import { fetchUserChats } from '@/src/service/message.services';
 import { usePostModalStore } from '@/src/store/postModalStore';
@@ -95,6 +96,18 @@ const ChatsListScreen = () => {
     }
   };
 
+    const handleRemoveConnection = async (chatId: string, chatUserId: string ) => {
+    try {
+      if (!user?.id) return;
+      await removeChatAndConnection( user.id, chatUserId, chatId);   
+      console.log('Connection removed for chat:', chatId, 'and the user:', chatUserId);
+
+      setChats(prevChats => prevChats.filter(chat => chat.chat_id !== chatId));   
+    } catch (error) {
+      log('handleRemoveConnection', 'Error removing connection:', error as string);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -151,6 +164,7 @@ const ChatsListScreen = () => {
                 timestamp: new Date(chat.last_message_at),
                 isOwnMessage: chat.last_message_sender === user?.id
               }}
+              onRemoveConnection={handleRemoveConnection}
             />
           ))
         )}
