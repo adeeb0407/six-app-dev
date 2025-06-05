@@ -111,3 +111,30 @@ export const updateProfilePicture = async (
     };
   }
 };
+
+export const updateUserProfile = async (userData: UserProfile): Promise<ProfileResponse> => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .update({
+        name: userData.name,
+        keyword_summary: userData.keyword_summary,
+      })
+      .eq('id', userData.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: data as UserProfile
+    };
+  } catch (error) {
+    log('updateUserProfile', 'Error updating user profile:', error as string);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update user profile'
+    };
+  }
+}

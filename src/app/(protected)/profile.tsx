@@ -1,8 +1,9 @@
 import SharingCard from '@/src/components/common/SharingCard';
+import EditProfileModal from '@/src/components/feature/Profile/EditProfileModal';
 import { Theme } from '@/src/constants/color';
 import { useAuth } from '@/src/context/AuthContext';
 import { log } from '@/src/service/logger.service';
-import { updateProfilePicture } from '@/src/service/profile.service';
+import { updateProfilePicture, updateUserProfile } from '@/src/service/profile.service';
 import { useUserStore } from '@/src/store/userStore';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import * as Burnt from "burnt";
@@ -23,6 +24,7 @@ const Profile = () => {
     const { user, logout } = useAuth();
     const { user: userProfile, setUser } = useUserStore();
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isEditModalVisible, setIsEditModalVisible] = useState<boolean>(false);
 
     const handleImageUpload = async (base64Image: string) => {
         if (!user?.id) {
@@ -70,12 +72,55 @@ const Profile = () => {
         }
     };
 
+    const handleEditProfile = async (name: string, traits: string[]) => {
+        if (!user?.id) {
+            throw new Error('User not found');
+        }
+
+        try {
+            const userData = {
+                id: user.id,
+                name: name,
+                keyword_summary: traits
+            };
+
+            const response = await updateUserProfile(userData);
+
+            if (!response.success) {
+                throw new Error(response.error || 'Failed to update profile');
+            }
+
+            // Update local user state
+            if (userProfile) {
+                setUser({ 
+                    ...userProfile, 
+                    name: name,
+                    keyword_summary: traits
+                });
+            }
+        } catch (error) {
+            log('handleEditProfile', 'Error updating profile:', error instanceof Error ? error.message : error as string);
+            Burnt.toast({
+                title: "Failed to update profile",
+                preset: "error",
+            });
+            throw error;
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Profile</Text>
                     <View style={styles.headerButtons}>
+                        <TouchableOpacity 
+                            style={styles.iconButton}
+                            onPress={() => setIsEditModalVisible(true)}
+                            disabled={isLoading}
+                        >
+                            <Feather name="edit-2" size={22} color={Theme.secondary} />
+                        </TouchableOpacity>
                         <TouchableOpacity style={styles.iconButton}
                             onPress={logout}
                             disabled={isLoading}
@@ -124,6 +169,14 @@ const Profile = () => {
                     <SharingCard />
                 </View>
             </ScrollView>
+
+            <EditProfileModal
+                visible={isEditModalVisible}
+                onClose={() => setIsEditModalVisible(false)}
+                onSave={handleEditProfile}
+                initialName={userProfile?.name || ''}
+                initialTraits={userProfile?.keyword_summary || ['', '', '']}
+            />
         </SafeAreaView>
     );
 };
