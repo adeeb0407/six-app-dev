@@ -1,106 +1,119 @@
 import NextButton from '@/src/components/common/NextButton';
 import SharingCard from '@/src/components/common/SharingCard';
-import { syncContactsWithSupabase } from '@/src/service/contact.service';
-import { log } from '@/src/service/logger.service';
+import { useContacts } from '@/src/hooks/useContact';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import * as Contacts from 'expo-contacts';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 const Share = () => {
   const router = useRouter();
-  const [contacts, setContacts] = useState<Contacts.Contact[]>([]);
-  const [permissionStatus, setPermissionStatus] = useState<string>('checking'); // Add initial checking state
+  const {
+    permissionStatus,
+    isLoading,
+    isSyncing,
+    checkAndLoadContacts,
+    syncContacts,
+    handleReload,
+  } = useContacts();
 
   // Check permissions when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       checkAndLoadContacts();
-    }, [])
+    }, [checkAndLoadContacts])
   );
 
-  const checkAndLoadContacts = async () => {
-    try {
-      let { status } = await Contacts.getPermissionsAsync();
-
-      if (status === 'undetermined') {
-        const { status: newStatus } = await Contacts.requestPermissionsAsync();
-        status = newStatus;
-      }
-
-      setPermissionStatus(status);
-
-      if (status === 'granted') {
-        await loadContacts();
-      }
-    } catch (error) {
-      log('checkAndLoadContacts', 'Error checking permissions:', error as string);
-      setPermissionStatus('error');
-    }
-  };
-
-  // Load contacts from device, extract unique last 10-digit phone numbers, then sync with Supabase
-  const loadContacts = async () => {
-    console.log('trying to load contacts')
-    try {
-      const { data } = await Contacts.getContactsAsync({
-        fields: [Contacts.Fields.PhoneNumbers, Contacts.Fields.Name],
-      });
-
-      if (!data || data.length === 0) return;
-
-      setContacts(data);
-
-      const phoneNumbers = extractUniqueLast10Digits(data);
-
-      if (phoneNumbers.length === 0) return;
-
-      await syncContactsWithSupabase(phoneNumbers);
-    } catch (error) {
-      log('loadContacts', 'Error loading contacts:', error as string);
-    }
-  };
-
-  // Extract unique last 10 digits of phone numbers from contact data
-  const extractUniqueLast10Digits = (contacts: any[]): string[] => {
-    const seen = new Set<string>();
-    const numbers: string[] = [];
-
-
-    for (const contact of contacts) {
-      if (contact.phoneNumbers) {
-        for (const phone of contact.phoneNumbers) {
-          if (!phone.number) continue;
-
-          const digitsOnly = phone.number.replace(/\D/g, '');
-          const last10 = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : null;
-
-          if (last10 && !seen.has(last10)) {
-            seen.add(last10);
-            numbers.push(last10);
-          }
-        }
-      }
-    }
-
-    log('extractUniqueLast10Digits', 'Total unique phone numbers extracted:' + numbers.length);
-    return numbers;
-  };
   const openSettings = async () => {
     await Linking.openSettings();
   };
 
-  const handleReload = async () => {
-    const { status } = await Contacts.getPermissionsAsync();
-    setPermissionStatus(status);
+  const handleSyncContacts = async () => {
+    try {
+      await syncContacts();
+    } catch (error) {
+      console.error('Failed to sync contacts:', error);
+    }
+  };
 
-    if (status === 'granted') {
-      loadContacts();
-    } else {
-      log('handleReload', 'Permission Required', 'Contact access is still not enabled');
+  const renderLoadingState = () => (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#007AFF" />
+      <Text style={styles.loadingText}>
+        {isLoading ? 'Loading contacts...' : 'Syncing contacts...'}
+      </Text>
+    </View>
+  );
+
+  const renderGrantedState = () => (
+    <>
+      <View style={styles.syncHeader}>
+        <Text style={styles.subtitle}>Refer six contacts to join</Text>
+        <TouchableOpacity
+          style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
+          onPress={handleSyncContacts}
+          disabled={isSyncing || isLoading}
+        >
+          {isSyncing ? (
+            <ActivityIndicator size="small" color="#007AFF" />
+          ) : (
+            <Ionicons name="refresh-outline" size={20} color="#007AFF" />
+          )}
+        </TouchableOpacity>
+      </View>
+      <SharingCard />
+    </>
+  );
+
+  const renderPermissionDeniedState = () => (
+    <View style={styles.permissionContainer}>
+      <Text style={styles.permissionText}>
+        Please enable contacts access in settings
+      </Text>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.settingsButton}
+          onPress={openSettings}
+        >
+          <Text style={styles.settingsButtonText}>
+            Enable in Settings
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.reloadButton}
+          onPress={handleReload}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#666" />
+          ) : (
+            <Ionicons name="reload-outline" size={24} color="#666" />
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderContent = () => {
+    if (isLoading || isSyncing) {
+      return renderLoadingState();
+    }
+
+    switch (permissionStatus) {
+      case 'checking':
+        return <Text style={styles.subtitle}>Checking permissions...</Text>;
+      case 'granted':
+        return renderGrantedState();
+      default:
+        return renderPermissionDeniedState();
     }
   };
 
@@ -109,45 +122,13 @@ const Share = () => {
       <View style={styles.content}>
         <View style={styles.textContainer}>
           <Text style={styles.title}>Almost There</Text>
-          
-          {permissionStatus === 'checking' ? (
-            <Text style={styles.subtitle}>Checking permissions...</Text>
-          ) : permissionStatus === 'granted' ? (
-            <>
-              <Text style={styles.subtitle}>
-                Refer six contacts to join
-              </Text>
-              <SharingCard />
-            </>
-          ) : (
-            <View style={styles.permissionContainer}>
-              <Text style={styles.permissionText}>
-                Please enable contacts access in settings
-              </Text>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.settingsButton}
-                  onPress={openSettings}
-                >
-                  <Text style={styles.settingsButtonText}>
-                    Enable in Settings
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.reloadButton}
-                  onPress={handleReload}
-                >
-                  <Ionicons name="reload-outline" size={24} color="#666" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
+          {renderContent()}
         </View>
       </View>
 
       <NextButton
         onPress={() => router.push('/guide1')}
-        disabled={permissionStatus !== 'granted'}
+        disabled={permissionStatus !== 'granted' || isLoading || isSyncing}
       />
     </View>
   );
@@ -179,6 +160,33 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 24,
     fontStyle: 'italic'
+  },
+  syncHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 24,
+  },
+  syncButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  syncButtonDisabled: {
+    opacity: 0.6,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
+    fontStyle: 'italic',
   },
   permissionText: {
     fontSize: 14,

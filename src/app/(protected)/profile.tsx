@@ -2,6 +2,7 @@ import SharingCard from '@/src/components/common/SharingCard';
 import EditProfileModal from '@/src/components/feature/Profile/EditProfileModal';
 import { Theme } from '@/src/constants/color';
 import { useAuth } from '@/src/context/AuthContext';
+import { useContacts } from '@/src/hooks/useContact';
 import { log } from '@/src/service/logger.service';
 import { updateProfilePicture, updateUserProfile } from '@/src/service/profile.service';
 import { useUserStore } from '@/src/store/userStore';
@@ -25,6 +26,16 @@ const Profile = () => {
     const { user: userProfile, setUser } = useUserStore();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState<boolean>(false);
+    
+    // Use contacts hook for contact syncing functionality
+    const { 
+        contacts, 
+        permissionStatus, 
+        isLoading: isLoadingContacts, 
+        isSyncing, 
+        checkAndLoadContacts, 
+        syncContacts 
+    } = useContacts();
 
     const handleImageUpload = async (base64Image: string) => {
         if (!user?.id) {
@@ -92,8 +103,8 @@ const Profile = () => {
 
             // Update local user state
             if (userProfile) {
-                setUser({ 
-                    ...userProfile, 
+                setUser({
+                    ...userProfile,
                     name: name,
                     keyword_summary: traits
                 });
@@ -108,22 +119,58 @@ const Profile = () => {
         }
     };
 
+    const handleSyncContacts = async () => {
+        try {
+            // First check permissions and load contacts if needed
+            if (permissionStatus !== 'granted' || contacts.length === 0) {
+                await checkAndLoadContacts();
+            } else {
+                // If we already have contacts, just sync them
+                await syncContacts();
+            }
+            
+            Burnt.toast({
+                title: "Contacts synced successfully",
+                preset: "done",
+            });
+        } catch (error) {
+            Burnt.toast({
+                title: "Failed to sync contacts",
+                preset: "error",
+            });
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Profile</Text>
                     <View style={styles.headerButtons}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
+                            style={styles.iconButton}
+                            onPress={handleSyncContacts}
+                            disabled={isLoading || isSyncing || isLoadingContacts}
+                        >
+                            {isSyncing || isLoadingContacts ? (
+                                <ActivityIndicator size="small" color={Theme.secondary} />
+                            ) : (
+                                <Ionicons name="refresh-outline" size={22} color={Theme.secondary} />
+                            )}
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity
                             style={styles.iconButton}
                             onPress={() => setIsEditModalVisible(true)}
-                            disabled={isLoading}
+                            disabled={isLoading || isSyncing || isLoadingContacts}
                         >
                             <Feather name="edit-2" size={22} color={Theme.secondary} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconButton}
+                        
+                        <TouchableOpacity 
+                            style={styles.iconButton}
                             onPress={logout}
-                            disabled={isLoading}
+                            disabled={isLoading || isSyncing || isLoadingContacts}
                         >
                             <Ionicons name="log-out-outline" size={22} color={Theme.secondary} />
                         </TouchableOpacity>
@@ -133,7 +180,7 @@ const Profile = () => {
                 <TouchableOpacity
                     style={styles.profileImageContainer}
                     onPress={pickImage}
-                    disabled={isLoading}
+                    disabled={isLoading || isSyncing || isLoadingContacts}
                 >
                     {isLoading ? (
                         <View style={styles.uploadContainer}>
@@ -165,9 +212,18 @@ const Profile = () => {
                     ))}
                 </View>
 
-                <View style={styles.sharingCardConatiner}>
+                <View style={styles.sharingCardContainer}>
                     <SharingCard />
                 </View>
+
+                {(isSyncing || isLoadingContacts) && (
+                    <View style={styles.syncingIndicator}>
+                        <ActivityIndicator size="small" color={Theme.primary} />
+                        <Text style={styles.syncingText}>
+                            {isLoadingContacts ? 'Loading contacts...' : 'Syncing contacts...'}
+                        </Text>
+                    </View>
+                )}
             </ScrollView>
 
             <EditProfileModal
@@ -250,10 +306,22 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '400'
     },
-    sharingCardConatiner: {
+    sharingCardContainer: {
         alignItems: 'center',
         paddingHorizontal: 20,
         marginBottom: 50,
+    },
+    syncingIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+        gap: 8,
+    },
+    syncingText: {
+        fontSize: 14,
+        color: '#666',
+        fontStyle: 'italic',
     },
 });
 
