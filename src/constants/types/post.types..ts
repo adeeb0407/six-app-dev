@@ -1,4 +1,5 @@
 import { CategoryTabs } from "./categoryTabs";
+import { PostTabs } from "./postTabs.types";
 
 export interface Post {
   id: string;
@@ -44,17 +45,23 @@ export enum ConnectionLevel {
   Third = '3',
 }
 
+export enum AllowedConnectionLevel {
+  First = '1',
+  Second = '2',
+  Third = '3',
+}
+
+
 export interface PostComponentProps {
   // Base props
   defaultTab?: CategoryTabs;
-  onPost?: (text: string, activeTab: CategoryTabs) => void;
-
+  postTabs?: PostTabs
   isModal?: boolean;
-  modalPosition?: 'center' | 'bottom';
   visible?: boolean;
   setDidPost?: (state: boolean) => void
   onClose?: (didPost?: boolean) => void;
   defaultConnectionLevel?: ConnectionLevel;
+
 }
 
 export interface CategorySelectorProps {

@@ -1,8 +1,8 @@
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
-import { Post } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
 import { log } from '@/src/service/logger.service';
 import { fetchPostsByDegree } from '@/src/service/post.service';
+import { usePostStore } from '@/src/store/postStore';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import PostCard from './PostCard';
@@ -11,8 +11,6 @@ interface PostsListProps {
   userId: string;
   postTabs: PostTabs;
   categoryTabs: CategoryTabs[];
-  refreshing: boolean;
-  setRefreshing: (value: boolean) => void;
 }
 
 interface PaginationState {
@@ -27,10 +25,9 @@ export const PostsList: React.FC<PostsListProps> = ({
   userId,
   postTabs,
   categoryTabs,
-  refreshing = false,
-  setRefreshing
 }) => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { posts, setPosts, addPosts, clearPosts } = usePostStore();
+  const [refreshing, setRefreshing] = useState(false);
   const [pagination, setPagination] = useState<PaginationState>({
     currentPage: 1,
     hasMore: true,
@@ -39,7 +36,7 @@ export const PostsList: React.FC<PostsListProps> = ({
     totalFetched: 0
   });
   const [error, setError] = useState<string | null>(null);
-  
+
   const isLoadingRef = useRef(false);
   const lastScrollY = useRef(0);
 
@@ -70,8 +67,9 @@ export const PostsList: React.FC<PostsListProps> = ({
 
       if (response?.success && response.data) {
         const { posts: newPosts, pagination: paginationInfo } = response.data;
-        
-        setPosts(prev => page === 1 ? newPosts : [...prev, ...newPosts]);
+
+        page === 1 ? setPosts(newPosts) : addPosts(newPosts);
+
         setPagination(prev => ({
           ...prev,
           currentPage: paginationInfo.currentPage,
@@ -90,7 +88,7 @@ export const PostsList: React.FC<PostsListProps> = ({
     } finally {
       isLoadingRef.current = false;
     }
-  }, [userId, degreeFilter]);
+  }, [userId, degreeFilter, setPosts, addPosts]);
 
   const loadMorePosts = useCallback(() => {
     if (pagination.hasMore && !isLoadingRef.current) {
@@ -99,23 +97,23 @@ export const PostsList: React.FC<PostsListProps> = ({
   }, [loadPosts, pagination.hasMore, pagination.currentPage]);
 
   const handleRefresh = useCallback(async () => {
-    setPosts([]);
+    clearPosts();
     setRefreshing(true);
     try {
       await loadPosts(1, false);
     } finally {
       setRefreshing(false);
     }
-  }, [loadPosts, setRefreshing]);
+  }, [loadPosts, setRefreshing, clearPosts]);
 
   const isNearBottom = useCallback((nativeEvent: any) => {
     const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
     const distanceFromEnd = contentSize.height - (layoutMeasurement.height + contentOffset.y);
     const scrollPercentage = (contentOffset.y + layoutMeasurement.height) / contentSize.height;
     const isScrollingDown = contentOffset.y > lastScrollY.current;
-    
+
     lastScrollY.current = contentOffset.y;
-    
+
     return isScrollingDown && (distanceFromEnd < 300 || scrollPercentage >= 0.85);
   }, []);
 
@@ -125,9 +123,8 @@ export const PostsList: React.FC<PostsListProps> = ({
     }
   }, [isNearBottom, loadMorePosts]);
 
-  // Reset and load initial posts when dependencies change
   useEffect(() => {
-    setPosts([]);
+    clearPosts();
     setPagination({
       currentPage: 1,
       hasMore: true,
@@ -140,7 +137,6 @@ export const PostsList: React.FC<PostsListProps> = ({
     loadPosts(1, false);
   }, [userId, degreeFilter]);
 
-  // Loading state
   if (pagination.isLoading && posts.length === 0) {
     return (
       <View style={styles.centeredContainer}>
@@ -149,7 +145,6 @@ export const PostsList: React.FC<PostsListProps> = ({
     );
   }
 
-  // Error state
   if (error && posts.length === 0) {
     return (
       <View style={styles.centeredContainer}>
@@ -160,7 +155,6 @@ export const PostsList: React.FC<PostsListProps> = ({
     );
   }
 
-  // Empty state
   if (filteredPosts.length === 0 && !pagination.isLoading) {
     return (
       <View style={styles.centeredContainer}>
@@ -201,7 +195,7 @@ export const PostsList: React.FC<PostsListProps> = ({
           <Text style={styles.endText}>You've reached the end</Text>
         </View>
       )}
-      
+
       <View style={styles.bottomPadding} />
     </ScrollView>
   );
@@ -231,11 +225,6 @@ const styles = StyleSheet.create({
   loadingIndicator: {
     paddingVertical: 20,
     alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 8,
-    color: '#666',
-    fontSize: 14,
   },
   endText: {
     color: '#999',

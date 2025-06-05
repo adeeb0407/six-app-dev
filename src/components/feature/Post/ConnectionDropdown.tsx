@@ -86,7 +86,11 @@ const ConnectionDropdown: React.FC<ConnectionSelectorProps> = ({
           ]}
         >
           <View style={styles.dropdownContent}>
-            {Object.values(ConnectionLevel).map((level) => (
+            {Object.values([
+  ConnectionLevel.First,
+  ConnectionLevel.Second,
+  ConnectionLevel.Third,
+]).map((level) => (
               <TouchableOpacity
                 key={level}
                 style={[

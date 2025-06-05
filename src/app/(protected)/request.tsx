@@ -43,10 +43,8 @@ const RequestScreen = () => {
   const handleDeclineRequest = async (requestId: string) => {
     setLoading(true);
     try {
-      // Delete from backend
       const response = await deleteReaction(requestId);
       if (response.success) {
-        // Remove from local store
         setRequests(requests.filter(r => r.id !== requestId));
         router.navigate('/(protected)/(tabs)/chats');
       }
@@ -61,12 +59,15 @@ const RequestScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color="black" />
+          <Feather name="arrow-left" size={24} color="#666" />
         </TouchableOpacity>
         <HeaderText title="Six" />
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+      >
         {requests.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>No pending requests</Text>
@@ -76,14 +77,14 @@ const RequestScreen = () => {
             <View key={request.id} style={styles.requestCard}>
               <View style={styles.messageBubble}>
                 <Text style={styles.messageText}>
-                  Your {request.degree}° connection with {request.mutuals} mutuals showed interest in 
+                  Your {request.degree}° connection with {request.mutuals} mutuals showed interest in
                 </Text>
                 <Text style={styles.postContent} numberOfLines={2}>
                   Post: {request.posts.content}
                 </Text>
               </View>
-
-              {!loading ? (
+              
+              {!loading && (
                 <View style={styles.actions}>
                   <TouchableOpacity
                     style={[styles.actionButton, styles.declineButton]}
@@ -91,6 +92,7 @@ const RequestScreen = () => {
                   >
                     <Ionicons name="close" size={24} color="#666" />
                   </TouchableOpacity>
+                  
                   <TouchableOpacity
                     style={[styles.actionButton, styles.acceptButton]}
                     onPress={() => handleAcceptRequest(request.reactor_id, request.id, request.posts.id)}
@@ -98,8 +100,13 @@ const RequestScreen = () => {
                     <Ionicons name="checkmark" size={24} color="#fff" />
                   </TouchableOpacity>
                 </View>
-              ) : (
-                <ActivityIndicator style={styles.actions} />
+              )}
+              
+              {loading && (
+                <ActivityIndicator 
+                  style={styles.loadingIndicator}
+                  color="#666"
+                />
               )}
             </View>
           ))
@@ -112,111 +119,113 @@ const RequestScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
   },
+  
   header: {
     paddingTop: 10,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#e0e0e0',
     flexDirection: 'row',
     alignItems: 'center',
   },
+  
   backButton: {
     marginRight: 10,
+    padding: 8,
+    borderRadius: 9999,
+    backgroundColor: '#f5f5f5',
   },
+  
   content: {
     flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
+  
+  scrollContent: {
+    paddingBottom: 32,
+  },
+  
   requestCard: {
-    padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-     borderWidth: 1,
-    borderColor: '#eee',
-  },
-  messageHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  aiAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#8B5CF6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  aiAvatarText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: 'bold',
-    fontFamily: 'TimesNewRomanBold',
-  },
-  messageInfo: {
-    flex: 1,
-  },
-  aiName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    fontFamily: 'TimesNewRomanBold',
-  },
-  timestamp: {
-    fontSize: 12,
-    color: '#666',
-    fontFamily: 'TimesNewRomanRegular',
+    marginVertical: 6,
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   messageBubble: {
     backgroundColor: '#f5f5f5',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 12,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   messageText: {
-    fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'TimesNewRomanBold',
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
     marginBottom: 4,
+    lineHeight: 24,
+    fontStyle: 'italic'
   },
   postContent: {
     fontSize: 14,
     color: '#666',
+    lineHeight: 20,
   },
+  
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    marginTop: 8,
     gap: 12,
   },
+  
   actionButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
+  
   acceptButton: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#9191ff',
   },
+  
   declineButton: {
-    backgroundColor: '#9CA3AF',
+    backgroundColor: '#f5f5f5',
   },
+  
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 32,
   },
+  
   emptyText: {
-    marginTop: 12,
     fontSize: 16,
-    color: '#666',
-    fontFamily: 'TimesNewRomanRegular',
+    color: '#888',
   },
+  
+  loadingIndicator: {
+    marginTop: 8,
+    alignSelf: 'flex-end',
+  }
 });
 
 export default RequestScreen;

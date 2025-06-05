@@ -1,3 +1,15 @@
+import { CategoryTabs } from '@/src/constants/types/categoryTabs';
+import {
+  ConnectionLevel,
+  Post,
+  PostComponentProps,
+  PostInput,
+} from '@/src/constants/types/post.types.';
+import { PostTabs } from '@/src/constants/types/postTabs.types';
+import { useAuth } from '@/src/context/AuthContext';
+import { log } from '@/src/service/logger.service';
+import { createPost } from '@/src/service/post.service';
+import { usePostStore } from '@/src/store/postStore';
 import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -9,18 +21,9 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-
-import { CategoryTabs } from '@/src/constants/types/categoryTabs';
-import {
-  ConnectionLevel,
-  PostComponentProps,
-  PostInput,
-} from '@/src/constants/types/post.types.';
-import { useAuth } from '@/src/context/AuthContext';
-import { log } from '@/src/service/logger.service';
-import { createPost } from '@/src/service/post.service';
 import CategoryDropdown from './CategoryDropdown';
 import ConnectionDropdown from './ConnectionDropdown';
+
 enum PostConnectionVisibility {
   All = 'All connections',
   HideChat = 'Hide chat connections'
@@ -31,9 +34,11 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   isModal = false,
   visible = true,
   onClose,
-  defaultConnectionLevel = ConnectionLevel.First
+  defaultConnectionLevel = ConnectionLevel.First,
+  postTabs
 }) => {
   const { user } = useAuth();
+  const { addPostOnTop } = usePostStore();
   const [activeTab, setActiveTab] = useState<CategoryTabs>(defaultTab);
   const [connectionLevel, setConnectionLevel] = useState<ConnectionLevel>(defaultConnectionLevel);
   const [connectionVisibility, setConnectionVisibility] = useState<PostConnectionVisibility>(PostConnectionVisibility.All)
@@ -76,6 +81,27 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
 
       const data = await createPost(post);
       if (!data) log('handlePost', 'error creating post');
+
+    if (postTabs === PostTabs.AllPosts) {
+      const newPost: Post = {
+        id: data.id,
+        user_id: user.id,
+        content: noteText,
+        category: activeTab,
+        hide_from_chat: post.hide_from_chat,
+        created_at: new Date().toISOString(),
+        expires_at: null,
+        locked: false,
+        connection_type: ConnectionLevel.You,
+        connection_degree: ConnectionLevel.You,
+        keyword_summary: [],
+        user_interested: false,
+        user_accepted: false,
+        mutual_count: 0
+      };
+
+      addPostOnTop(newPost);
+    }
 
       if (data && onClose) {
         onClose(true);

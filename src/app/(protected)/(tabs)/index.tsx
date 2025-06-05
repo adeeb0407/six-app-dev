@@ -32,7 +32,6 @@ const HomeScreen: FC = () => {
   const { user: userProfile, setUser } = useUserStore();
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const [postTabs, setPostTabs] = useState<PostTabs>(PostTabs.AllPosts);
-  const [refreshing, setRefreshing] = useState(false);
   const [categoryTabs, setCategoryTabs] = useState<CategoryTabs[]>([]);
   const { isHomePostModalVisible, setHomePostModalVisible } = usePostModalStore();
   const modalScaleAnim = useRef(new Animated.Value(1)).current;
@@ -87,15 +86,10 @@ const HomeScreen: FC = () => {
     }).start(() => {
       setHomePostModalVisible(false);
       if (didPost) {
-        handleRefresh();
       }
     });
   };
 
-  const handleRefresh = () => {
-    console.log('handle refresh called on HomeScreen');
-    setRefreshing(true); 
-  };
 
   const tabs = Object.values(CategoryTabs);
   const degrees = ['1°', '2°', '3°'];
@@ -145,6 +139,7 @@ const HomeScreen: FC = () => {
                 isModal={false}
                 visible={isHomePostModalVisible}
                 onClose={hideModal}
+                postTabs={postTabs}
               />
             </Animated.View>
           </TouchableWithoutFeedback>
@@ -172,8 +167,6 @@ const HomeScreen: FC = () => {
           userId={user?.id}
           postTabs={postTabs}
           categoryTabs={categoryTabs}
-          setRefreshing={setRefreshing}
-          refreshing={refreshing}
         />}
     </SafeAreaView>
   );
