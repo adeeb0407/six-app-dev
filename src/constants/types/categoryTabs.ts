@@ -2,5 +2,6 @@ export enum CategoryTabs {
   General = 'general',
   Meet = 'meet',
   Chat = 'chat',
-  Opportunity = 'opportunity'
+  Opportunity = 'opportunity',
+  Help = 'help'
 }

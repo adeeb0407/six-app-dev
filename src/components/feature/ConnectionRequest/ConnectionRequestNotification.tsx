@@ -10,51 +10,51 @@ import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } fr
 const ConnectionRequestNotification = () => {
     const router = useRouter();
     const { user } = useUserStore();
-    const {requests, setRequests} = useConnectionRequestStore()
+    const { requests, setRequests } = useConnectionRequestStore()
     const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (!user?.id) return;
+    useEffect(() => {
+        if (!user?.id) return;
 
-    loadRequests();
+        loadRequests();
 
-    // Subscribe to post_reactions changes where post_owner_id === user.id
-    const subscription = supabase
-      .channel('public:post_reactions') 
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'post_reactions',
-          filter: `post_owner_id=eq.${user.id}`, 
-        },
-        (payload) => {
-          loadRequests(); 
-          console.log('aaya hai', payload);
-        }
-      )
-      .subscribe();
+        // Subscribe to post_reactions changes where post_owner_id === user.id
+        const subscription = supabase
+            .channel('public:post_reactions')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'post_reactions',
+                    filter: `post_owner_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    loadRequests();
+                    console.log('aaya hai', payload);
+                }
+            )
+            .subscribe();
 
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, [user?.id]);
-    
+        return () => {
+            supabase.removeChannel(subscription);
+        };
+    }, [user?.id]);
+
 
     const loadRequests = async () => {
-        if (!user?.id) return;
+        if (!user?.id || !user?.name) return;
 
         try {
             setIsLoading(true);
-            const response = await fetchPostRequests(user.id);
-            
+            const response = await fetchPostRequests(user.id, user.name);
+
             if (response.success) {
                 setRequests(response.data);
             }
         } catch (error) {
             log('loadRequests', 'Error loading requests:', error as string);
-        } finally { 
+        } finally {
             setIsLoading(false);
         }
     };

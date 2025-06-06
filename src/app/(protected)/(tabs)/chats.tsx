@@ -96,13 +96,13 @@ const ChatsListScreen = () => {
     }
   };
 
-    const handleRemoveConnection = async (chatId: string, chatUserId: string ) => {
+  const handleRemoveConnection = async (chatId: string, chatUserId: string) => {
     try {
       if (!user?.id) return;
-      await removeChatAndConnection( user.id, chatUserId, chatId);   
+      await removeChatAndConnection(user.id, chatUserId, chatId);
       console.log('Connection removed for chat:', chatId, 'and the user:', chatUserId);
 
-      setChats(prevChats => prevChats.filter(chat => chat.chat_id !== chatId));   
+      setChats(prevChats => prevChats.filter(chat => chat.chat_id !== chatId));
     } catch (error) {
       log('handleRemoveConnection', 'Error removing connection:', error as string);
     }
@@ -140,7 +140,7 @@ const ChatsListScreen = () => {
       {/* Messages List */}
       <ScrollView style={styles.messagesContainer}>
 
-        <ConnectionRequestNotification/>
+        <ConnectionRequestNotification />
 
         {loading ? (
           <View style={styles.loadingContainer}>

@@ -36,6 +36,11 @@ export async function createChatRequest(userId1: string, userId2: string, postId
         userId2: userId2,
       });
 
+      await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connect`, {
+        userId1: userId2,
+        userId2: userId1,
+      });
+
       console.log(`adding connection between ${userId1} and ${userId2} for chat ${chatId}`);
     }
 

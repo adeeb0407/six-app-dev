@@ -17,7 +17,8 @@ export interface ConnectionRequest {
   posts: RequestPost;
   user: RequestUser
   degree: number
-  mutuals: number
+  mutuals: number,
+  intro: string
 }
 
 interface RequestResponse {
@@ -26,10 +27,10 @@ interface RequestResponse {
   error?: string;
 }
 
-export const fetchPostRequests = async (userId: string): Promise<any> => {
-  console.log(`https://7b61-103-185-242-180.ngrok-free.app/api/users/connection-requests/${userId}`);
+export const fetchPostRequests = async (userId: string, userName: string): Promise<any> => {
+  console.log(`https://1045-103-185-242-180.ngrok-free.app/api/users/connection-requests/${userId}/${userName}`);
   try {
-    const { data } = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connection-requests/${userId}`)
+    const { data } = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connection-requests/${userId}/${userName}`)
     console.log(data)
     return {
       success: true,

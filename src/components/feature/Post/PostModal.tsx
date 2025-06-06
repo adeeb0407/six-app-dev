@@ -6,13 +6,15 @@ import {
   PostInput,
 } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
-import { useAuth } from '@/src/context/AuthContext';
 import { log } from '@/src/service/logger.service';
 import { createPost } from '@/src/service/post.service';
+import { fetchPostSuggestion } from '@/src/service/six.service';
 import { usePostStore } from '@/src/store/postStore';
+import { useUserStore } from '@/src/store/userStore';
 import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   Modal,
   StyleSheet,
@@ -37,12 +39,13 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   defaultConnectionLevel = ConnectionLevel.First,
   postTabs
 }) => {
-  const { user } = useAuth();
+  const { user } = useUserStore();
   const { addPostOnTop } = usePostStore();
   const [activeTab, setActiveTab] = useState<CategoryTabs>(defaultTab);
   const [connectionLevel, setConnectionLevel] = useState<ConnectionLevel>(defaultConnectionLevel);
   const [connectionVisibility, setConnectionVisibility] = useState<PostConnectionVisibility>(PostConnectionVisibility.All)
   const [noteText, setNoteText] = useState('');
+   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -82,26 +85,26 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       const data = await createPost(post);
       if (!data) log('handlePost', 'error creating post');
 
-    if (postTabs === PostTabs.AllPosts) {
-      const newPost: Post = {
-        id: data.id,
-        user_id: user.id,
-        content: noteText,
-        category: activeTab,
-        hide_from_chat: post.hide_from_chat,
-        created_at: new Date().toISOString(),
-        expires_at: null,
-        locked: false,
-        connection_type: ConnectionLevel.You,
-        connection_degree: ConnectionLevel.You,
-        keyword_summary: [],
-        user_interested: false,
-        user_accepted: false,
-        mutual_count: 0
-      };
+      if (postTabs === PostTabs.AllPosts) {
+        const newPost: Post = {
+          id: data.id,
+          user_id: user.id,
+          content: noteText,
+          category: activeTab,
+          hide_from_chat: post.hide_from_chat,
+          created_at: new Date().toISOString(),
+          expires_at: null,
+          locked: false,
+          connection_type: ConnectionLevel.You,
+          connection_degree: ConnectionLevel.You,
+          keyword_summary: [],
+          user_interested: false,
+          user_accepted: false,
+          mutual_count: 0
+        };
 
-      addPostOnTop(newPost);
-    }
+        addPostOnTop(newPost);
+      }
 
       if (data && onClose) {
         onClose(true);
@@ -110,6 +113,21 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       setNoteText('');
     }
   };
+
+  
+  const handlePostSuggestion = async () => {
+    if (user?.keyword_summary && !isLoadingSuggestion) {
+      setIsLoadingSuggestion(true);
+      try {
+        const response = await fetchPostSuggestion(user.keyword_summary);
+        setNoteText(response.data.message);
+      } catch (error) {
+        log('handlePostSuggestion', 'error fetching suggestion');
+      } finally {
+        setIsLoadingSuggestion(false);
+      }
+    }
+  }
 
   const isPostButtonActive = noteText.trim().length > 0;
 
@@ -161,8 +179,16 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
             <Text style={styles.optionText}>{connectionVisibility}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.suggestionButton}>
-            <Feather name="zap" size={18} color="#666" />
+          <TouchableOpacity
+            style={[styles.suggestionButton, isLoadingSuggestion && styles.suggestionButtonDisabled]}
+            onPress={handlePostSuggestion}
+            disabled={isLoadingSuggestion}
+          >
+            {isLoadingSuggestion ? (
+              <ActivityIndicator size="small" color="#666" />
+            ) : (
+              <Feather name="zap" size={18} color="#666" />
+            )}
             <Text style={styles.suggestionText}>Suggestion</Text>
           </TouchableOpacity>
         </View>
@@ -308,12 +334,15 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
   },
-  suggestionButton: {
+ suggestionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F9F9FB',
     borderRadius: 12,
     padding: 8,
+  },
+  suggestionButtonDisabled: {
+    opacity: 0.6,
   },
   suggestionText: {
     marginLeft: 4,

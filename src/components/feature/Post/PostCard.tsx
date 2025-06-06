@@ -167,9 +167,9 @@ const styles = StyleSheet.create({
   },
   postTitle: {
     fontSize: 26,
-    fontWeight: '500',
+    fontWeight: '300',
     marginBottom: 2,
-    fontFamily: 'TimesNewRomanRegular',
+    // fontFamily: 'TimesNewRomanRegular',
   },
   postDescription: {
     color: '#555',
