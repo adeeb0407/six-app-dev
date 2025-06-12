@@ -2,10 +2,10 @@ import NextButton from '@/src/components/common/NextButton';
 import SharingCard from '@/src/components/common/SharingCard';
 import { useContacts } from '@/src/hooks/useContact';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import * as Burnt from "burnt";
 import * as Linking from 'expo-linking';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useRef } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -17,6 +17,7 @@ import {
 const Share = () => {
   const router = useRouter();
   const {
+    contacts,
     permissionStatus,
     isLoading,
     isSyncing,
@@ -25,11 +26,19 @@ const Share = () => {
     handleReload,
   } = useContacts();
 
-  // Check permissions when screen comes into focus
-  useFocusEffect(
+  const hasCheckedOnFocus = useRef(false);
+
+  useFocusEffect( 
     React.useCallback(() => {
-      checkAndLoadContacts();
-    }, [checkAndLoadContacts])
+      if (!hasCheckedOnFocus.current) {
+        hasCheckedOnFocus.current = true;
+        checkAndLoadContacts(true); // Changed to true to enable auto-sync
+      }
+      
+      return () => {
+        hasCheckedOnFocus.current = false;
+      };
+    }, []) 
   );
 
   const openSettings = async () => {
@@ -38,69 +47,90 @@ const Share = () => {
 
   const handleSyncContacts = async () => {
     try {
-      await syncContacts();
+      // If we don't have permission or contacts, check and load first
+      if (permissionStatus !== 'granted') {
+        await checkAndLoadContacts(true); // Auto-sync after loading
+      } else if (contacts.length === 0) {
+        await checkAndLoadContacts(true); // Auto-sync after loading
+      } else {
+        await syncContacts();
+      }
+      
+      Burnt.toast({
+        title: "Contacts synced successfully",
+        preset: "done",
+      });
     } catch (error) {
-      console.error('Failed to sync contacts:', error);
+      Burnt.toast({
+        title: "Failed to sync contacts",
+        preset: "error",
+      });
     }
   };
 
-  const renderLoadingState = () => (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#007AFF" />
-      <Text style={styles.loadingText}>
-        {isLoading ? 'Loading contacts...' : 'Syncing contacts...'}
-      </Text>
-    </View>
-  );
-
-  const renderGrantedState = () => (
-    <>
-      <View style={styles.syncHeader}>
-        <Text style={styles.subtitle}>Refer six contacts to join</Text>
-        <TouchableOpacity
-          style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
-          onPress={handleSyncContacts}
-          disabled={isSyncing || isLoading}
-        >
-          {isSyncing ? (
-            <ActivityIndicator size="small" color="#007AFF" />
-          ) : (
-            <Ionicons name="refresh-outline" size={20} color="#007AFF" />
-          )}
-        </TouchableOpacity>
+  const renderLoadingState = () => {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.loadingText}>
+          {isLoading ? 'Loading contacts...' : 'Syncing contacts...'}
+        </Text>
       </View>
-      <SharingCard />
-    </>
-  );
+    );
+  };
 
-  const renderPermissionDeniedState = () => (
-    <View style={styles.permissionContainer}>
-      <Text style={styles.permissionText}>
-        Please enable contacts access in settings
-      </Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={openSettings}
-        >
-          <Text style={styles.settingsButtonText}>
-            Enable in Settings
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.reloadButton}
-          onPress={handleReload}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#666" />
-          ) : (
-            <Ionicons name="reload-outline" size={24} color="#666" />
-          )}
-        </TouchableOpacity>
+  const renderGrantedState = () => {
+    return (
+      <>
+        <View style={styles.syncHeader}>
+          <Text style={styles.subtitle}>Refer six contacts to join</Text>
+          <TouchableOpacity
+            style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
+            onPress={handleSyncContacts}
+            disabled={isSyncing || isLoading}
+          >
+            {isSyncing ? (
+              <ActivityIndicator size="small" color="#007AFF" />
+            ) : (
+              <Ionicons name="refresh-outline" size={20} color="#007AFF" />
+            )}
+          </TouchableOpacity>
+        </View>
+        <SharingCard />
+      </>
+    );
+  };
+
+  const renderPermissionDeniedState = () => {
+    return (
+      <View style={styles.permissionContainer}>
+        <Text style={styles.permissionText}>
+          Please enable contacts access in settings
+        </Text>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={openSettings}
+          >
+            <Text style={styles.settingsButtonText}>
+              Enable in Settings
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.reloadButton}
+            onPress={handleReload}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#666" />
+            ) : (
+              <Ionicons name="reload-outline" size={24} color="#666" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderContent = () => {
     if (isLoading || isSyncing) {
@@ -127,7 +157,9 @@ const Share = () => {
       </View>
 
       <NextButton
-        onPress={() => router.push('/guide1')}
+        onPress={() => {
+          router.push('/guide1');
+        }}
         disabled={permissionStatus !== 'granted' || isLoading || isSyncing}
       />
     </View>
@@ -158,8 +190,8 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 18,
     color: '#666',
-    marginBottom: 24,
-    fontStyle: 'italic'
+    fontStyle: 'italic',
+    textAlignVertical: 'center',
   },
   syncHeader: {
     flexDirection: 'row',
@@ -174,9 +206,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   syncButtonDisabled: {
     opacity: 0.6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingContainer: {
     alignItems: 'center',

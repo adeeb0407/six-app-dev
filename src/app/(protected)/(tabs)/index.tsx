@@ -7,7 +7,7 @@ import ProfileImage from '@/src/components/feature/Profile/ProfileImage';
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
 import { useAuth } from '@/src/context/AuthContext';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { fetchUserProfile } from '@/src/service/profile.service';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import { useUserStore } from '@/src/store/userStore';
@@ -52,7 +52,7 @@ const HomeScreen: FC = () => {
           }
         }
       } catch (e) {
-        log('loadData useEffect: Index.tsx', 'Error loading data:', e as string);
+        logger.error('loadData useEffect: Index.tsx', 'Error loading data:', e as string);
       }
     };
 

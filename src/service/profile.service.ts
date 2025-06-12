@@ -1,7 +1,7 @@
 import { decode } from "base64-arraybuffer";
 import { UserProfile } from "../constants/types/user.types";
 import { supabase } from "../db/supabase";
-import { log } from "./logger.service";
+import { logger } from "./logger.service";
 
 interface ProfileResponse {
   success: boolean;
@@ -36,7 +36,7 @@ export const fetchUserProfile = async (userId: string): Promise<ProfileResponse>
     };
 
   } catch (error) {
-    log('fetchUserProfile', 'Error fetching user profile:', error as string);
+    logger.error('fetchUserProfile', 'Error fetching user profile:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch user profile'
@@ -104,7 +104,7 @@ export const updateProfilePicture = async (
 
     return { success: true, url: cacheBustedUrl };
   } catch (error) {
-    log('updateProfilePicture', 'Profile picture update error:', error as string);
+    logger.error('updateProfilePicture', 'Profile picture update error:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update profile picture'
@@ -131,7 +131,7 @@ export const updateUserProfile = async (userData: UserProfile): Promise<ProfileR
       data: data as UserProfile
     };
   } catch (error) {
-    log('updateUserProfile', 'Error updating user profile:', error as string);
+    logger.error('updateUserProfile', 'Error updating user profile:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update user profile'

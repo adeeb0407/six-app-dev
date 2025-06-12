@@ -1,14 +1,14 @@
 import { syncContactsWithSupabase } from '@/src/service/contact.service';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import * as Contacts from 'expo-contacts';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 export interface UseContactsReturn {
   contacts: Contacts.Contact[];
   permissionStatus: string;
   isLoading: boolean;
   isSyncing: boolean;
-  checkAndLoadContacts: () => Promise<void>;
+  checkAndLoadContacts: (shouldAutoSync?: boolean) => Promise<void>;
   syncContacts: () => Promise<void>;
   handleReload: () => Promise<void>;
 }
@@ -18,6 +18,11 @@ export const useContacts = (): UseContactsReturn => {
   const [permissionStatus, setPermissionStatus] = useState<string>('checking');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  
+  // Add refs to prevent redundant operations
+  const lastLoadTime = useRef<number>(0);
+  const loadingPromise = useRef<Promise<Contacts.Contact[]> | null>(null);
+  const checkingPromise = useRef<Promise<void> | null>(null);
 
   // Extract unique last 10 digits of phone numbers from contact data
   const extractUniqueLast10Digits = useCallback((contacts: Contacts.Contact[]): string[] => {
@@ -43,38 +48,62 @@ export const useContacts = (): UseContactsReturn => {
     return numbers;
   }, []);
 
-  // Load contacts from device
+  // Load contacts from device with caching
   const loadContacts = useCallback(async (): Promise<Contacts.Contact[]> => {
-    setIsLoading(true);
-    
-    try {
-      const { status } = await Contacts.getPermissionsAsync();
-      setPermissionStatus(status);
-
-      if (status !== 'granted') {
-        return [];
-      }
-
-      const { data } = await Contacts.getContactsAsync({
-        fields: [Contacts.Fields.PhoneNumbers, Contacts.Fields.Name],
-      });
-
-      if (!data || data.length === 0) {
-        return [];
-      }
-
-      setContacts(data);
-      return data;
-    } catch (error) {
-      log('loadContacts', 'Error loading contacts:', error as string);
-      return [];
-    } finally {
-      setIsLoading(false);
+    // If we're already loading, return the existing promise
+    if (loadingPromise.current) {
+      return await loadingPromise.current;
     }
-  }, []);
+
+    // Check if we loaded recently (within 30 seconds) and have contacts
+    const now = Date.now();
+    if (contacts.length > 0 && (now - lastLoadTime.current) < 30000) {
+      return contacts;
+    }
+
+    // Create the loading promise
+    loadingPromise.current = (async (): Promise<Contacts.Contact[]> => {
+      setIsLoading(true);
+      
+      try {
+        const { status } = await Contacts.getPermissionsAsync();
+        setPermissionStatus(status);
+
+        if (status !== 'granted') {
+          return [];
+        }
+
+        const { data } = await Contacts.getContactsAsync({
+          fields: [Contacts.Fields.PhoneNumbers, Contacts.Fields.Name],
+        });
+
+        if (!data || data.length === 0) {
+          return [];
+        }
+
+        console.log('✅ Loaded contacts:', data.length);
+        setContacts(data);
+        lastLoadTime.current = now;
+        return data;
+      } catch (error) {
+        logger.error('loadContacts', 'Error loading contacts:', error as string);
+        return [];
+      } finally {
+        setIsLoading(false);
+        loadingPromise.current = null;
+      }
+    })();
+
+    return await loadingPromise.current;
+  }, [contacts]);
 
   // Sync contacts with Supabase
   const syncContacts = useCallback(async (contactsData?: Contacts.Contact[]): Promise<void> => {
+    // Prevent multiple simultaneous syncs
+    if (isSyncing) {
+      return;
+    }
+    
     setIsSyncing(true);
     
     try {
@@ -92,38 +121,55 @@ export const useContacts = (): UseContactsReturn => {
 
       await syncContactsWithSupabase(phoneNumbers);
     } catch (error) {
-      log('syncContacts', 'Error syncing contacts:', error as string);
+      logger.error('syncContacts', 'Error syncing contacts:', error as string);
       throw error;
-    } finally {
+    } finally { 
       setIsSyncing(false);
     }
-  }, [contacts, extractUniqueLast10Digits]);
+  }, [contacts, extractUniqueLast10Digits, isSyncing]);
 
-  // Check permissions and load contacts
-  const checkAndLoadContacts = useCallback(async (): Promise<void> => {
-    try {
-      let { status } = await Contacts.getPermissionsAsync();
-
-      if (status === 'undetermined') {
-        const { status: newStatus } = await Contacts.requestPermissionsAsync();
-        status = newStatus;
-      }
-
-      setPermissionStatus(status);
-
-      if (status === 'granted') {
-        const loadedContacts = await loadContacts();
-        if (loadedContacts.length > 0) {
-          await syncContacts(loadedContacts);
-        }
-      }
-    } catch (error) {
-      setPermissionStatus('error');
+  // Check permissions and load contacts (with optional auto-sync) - with deduplication
+  const checkAndLoadContacts = useCallback(async (shouldAutoSync: boolean = false): Promise<void> => {
+    // If we're already checking, return the existing promise
+    if (checkingPromise.current) {
+      return await checkingPromise.current;
     }
+
+    // Create the checking promise
+    checkingPromise.current = (async (): Promise<void> => {
+      try {
+        let { status } = await Contacts.getPermissionsAsync();
+
+        if (status === 'undetermined') {
+          const { status: newStatus } = await Contacts.requestPermissionsAsync();
+          status = newStatus;
+        }
+
+        setPermissionStatus(status);
+
+        if (status === 'granted') {
+          const loadedContacts = await loadContacts();
+          
+          // Only auto-sync if explicitly requested and we have contacts
+          if (shouldAutoSync && loadedContacts.length > 0) {
+            await syncContacts(loadedContacts);
+          }
+        }
+      } catch (error) {
+        setPermissionStatus('error');
+      } finally {
+        checkingPromise.current = null;
+      }
+    })();
+
+    return await checkingPromise.current;
   }, [loadContacts, syncContacts]);
 
   // Handle reload after permission changes
   const handleReload = useCallback(async (): Promise<void> => {
+    // Clear cache to force fresh load
+    lastLoadTime.current = 0;
+    
     const { status } = await Contacts.getPermissionsAsync();
     setPermissionStatus(status);
 
@@ -132,7 +178,6 @@ export const useContacts = (): UseContactsReturn => {
       if (loadedContacts.length > 0) {
         await syncContacts(loadedContacts);
       }
-    } else {
     }
   }, [loadContacts, syncContacts]);
 

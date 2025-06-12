@@ -1,6 +1,6 @@
 import NextButton from '@/src/components/common/NextButton';
 import { useAuth } from '@/src/context/AuthContext';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { updateUserProfile } from '@/src/service/user.service';
 import { useUserOnboardingStore } from '@/src/store/userOnboardingStore';
 import { useRouter } from 'expo-router';
@@ -65,14 +65,14 @@ const Traits = () => {
         const response = await updateUserProfile(userData);
 
         if (!response.success) {
-          log('updateUserProfile', 'Failed to update profile:', response.error);
+          logger.error('updateUserProfile', 'Failed to update profile:', response.error);
           return;
         }
       } 
 
       router.push('/share');
     } catch (error) {
-      log('handleNext', 'Error in handleNext:', error instanceof Error ? error.message : error as string);
+      logger.error('handleNext', 'Error in handleNext:', error instanceof Error ? error.message : error as string);
     }
   };
 

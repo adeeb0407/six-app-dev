@@ -9,9 +9,6 @@ interface PostStore {
   clearPosts: () => void;
 }
 
-interface AddPostOnTop {
-  (newPost: Post[]): void;
-}
 
 export const usePostStore = create<PostStore>((set) => ({
   posts: [],

@@ -1,5 +1,5 @@
 import { supabase } from '@/src/db/supabase';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { fetchPostRequests } from '@/src/service/request.service';
 import { useConnectionRequestStore } from '@/src/store/connectionRequest';
 import { useUserStore } from '@/src/store/userStore';
@@ -28,10 +28,10 @@ const ConnectionRequestNotification = () => {
                     schema: 'public',
                     table: 'post_reactions',
                     filter: `post_owner_id=eq.${user.id}`,
-                },
+                },  
                 (payload) => {
                     loadRequests();
-                    console.log('aaya hai', payload);
+                    logger.info('aaya hai', 'payload', payload);
                 }
             )
             .subscribe();
@@ -53,7 +53,7 @@ const ConnectionRequestNotification = () => {
                 setRequests(response.data);
             }
         } catch (error) {
-            log('loadRequests', 'Error loading requests:', error as string);
+            logger.error('loadRequests', 'Error loading requests:', error as string);
         } finally {
             setIsLoading(false);
         }

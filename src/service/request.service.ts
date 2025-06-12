@@ -1,6 +1,6 @@
 import axios from "axios";
 import { supabase } from "../db/supabase";
-import { log } from "./logger.service";
+import { logger } from "./logger.service";
 
 interface RequestUser {
   keyword_summary: string[]
@@ -28,17 +28,17 @@ interface RequestResponse {
 }
 
 export const fetchPostRequests = async (userId: string, userName: string): Promise<any> => {
-  console.log(`https://1045-103-185-242-180.ngrok-free.app/api/users/connection-requests/${userId}/${userName}`);
+  logger.info('fetchPostRequests', `https://197e-2409-4081-beb4-f3c0-1e8-f449-e4bc-83b2.ngrok-free.app/api/users/connection-requests/${userId}/${userName}`);
   try {
-    const { data } = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connection-requests/${userId}/${userName}`)
-    console.log(data)
+    const result = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connection-requests/${userId}/${userName}`)
+    logger.info('fetchPostRequests', 'data', result.data.data)
     return {
-      success: true,
-      data: data,
+      success: result.data.success,
+      data: result.data.data,
     };
 
   } catch (error) {
-    log('fetchPostRequests', 'Error fetching post requests:', error as string);
+    logger.error('fetchPostRequests', 'Error fetching post requests:', error as string);
     return {
       success: false,
       data: [],
@@ -59,7 +59,9 @@ export const reactToPost = async (
   reactor_id: string,
 ): Promise<ReactionResponse> => {
   try {
-    console.log('reactToPost', 'postId:', postId, 'post_owner_id:', post_owner_id, 'reactor_id:', reactor_id);
+    logger.info('reactToPost', 'postId', postId);
+    logger.info('reactToPost', 'post_owner_id', post_owner_id);
+    logger.info('reactToPost', 'reactor_id', reactor_id);
 
     const { error } = await supabase
       .from("post_reactions")
@@ -81,7 +83,7 @@ export const reactToPost = async (
       success: true
     };
   } catch (error) {
-    log('reactToPost', 'Error reacting to post:', error as string);
+    logger.error('reactToPost', 'Error reacting to post:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to react to post'
@@ -105,7 +107,7 @@ export const deleteReaction = async (reactionId: string): Promise<DeleteReaction
 
     return { success: true };
   } catch (error) {
-    log('deleteReaction', 'Error deleting reaction:', error as string);
+    logger.error('deleteReaction', 'Error deleting reaction:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to delete reaction'

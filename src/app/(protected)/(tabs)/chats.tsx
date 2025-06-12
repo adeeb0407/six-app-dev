@@ -5,7 +5,7 @@ import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { UserChat } from '@/src/constants/types/message.types';
 import { supabase } from '@/src/db/supabase';
 import { removeChatAndConnection } from '@/src/service/chat.service';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { fetchUserChats } from '@/src/service/message.services';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import { useUserStore } from '@/src/store/userStore';
@@ -87,10 +87,10 @@ const ChatsListScreen = () => {
       if (response.success) {
         setChats(response.data);
       } else {
-        log('loadChats', 'Failed to load chats:', response.error);
+        logger.error('loadChats', 'Failed to load chats:', response.error);
       }
     } catch (error) {
-      log('loadChats', 'Error loading chats:', error as string);
+      logger.error('loadChats', 'Error loading chats:', error as string);
     } finally {
       setLoading(false);
     }
@@ -100,11 +100,11 @@ const ChatsListScreen = () => {
     try {
       if (!user?.id) return;
       await removeChatAndConnection(user.id, chatUserId, chatId);
-      console.log('Connection removed for chat:', chatId, 'and the user:', chatUserId);
+      logger.info('handleRemoveConnection', 'Connection removed for chat:', chatId);
 
       setChats(prevChats => prevChats.filter(chat => chat.chat_id !== chatId));
     } catch (error) {
-      log('handleRemoveConnection', 'Error removing connection:', error as string);
+      logger.error('handleRemoveConnection', 'Error removing connection:', error as string);
     }
   };
 

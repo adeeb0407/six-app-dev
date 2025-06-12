@@ -3,7 +3,7 @@ import EditProfileModal from '@/src/components/feature/Profile/EditProfileModal'
 import { Theme } from '@/src/constants/color';
 import { useAuth } from '@/src/context/AuthContext';
 import { useContacts } from '@/src/hooks/useContact';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { updateProfilePicture, updateUserProfile } from '@/src/service/profile.service';
 import { useUserStore } from '@/src/store/userStore';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -41,14 +41,13 @@ const Profile = () => {
         if (!user?.id) {
             return;
         }
-
         setIsLoading(true);
         try {
             const result = await updateProfilePicture(user.id, base64Image);
 
             if (result.success && result.url) {
                 if (userProfile) {
-                    console.log(';result.url', result.url);
+                    logger.info('handleImageUpload', 'result.url', result.url);
                     setUser({ ...userProfile, profile_photo: result.url });
                 }
                 Burnt.toast({
@@ -62,7 +61,7 @@ const Profile = () => {
                 });
             }
         } catch (error) {
-            log('handleImageUpload', 'Image upload error:', error as string);
+            logger.error('handleImageUpload', 'Image upload error:', error as string);
         } finally {
             setIsLoading(false);
         }
@@ -110,7 +109,7 @@ const Profile = () => {
                 });
             }
         } catch (error) {
-            log('handleEditProfile', 'Error updating profile:', error instanceof Error ? error.message : error as string);
+            logger.error('handleEditProfile', 'Error updating profile:', error instanceof Error ? error.message : error as string);
             Burnt.toast({
                 title: "Failed to update profile",
                 preset: "error",

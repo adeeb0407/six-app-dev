@@ -4,9 +4,9 @@ import { ApiResponse } from '../constants/types/api.types';
 import { AppConfigExtra } from '../constants/types/env.types';
 import { PaginatedPostsResponse, PostInput } from '../constants/types/post.types.';
 import { supabase } from '../db/supabase';
-import { log } from './logger.service';
+import { logger } from './logger.service';
 
-const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://58af-103-185-242-167.ngrok-free.app/api'
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://197e-2409-4081-beb4-f3c0-1e8-f449-e4bc-83b2.ngrok-free.app/api'
 
 export const fetchPostsByDegree = async (
   userId: string,
@@ -15,7 +15,6 @@ export const fetchPostsByDegree = async (
   limit: number = 20
 
 ): Promise<ApiResponse<PaginatedPostsResponse> | null> => {
-    console.log(`${BACKEND_URL}/users/posts/${userId}`)
 
   try {
     const response = await axios.get(`${BACKEND_URL}/users/posts/${userId}`, {
@@ -24,21 +23,15 @@ export const fetchPostsByDegree = async (
         page,
         limit
       }
-    })  
+    })
 
-    console.log(response.data)
-
-    if (response.data) {
-      const paginatedData: PaginatedPostsResponse = response.data;
-      return {
-        success: true,
-        data: paginatedData
-      };
+    if (response.data.success) {
+      return response.data
     }
     return null;
 
   } catch (error) {
-    log('fetchPostsByDegree', 'Error fetching posts:', error as string);
+    logger.error('fetchPostsByDegree', 'Error fetching posts:', error as string);
     return {
       success: false,
       error: (error as Error).message || 'Failed to fetch posts'
@@ -61,10 +54,16 @@ export const createPost = async (input: PostInput) => {
       .single();
     if (error) throw error;
 
-    return data;
+    return {
+      success: true,
+      data: data
+    }
   } catch (err) {
-    log('createPost', 'Error creating post:', err as string);
-    return null;
+    await logger.error('createPost', 'Error creating post:', err as string);
+    return {
+      success: false,
+      error: (err as Error).message || 'Failed to create post'
+    };
   }
 };
 

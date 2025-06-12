@@ -4,7 +4,7 @@ import MessageList from '@/src/components/feature/Chat/MessageList';
 import { Contact, Message } from '@/src/constants/types/chat.types';
 import { useAuth } from '@/src/context/AuthContext';
 import { supabase } from '@/src/db/supabase';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { fetchChatMessages, sendMessage } from '@/src/service/message.services';
 import { getConnectionDetails } from '@/src/service/neo4j.service';
 import { useLocalSearchParams } from 'expo-router';
@@ -70,7 +70,7 @@ const ChatScreen: React.FC = () => {
         (payload) => {
           const newMessage = payload.new as ChatMessage;
 
-          console.log('new message received:', newMessage);
+          logger.info('new message received', 'newMessage', newMessage);
 
           if (newMessage.sender_id !== user?.id) {
             // Only handling messages from others, not our own
@@ -124,10 +124,10 @@ const ChatScreen: React.FC = () => {
 
         setMessages(mappedMessages);
       } else {
-        log('loadMessages', 'Failed to load messages:', response.error);
+        logger.error('loadMessages', 'Failed to load messages:', response.error);
       }
     } catch (error) {
-      log('loadMessages', 'Error loading messages:', error as string);
+      logger.error('loadMessages', 'Error loading messages:', error as string);
     } finally {
       setLoading(false);
     }
@@ -163,7 +163,7 @@ const ChatScreen: React.FC = () => {
         
         setConnectionDetails(contact);
       } catch (error) {
-        log('loadConnectionDetails', 'Error fetching connection details:', error as string);
+        logger.error('loadConnectionDetails', 'Error fetching connection details:', error as string);
       } finally {
         setLoadingConnectionDetails(false);
       }
@@ -186,7 +186,7 @@ const ChatScreen: React.FC = () => {
         setMessages(prev => [...prev, myMsg]);
       }
     } catch (error) {
-      log('ChatScreen: handleSend', 'Error sending message:', error as string);
+      logger.error('ChatScreen: handleSend', 'Error sending message:', error as string);
     }
   };
 

@@ -1,6 +1,6 @@
 import { ConnectionLevel, Post } from '@/src/constants/types/post.types.';
 import { useAuth } from '@/src/context/AuthContext';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { reactToPost } from '@/src/service/request.service';
 import React, { useState } from 'react';
 import {
@@ -47,7 +47,7 @@ const PostCard = ({ post }: props) => {
     if (user) {
       const response = await reactToPost(post.id, post.user_id,  user.id);
       if (!response.success) {
-        log('handleInterestedClick', 'Failed to react:', response.error);
+        logger.error('handleInterestedClick', 'Failed to react:', response.error);
       }
       setIsReplied(true);
     }

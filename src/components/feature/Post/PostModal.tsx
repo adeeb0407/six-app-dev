@@ -6,7 +6,7 @@ import {
   PostInput,
 } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { createPost } from '@/src/service/post.service';
 import { fetchPostSuggestion } from '@/src/service/six.service';
 import { usePostStore } from '@/src/store/postStore';
@@ -83,11 +83,11 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       }
 
       const data = await createPost(post);
-      if (!data) log('handlePost', 'error creating post');
+      if (!data) logger.error('handlePost', 'error creating post');
 
       if (postTabs === PostTabs.AllPosts) {
         const newPost: Post = {
-          id: data.id,
+          id: data.data?.id,  
           user_id: user.id,
           content: noteText,
           category: activeTab,
@@ -120,10 +120,10 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       setIsLoadingSuggestion(true);
       try {
         const response = await fetchPostSuggestion(user.keyword_summary);
-        setNoteText(response.data.message);
+        setNoteText(response.data);
       } catch (error) {
-        log('handlePostSuggestion', 'error fetching suggestion');
-      } finally {
+        logger.error('handlePostSuggestion', 'error fetching suggestion');
+      } finally { 
         setIsLoadingSuggestion(false);
       }
     }

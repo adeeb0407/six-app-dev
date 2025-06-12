@@ -1,5 +1,5 @@
 import { createChatRequest } from '@/src/service/chat.service';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { deleteReaction } from '@/src/service/request.service';
 import { useConnectionRequestStore } from '@/src/store/connectionRequest';
 import { useUserStore } from '@/src/store/userStore';
@@ -45,7 +45,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ request }) => {
         }
       }
     } catch (error) {
-      log('handleAcceptRequest', 'Error accepting request:', error as string);
+      logger.error('handleAcceptRequest', 'Error accepting request:', error as string);
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ request }) => {
         router.navigate('/(protected)/(tabs)/chats');
       }
     } catch (error) {
-      log('handleDeclineRequest', 'Error declining request:', error as string);
+      logger.error('handleDeclineRequest', 'Error declining request:', error as string);
     } finally {
       setLoading(false);
     }

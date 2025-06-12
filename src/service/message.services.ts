@@ -1,6 +1,6 @@
 import { ChatResponse, UserChat } from "../constants/types/message.types";
 import { supabase } from "../db/supabase";
-import { log } from "./logger.service";
+import { logger } from "./logger.service";
 
 interface MessageResponse {
     success: boolean;
@@ -22,7 +22,7 @@ interface MessagesResponse {
 }
 
 export const sendMessage = async (
-    currentUserId: string,
+    currentUserId: string,      
     chatId: string,
     content: string
 ): Promise<MessageResponse> => {
@@ -43,7 +43,7 @@ export const sendMessage = async (
 
         return { success: true };
     } catch (error) {
-        log('sendMessage', 'Error sending message:', error as string);
+        logger.error('sendMessage', 'Error sending message:', error as string);
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Failed to send message'
@@ -60,7 +60,7 @@ export const fetchUserChats = async (userId: string): Promise<ChatResponse> => {
             throw new Error(`Failed to fetch chats: ${error.message}`);
         }
 
-        console.log('chats data', data)
+        logger.info('fetchUserChats', 'chats data', data)
 
         return {
             success: true,
@@ -68,7 +68,7 @@ export const fetchUserChats = async (userId: string): Promise<ChatResponse> => {
         };
 
     } catch (error) {
-        log('fetchUserChats', 'Error fetching user chats:', error as string);
+        logger.error('fetchUserChats', 'Error fetching user chats:', error as string);
         return {
             success: false,
             data: [],
@@ -88,7 +88,7 @@ export const fetchChatMessages = async (chatId: string): Promise<MessagesRespons
         if (error) {
             throw new Error(`Failed to fetch messages: ${error.message}`);
         }
-        console.log(data)
+        logger.info('fetchChatMessages', 'messages data', data)
         return {
             success: true,
             data: data as Message[],
@@ -96,7 +96,7 @@ export const fetchChatMessages = async (chatId: string): Promise<MessagesRespons
         };
 
     } catch (error) {
-        log('fetchChatMessages', 'Error fetching chat messages:', error as string);
+        logger.error('fetchChatMessages', 'Error fetching chat messages:', error as string);
         return {
             success: false,
             data: [],

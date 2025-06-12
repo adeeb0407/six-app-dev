@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
   Keyboard,
   Linking,
@@ -17,7 +18,7 @@ import RotatingLogo from '../components/common/RotatingLogo';
 import { AuthType } from '../constants/types/auth.types';
 import { useAuth } from '../context/AuthContext';
 import { verifyOTP } from '../service/auth.service';
-import { log } from '../service/logger.service';
+import { logger } from '../service/logger.service';
 import { createUser } from '../service/user.service';
 import { useUserStore } from '../store/userStore';
 
@@ -96,10 +97,10 @@ const PhoneAuthScreen = () => {
         id: response.data.id,
         phone: response.data.phone
       };
-      console.log('userData', userData)
+      logger.info('handleLogin', 'userData', userData)
       setUser({ id: userData.id, phone: userData.phone });
 
-      if (authType === AuthType.SignUp) {
+      if (authType === AuthType.SignUp && response.isNewUser) {
         const user = await createUser(userData);
         if (user.success) router.push('/enterName');
       } else {
@@ -107,7 +108,9 @@ const PhoneAuthScreen = () => {
         router.push('/')
       }
     } else {
-      log('handleLogin', 'Failed to verify OTP:', response.error);
+      logger.error('handleLogin', 'Failed to verify OTP:', response.error);
+      Alert.alert('Failed to verify OTP');
+      router.back();
     }
     setLoading(false);
   };

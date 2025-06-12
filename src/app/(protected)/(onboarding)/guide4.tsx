@@ -1,5 +1,5 @@
 import { useAuth } from '@/src/context/AuthContext';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -17,7 +17,7 @@ const Guide2 = () => {
       });
       router.push('/');
     } else {
-      log('Guide2: handleNext', 'No user data found at end of onboarding');
+      logger.error('Guide2: handleNext', 'No user data found at end of onboarding');
     }
   };
 

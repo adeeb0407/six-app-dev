@@ -1,5 +1,5 @@
 import { supabase } from '../db/supabase';
-import { log } from './logger.service';
+import { logger } from './logger.service';
 
 type CreateUserParams = {
   id: string;
@@ -21,8 +21,8 @@ export const checkUserExists = async (id: string): Promise<boolean> => {
       .single();
 
     if (error) {
-      log(
-        'checkUserExists',
+        logger.info(
+        'checkUserExists',  
         'Error checking user existence:',
         error.message || error.details || JSON.stringify(error)
       );
@@ -31,7 +31,7 @@ export const checkUserExists = async (id: string): Promise<boolean> => {
 
     return !!data;
   } catch (error) {
-    log(
+    logger.error(
       'checkUserExists',
       'Exception checking user existence:',
       (error as Error).message || JSON.stringify(error)
@@ -47,7 +47,7 @@ export const createUser = async ({ id, phone }: CreateUserParams) => {
     const exists = await checkUserExists(id);
     
     if (exists) {
-      log('createUser', 'User already exists:', id);
+      logger.info('createUser', 'User already exists:', id);
       return {
         success: true,
         exists: true,
@@ -63,7 +63,7 @@ export const createUser = async ({ id, phone }: CreateUserParams) => {
       .single();
 
     if (error) {
-      log('createUser', 'Error creating user:', error.message || error.details || JSON.stringify(error));
+      logger.error('createUser', 'Error creating user:', error.message || error.details || JSON.stringify(error));
       return {
         success: false,
         exists: false,
@@ -78,10 +78,10 @@ export const createUser = async ({ id, phone }: CreateUserParams) => {
       data
     };
   } catch (error) {
-    log(
+    logger.error(
       'createUser',
       'Exception creating user:',
-      error instanceof Error ? error.message : JSON.stringify(error)
+      error instanceof Error ? error.message : JSON.stringify(error) 
     );
     return {
       success: false,
@@ -109,7 +109,7 @@ export const updateUserProfile = async ({
       .single();
 
     if (error) {
-      log('updateUserProfile', 'Error updating user profile:', error.message);
+      logger.error('updateUserProfile', 'Error updating user profile:', error.message);
       return {
         success: false,
         error: error.message,
@@ -121,7 +121,7 @@ export const updateUserProfile = async ({
       data,
     };
   } catch (error) {
-    log('updateUserProfile', 'Exception updating user profile:', error as string);
+    logger.error('updateUserProfile', 'Exception updating user profile:', error as string);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update user profile',

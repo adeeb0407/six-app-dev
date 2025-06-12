@@ -1,4 +1,4 @@
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { Octicons } from '@expo/vector-icons';
 import React from 'react';
 import { Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -16,7 +16,7 @@ const SharingCard: React.FC<SharingCardProps> = ({ contactsCount = 0 }) => {
                 title: 'Six App'
             });
         } catch (error) {
-            log('SharingCard: handleShare', 'Error sharing:', error as string);
+            logger.error('SharingCard: handleShare', 'Error sharing:', error as string);
         }
     };
 

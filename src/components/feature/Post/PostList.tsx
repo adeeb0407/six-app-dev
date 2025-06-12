@@ -1,6 +1,6 @@
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
-import { log } from '@/src/service/logger.service';
+import { logger } from '@/src/service/logger.service';
 import { fetchPostsByDegree } from '@/src/service/post.service';
 import { usePostStore } from '@/src/store/postStore';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -81,8 +81,8 @@ export const PostsList: React.FC<PostsListProps> = ({
       } else {
         throw new Error('Failed to load posts');
       }
-    } catch (err) {
-      log('PostsList', 'Error loading posts:', err as string);
+    } catch (err) { 
+      logger.error('PostsList', 'Error loading posts:', err as string);
       setError('Error loading posts');
       setPagination(prev => ({ ...prev, isLoading: false, isLoadingMore: false, hasMore: false }));
     } finally {

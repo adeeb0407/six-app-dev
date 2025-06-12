@@ -1,6 +1,7 @@
 import axios from "axios";
 import { supabase } from "../db/supabase";
-import { log } from "./logger.service";
+import { logger } from "./logger.service";
+import { deleteReaction } from "./request.service";
 
 export async function createChatRequest(userId1: string, userId2: string, postId: string, requestId: string): Promise<{
   success: boolean;
@@ -51,8 +52,7 @@ export async function createChatRequest(userId1: string, userId2: string, postId
       chatId
     });
 
-    // TODO remove this 
-    // deleteReaction(requestId);
+    await deleteReaction(requestId);
 
     return {
       success: true,
@@ -60,7 +60,7 @@ export async function createChatRequest(userId1: string, userId2: string, postId
       data: { chat_id: chatId },
     };
   } catch (error) {
-    log("createChat", 'Error while creating chat', error as string);
+    logger.error("createChat", 'Error while creating chat', error as string);
     return {
       success: false,
       error: error,
@@ -89,7 +89,7 @@ export async function removeChatAndConnection(userId1: string, userId2: string, 
       error: null,
     };
   } catch (error) {
-    log("removeChatAndConnection", "Error while removing chat and connection", error as string);
+    logger.error("removeChatAndConnection", "Error while removing chat and connection", error as string);
     return {
       success: false,
       error,

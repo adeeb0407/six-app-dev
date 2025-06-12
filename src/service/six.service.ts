@@ -1,19 +1,19 @@
 import axios from "axios";
-import { log } from "./logger.service";
+import { logger } from "./logger.service";
 
 export const fetchPostSuggestion = async (keyword_summary: string[]): Promise<any> => {
   try {
     const { data } = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/sixai/suggestion`, {
         keyword_summary
     })
-   
+   console.log(data.data)
     return {
       success: true,
-      data: data,
+      data: data.data,
     };
 
   } catch (error) {
-    log('fetchPostSuggestion', 'Error fetching post suggestion:', error as string);
+    logger.error('fetchPostSuggestion', 'Error fetching post suggestion:', error as string);
     return {
       success: false,
       data: [],

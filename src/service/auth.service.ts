@@ -1,49 +1,16 @@
 import axios from 'axios';
-import Constants from 'expo-constants';
 import { AuthType } from "../constants/types/auth.types";
-import { AppConfigExtra } from "../constants/types/env.types";
 import { supabase } from "../db/supabase";
-import { log } from "./logger.service";
+import { logger } from './logger.service';
 
-const BACKEND_URL = "https://58af-103-185-242-167.ngrok-free.app/api";
+const BACKEND_URL = "https://197e-2409-4081-beb4-f3c0-1e8-f449-e4bc-83b2.ngrok-free.app/api";
 
 interface OTPResponse {
     success: boolean;
     error?: string;
     data?: any;
-    exists?: boolean;  // Add exists flag to interface
+    isNewUser?: boolean;
 }
-
-const { SUPABASE_URL, SUPABASE_ANON_KEY } = Constants.expoConfig?.extra as AppConfigExtra;
-
-export const sendOTP = async (phoneNumber: string): Promise<OTPResponse> => {
-    try {
-        const { data, error } = await supabase.auth.signInWithOtp({
-            phone: phoneNumber,
-            options: {
-
-            }
-        });
-
-        if (error) {
-            log("sendOTP", 'Error while sending otp to the user', error.message);
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-
-        return {
-            success: true,
-            data
-        };
-    } catch (error) {
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Failed to send OTP'
-        };
-    }
-};
 
 export const verifyOTP = async (phoneNumber: string, otp: string, authType: AuthType): Promise<OTPResponse> => {
     try {
@@ -54,18 +21,28 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
         }
         const response = await axios.post(`${BACKEND_URL}/otp/verify`, body)
 
-        const { data } = await supabase.auth.setSession({
-            access_token: response.data.session.access_token,
-            refresh_token: response.data.session.refresh_token
-        })
+        if(response.data.success) {
+            await supabase.auth.setSession({
+                access_token: response.data.session.access_token,
+                refresh_token: response.data.session.refresh_token
+            })
 
-        return {
-            success: true,
-            data: response.data.user,
-            exists: false
-        };
+            console.log('response.data.user', response.data)
+    
+            return {
+                success: true,
+                data: response.data.user,
+                isNewUser: response.data.isNewUser
+            };
+        }
+        else {
+            return {
+                success: false,
+                error: response.data.error
+            };
+        }
     } catch (error) {
-        console.log('errpr', error)
+        logger.error('verifyOTP', 'Error verifying OTP:', error as string);
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Failed to verify OTP'
