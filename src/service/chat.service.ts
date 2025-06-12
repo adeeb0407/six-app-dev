@@ -42,7 +42,6 @@ export async function createChatRequest(userId1: string, userId2: string, postId
         userId2: userId1,
       });
 
-      console.log(`adding connection between ${userId1} and ${userId2} for chat ${chatId}`);
     }
 
     await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/sixai/introduce`, {
@@ -81,8 +80,6 @@ export async function removeChatAndConnection(userId1: string, userId2: string, 
       userId2,
       chatId,
     });
-
-    console.log(`Removing connection between ${userId1} and ${userId2} for chat ${chatId}`);
 
     return {
       success: true,

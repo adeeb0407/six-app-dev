@@ -15,7 +15,7 @@ const Guide2 = () => {
        login({
         id: user.id,
       });
-      router.push('/');
+      router.replace('/');
     } else {
       logger.error('Guide2: handleNext', 'No user data found at end of onboarding');
     }
@@ -29,7 +29,7 @@ const Guide2 = () => {
           onPress={handleNext} >
       <View style={styles.content}>
         <Text style={styles.title}>
-          Tap “Interested”
+          Tap "Interested"
         </Text>
         <View style={styles.degreesContainer}>
           <Text style={styles.degreeItem}>

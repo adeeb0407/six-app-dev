@@ -50,7 +50,7 @@ export const getConnectionDetails = async (userId1: string, userId2: string) => 
     logger.info('getConnectionDetails', 'reponse of connection details:', response.data);
 
     if (response.status === 200) {
-      return response.data;
+      return response.data.data;
     } else {
       logger.error('getConnectionDetails', `Failed to get connection details: ${response.statusText}`);
       return null;

@@ -18,6 +18,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +27,7 @@ const ChatsListScreen = () => {
   const { user } = useUserStore();
   const [chats, setChats] = useState<UserChat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
   const supabaseChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -108,6 +110,11 @@ const ChatsListScreen = () => {
     }
   };
 
+  // Filter chats based on search query
+  const filteredChats = chats.filter(chat => 
+    chat.other_user_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -117,15 +124,25 @@ const ChatsListScreen = () => {
         <HeaderText title="Chats" />
       </View>
 
+
+
       {/* Search Bar */}
       <View style={styles.searchContainer}>
+       <ConnectionRequestNotification />
         <View style={styles.searchBar}>
           <Feather name="search" size={20} color="#999" />
           <TextInput
             style={styles.searchInput}
             placeholder="Search chats"
             placeholderTextColor="#999"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Feather name="x" size={20} color="#000" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -140,19 +157,18 @@ const ChatsListScreen = () => {
       {/* Messages List */}
       <ScrollView style={styles.messagesContainer}>
 
-        <ConnectionRequestNotification />
-
         {loading ? (
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading chats...</Text>
           </View>
-        ) : chats.length === 0 ? (
+        ) : filteredChats.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No chats yet</Text>
-            <Text style={styles.emptySubText}>Start a conversation to connect!</Text>
+            <Text style={styles.emptyText}>
+              {searchQuery ? 'No matching chats found' : 'No chats yet'}
+            </Text>
           </View>
         ) : (
-          chats.map(chat => (
+          filteredChats.map(chat => (
             <ChatMessageCard
               key={chat.chat_id}
               message={{

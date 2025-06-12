@@ -45,7 +45,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   const [connectionLevel, setConnectionLevel] = useState<ConnectionLevel>(defaultConnectionLevel);
   const [connectionVisibility, setConnectionVisibility] = useState<PostConnectionVisibility>(PostConnectionVisibility.All)
   const [noteText, setNoteText] = useState('');
-   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
+  const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
 
       if (postTabs === PostTabs.AllPosts) {
         const newPost: Post = {
-          id: data.data?.id,  
+          id: data.data?.id,
           user_id: user.id,
           content: noteText,
           category: activeTab,
@@ -114,7 +114,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
     }
   };
 
-  
+
   const handlePostSuggestion = async () => {
     if (user?.keyword_summary && !isLoadingSuggestion) {
       setIsLoadingSuggestion(true);
@@ -123,7 +123,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
         setNoteText(response.data);
       } catch (error) {
         logger.error('handlePostSuggestion', 'error fetching suggestion');
-      } finally { 
+      } finally {
         setIsLoadingSuggestion(false);
       }
     }
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
   },
- suggestionButton: {
+  suggestionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F9F9FB',

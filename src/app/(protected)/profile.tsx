@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 import {
     ActivityIndicator,
     Image,
+    Linking,
     ScrollView,
     StyleSheet,
     Text,
@@ -122,7 +123,7 @@ const Profile = () => {
         try {
             // First check permissions and load contacts if needed
             if (permissionStatus !== 'granted' || contacts.length === 0) {
-                await checkAndLoadContacts();
+                await checkAndLoadContacts(true);
             } else {
                 // If we already have contacts, just sync them
                 await syncContacts();
@@ -133,10 +134,26 @@ const Profile = () => {
                 preset: "done",
             });
         } catch (error) {
-            Burnt.toast({
-                title: "Failed to sync contacts",
-                preset: "error",
-            });
+            logger.error('handleSyncContacts', 'Error syncing contacts:', error as string);
+            
+            // If permission is denied, show a more helpful message
+            if (error instanceof Error && error.message.includes('Permission not granted')) {
+                Burnt.toast({
+                    title: "Contacts access denied",
+                    message: "Please enable contacts access in your device settings",
+                    preset: "error",
+                    haptic: "error",
+                });
+                
+                setTimeout(() => {
+                    Linking.openSettings();
+                }, 1000);
+            } else {
+                Burnt.toast({
+                    title: "Failed to sync contacts",
+                    preset: "error",
+                });
+            }
         }
     };
 

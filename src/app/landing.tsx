@@ -1,18 +1,21 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function Landing() {
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>Six</Text>
+       <Image
+        source={require('@/src/assets/images/icon.png')}
+        resizeMode="contain"
+        style={styles.logo}
+      />
       <Text style={styles.title}>unlock your{'\n'}social network</Text>
       <Text style={styles.subtitle}>every connection starts with a mutual</Text>
 
       <TouchableOpacity style={styles.createButton} onPress={() => router.push({
         pathname: '/phoneAuth',
         params: { authType: 'signUp' },
-        // pathname: '/(onboarding)/share'
       })}>
         <Text style={styles.createText}>Create Account</Text>
       </TouchableOpacity>
@@ -36,10 +39,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   logo: {
-    fontSize: 50,
-    color: '#A020F0',
+    width: 150,
+    height: 150,
     marginBottom: 20,
-    fontFamily: 'TimesNewRomanBold'
   },
   title: {
     fontSize: 24,

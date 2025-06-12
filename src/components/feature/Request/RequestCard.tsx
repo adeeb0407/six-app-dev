@@ -73,7 +73,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ request }) => {
           {request.intro}
         </Text>
         <Text style={styles.postContent} numberOfLines={2}>
-          Post: {request.posts.content}
+          Post: {request.posts?.content || 'No content available'}
         </Text>
       </View>
       
@@ -133,7 +133,6 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 4,
     lineHeight: 24,
-    fontStyle: 'italic'
   },
   
   postContent: {

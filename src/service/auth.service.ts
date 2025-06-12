@@ -27,8 +27,6 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
                 refresh_token: response.data.session.refresh_token
             })
 
-            console.log('response.data.user', response.data)
-    
             return {
                 success: true,
                 data: response.data.user,

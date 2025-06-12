@@ -91,7 +91,6 @@ const PhoneAuthScreen = () => {
 
     const formattedPhone = `+${callingCode}${phone}`;
     const response = await verifyOTP(formattedPhone, code, authType);
-
     if (response.success) {
       const userData = {
         id: response.data.id,
@@ -102,7 +101,7 @@ const PhoneAuthScreen = () => {
 
       if (authType === AuthType.SignUp && response.isNewUser) {
         const user = await createUser(userData);
-        if (user.success) router.push('/enterName');
+        if (user.success) router.replace('/enterName');
       } else {
         login(userData);
         router.push('/')
