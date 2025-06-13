@@ -3,7 +3,7 @@ import { AuthType } from "../constants/types/auth.types";
 import { supabase } from "../db/supabase";
 import { logger } from './logger.service';
 
-const BACKEND_URL = "https://197e-2409-4081-beb4-f3c0-1e8-f449-e4bc-83b2.ngrok-free.app/api";
+const BACKEND_URL = "https://1a6f-103-185-242-190.ngrok-free.app/api";
 
 interface OTPResponse {
     success: boolean;
@@ -26,6 +26,8 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
                 access_token: response.data.session.access_token,
                 refresh_token: response.data.session.refresh_token
             })
+
+            console.log(response.data.isNewUser)
 
             return {
                 success: true,

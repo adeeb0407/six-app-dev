@@ -46,6 +46,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   const [connectionVisibility, setConnectionVisibility] = useState<PostConnectionVisibility>(PostConnectionVisibility.All)
   const [noteText, setNoteText] = useState('');
   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
+  const [isPostButtonActive, setIsPostButtonActive] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -56,6 +57,11 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       useNativeDriver: true,
     }).start();
   }, [visible, fadeAnim, isModal]);
+
+
+  useEffect(() => {
+    setIsPostButtonActive(noteText.length > 0);
+  }, [noteText]);
 
   const handleTabPress = (tab: CategoryTabs) => {
     setActiveTab(tab);
@@ -128,8 +134,6 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       }
     }
   }
-
-  const isPostButtonActive = noteText.trim().length > 0;
 
   const renderContent = () => (
     <View style={styles.content}>

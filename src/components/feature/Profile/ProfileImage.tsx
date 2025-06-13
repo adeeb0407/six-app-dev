@@ -13,6 +13,7 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
   size = 40 
 }) => {
   const getInitials = (name: string) => {
+    console.log(name)
     return name
       .split(' ')
       .map(word => word.charAt(0))

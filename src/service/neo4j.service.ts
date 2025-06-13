@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 import { AppConfigExtra } from '../constants/types/env.types';
 import { logger } from './logger.service';
 
-const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://197e-2409-4081-beb4-f3c0-1e8-f449-e4bc-83b2.ngrok-free.app/api'
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://1a6f-103-185-242-190.ngrok-free.app/api'
 
 export async function addConnection(userId1: string, userId2: string) {
   try {

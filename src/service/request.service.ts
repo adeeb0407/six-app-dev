@@ -28,7 +28,7 @@ interface RequestResponse {
 }
 
 export const fetchPostRequests = async (userId: string, userName: string): Promise<any> => {
-  logger.info('fetchPostRequests', `https://197e-2409-4081-beb4-f3c0-1e8-f449-e4bc-83b2.ngrok-free.app/api/users/connection-requests/${userId}/${userName}`);
+  logger.info('fetchPostRequests', `https://1a6f-103-185-242-190.ngrok-free.app/api/users/connection-requests/${userId}/${userName}`);
   try {
     const result = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connection-requests/${userId}/${userName}`)
     logger.info('fetchPostRequests', 'data', result.data.data)

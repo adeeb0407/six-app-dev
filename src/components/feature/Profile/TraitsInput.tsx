@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    StyleSheet,
-    Text,
-    TextInput,
-    View
+  Animated,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
 } from 'react-native';
 
 const MAX_CHARS = 30; // Maximum characters per trait
@@ -18,7 +18,7 @@ interface TraitsInputProps {
 const TraitsInput: React.FC<TraitsInputProps> = ({ 
   initialTraits = ['', '', ''], 
   onTraitsChange,
-  placeholders = ['Uni / Work (NYU\'24 econ) - min 3 chars', 'Interests - min 3 chars', 'Free time - min 3 chars']
+  placeholders = ['Uni / Work (NYU\'24 econ)', 'Interests', 'One more please']
 }) => {
   const [traits, setTraits] = useState(initialTraits);
   const fadeAnims = [

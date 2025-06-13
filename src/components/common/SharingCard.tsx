@@ -39,7 +39,7 @@ const SharingCard: React.FC<SharingCardProps> = ({ contactsCount = 0 }) => {
                     )}
                 </View>
             </View>
-            <TouchableOpacity 
+            <TouchableOpacity
                 style={styles.shareButton}
                 onPress={handleShare}
             >

@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
 const demoDetails = [
   `Uni / Work (NYU’24 econ)`,
   'Interests',
-  'Free time'
+  'One more please'
 ];
 
 export default Traits;
