@@ -1,10 +1,16 @@
-import 'dotenv/config';
+import { ConfigContext, ExpoConfig } from "expo/config";
 
-export default () => ({
-  expo: {
+const EAS_PROJECT_ID = "1b0f9bd1-5ad7-434c-9b1b-b811cc1ddb13";
+const PROJECT_SLUG = "six";
+const OWNER = "sixai";
+
+export default ({ config }: ConfigContext): ExpoConfig => {
+
+  return {
+    ...config,
     name: "Six",
-    slug: "six",
-    version: "1.0.0",
+    slug: PROJECT_SLUG,
+    version: "1.0.1",
     orientation: "portrait",
     icon: "./src/assets/icons/ios-light.png",
     scheme: "six",
@@ -29,7 +35,8 @@ export default () => ({
       package: "com.sixai.six",
       permissions: [
         "android.permission.READ_CONTACTS",
-        "android.permission.WRITE_CONTACTS"
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.INTERNET" 
       ]
     },
     web: {
@@ -96,13 +103,14 @@ export default () => ({
     extra: {
       router: {},
       eas: {
-        projectId: "1b0f9bd1-5ad7-434c-9b1b-b811cc1ddb13"
+        projectId: EAS_PROJECT_ID
       },
+      // Environment variables - these come from EAS environment settings
       APP_ENV: process.env.APP_ENV,
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
       BACKEND_URL: process.env.BACKEND_URL,
     },
-    owner: "sixai"
-  }
-});
+    owner: OWNER
+  };
+};

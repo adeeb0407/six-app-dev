@@ -62,8 +62,16 @@ const PhoneAuthScreen = () => {
     const formattedPhone = `+${callingCode}${phone}`;
 
     const sendiMessage = (message: string) => {
-      const url = `sms:${`sixmessage@a.imsg.co`}${Platform.OS === 'ios' ? '&' : '?'}body=${encodeURIComponent(message)}`;
-      Linking.openURL(url).catch(err => console.error('Error opening iMessage:', err));
+      if (Platform.OS === 'ios') {
+        const recipient = 'sixmessage@a.imsg.co';
+        const body = encodeURIComponent(message);
+        const url = `imessage://${recipient}&body=${body}`;
+        Linking.openURL(url).catch(err => {
+          logger.error('handleSendCode', 'Failed to open iMessage:', err);
+        });
+      } else {
+        logger.error('handleSendCode', 'iMessage deep linking is only supported on iOS.');  
+      }
     };
 
     setIsCodeSent(true);
@@ -96,7 +104,6 @@ const PhoneAuthScreen = () => {
         id: response.data.id,
         phone: response.data.phone
       };
-      logger.info('handleLogin', 'userData', userData)
       setUser({ id: userData.id, phone: userData.phone });
 
       if (authType === AuthType.SignUp && response.isNewUser) {
@@ -108,8 +115,8 @@ const PhoneAuthScreen = () => {
       }
     } else {
       logger.error('handleLogin', 'Failed to verify OTP:', response.error);
-      Alert.alert('Failed to verify OTP');
-      router.back();
+      Alert.alert('Failed to verify OTP', response.error);
+      // router.back();
     }
     setLoading(false);
   };

@@ -48,7 +48,6 @@ const Profile = () => {
 
             if (result.success && result.url) {
                 if (userProfile) {
-                    logger.info('handleImageUpload', 'result.url', result.url);
                     setUser({ ...userProfile, profile_photo: result.url });
                 }
                 Burnt.toast({

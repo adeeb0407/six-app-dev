@@ -6,7 +6,7 @@ import { PaginatedPostsResponse, PostInput } from '../constants/types/post.types
 import { supabase } from '../db/supabase';
 import { logger } from './logger.service';
 
-const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra || 'https://1a6f-103-185-242-190.ngrok-free.app/api'
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra;
 
 export const fetchPostsByDegree = async (
   userId: string,

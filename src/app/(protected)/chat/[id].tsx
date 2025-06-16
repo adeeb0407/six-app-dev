@@ -70,8 +70,6 @@ const ChatScreen: React.FC = () => {
         (payload) => {
           const newMessage = payload.new as ChatMessage;
 
-          logger.info('new message received', 'newMessage', newMessage);
-
           if (newMessage.sender_id !== user?.id) {
             // Only handling messages from others, not our own
             const mappedMessage: Message = {

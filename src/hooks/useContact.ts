@@ -138,26 +138,20 @@ export const useContacts = (): UseContactsReturn => {
     checkingPromise.current = (async (): Promise<void> => {
       try {
         let { status } = await Contacts.getPermissionsAsync();
-        logger.info('checkAndLoadContacts', 'Initial permission status:', status);
 
         // Always request permission if not granted
         if (status !== 'granted') {
-          logger.info('checkAndLoadContacts', 'Requesting permission...');
           const { status: newStatus } = await Contacts.requestPermissionsAsync();
           status = newStatus;
-          logger.info('checkAndLoadContacts', 'New permission status:', status);
         }
 
         setPermissionStatus(status);
 
         if (status === 'granted') {
-          logger.info('checkAndLoadContacts', 'Permission granted, loading contacts...');
           const loadedContacts = await loadContacts();
-          logger.info('checkAndLoadContacts', 'Loaded contacts count:', loadedContacts.length);
           
           // Only auto-sync if explicitly requested and we have contacts
           if (shouldAutoSync && loadedContacts.length > 0) {
-            logger.info('checkAndLoadContacts', 'Auto-syncing contacts...');
             await syncContacts(loadedContacts);
           }
         } else {

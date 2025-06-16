@@ -1,6 +1,10 @@
 import axios from "axios";
+import Constants from "expo-constants";
+import { AppConfigExtra } from "../constants/types/env.types";
 import { supabase } from "../db/supabase";
 import { logger } from "./logger.service";
+
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra;
 
 interface RequestUser {
   keyword_summary: string[]
@@ -21,17 +25,10 @@ export interface ConnectionRequest {
   intro: string
 }
 
-interface RequestResponse {
-  success: boolean;
-  data: ConnectionRequest[];
-  error?: string;
-}
 
 export const fetchPostRequests = async (userId: string, userName: string): Promise<any> => {
-  logger.info('fetchPostRequests', `https://1a6f-103-185-242-190.ngrok-free.app/api/users/connection-requests/${userId}/${userName}`);
   try {
-    const result = await axios.get(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connection-requests/${userId}/${userName}`)
-    logger.info('fetchPostRequests', 'data', result.data.data)
+    const result = await axios.get(`${BACKEND_URL}/users/connection-requests/${userId}/${userName}`)
     return {
       success: result.data.success,
       data: result.data.data,
@@ -59,10 +56,7 @@ export const reactToPost = async (
   reactor_id: string,
 ): Promise<ReactionResponse> => {
   try {
-    logger.info('reactToPost', 'postId', postId);
-    logger.info('reactToPost', 'post_owner_id', post_owner_id);
-    logger.info('reactToPost', 'reactor_id', reactor_id);
-
+    
     const { error } = await supabase
       .from("post_reactions")
       .upsert(

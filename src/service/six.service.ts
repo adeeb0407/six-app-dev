@@ -1,9 +1,13 @@
 import axios from "axios";
+import Constants from 'expo-constants';
+import { AppConfigExtra } from '../constants/types/env.types';
 import { logger } from "./logger.service";
+
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra;
 
 export const fetchPostSuggestion = async (keyword_summary: string[]): Promise<any> => {
   try {
-    const { data } = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/sixai/suggestion`, {
+    const { data } = await axios.post(`${BACKEND_URL}/sixai/suggestion`, {
         keyword_summary
     })
     return {

@@ -1,9 +1,12 @@
 import axios from 'axios';
+import Constants from 'expo-constants';
 import { AuthType } from "../constants/types/auth.types";
+import { AppConfigExtra } from '../constants/types/env.types';
 import { supabase } from "../db/supabase";
 import { logger } from './logger.service';
 
-const BACKEND_URL = "https://1a6f-103-185-242-190.ngrok-free.app/api";
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra;
+
 
 interface OTPResponse {
     success: boolean;
@@ -26,8 +29,6 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
                 access_token: response.data.session.access_token,
                 refresh_token: response.data.session.refresh_token
             })
-
-            console.log(response.data.isNewUser)
 
             return {
                 success: true,

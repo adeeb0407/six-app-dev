@@ -102,7 +102,6 @@ const ChatsListScreen = () => {
     try {
       if (!user?.id) return;
       await removeChatAndConnection(user.id, chatUserId, chatId);
-      logger.info('handleRemoveConnection', 'Connection removed for chat:', chatId);
 
       setChats(prevChats => prevChats.filter(chat => chat.chat_id !== chatId));
     } catch (error) {

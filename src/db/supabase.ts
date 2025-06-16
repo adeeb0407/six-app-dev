@@ -5,7 +5,7 @@ import { AppState } from 'react-native'
 import 'react-native-url-polyfill/auto'
 import { AppConfigExtra } from '../constants/types/env.types'
 
-const { SUPABASE_URL, SUPABASE_ANON_KEY } = Constants.expoConfig?.extra as AppConfigExtra
+const { SUPABASE_URL, SUPABASE_ANON_KEY, APP_ENV, BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
@@ -14,6 +14,13 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     detectSessionInUrl: false,
   },
+})
+
+console.log('Environment Config:', {
+  APP_ENV,
+  SUPABASE_URL: SUPABASE_URL ? 'SET' : 'NOT SET',
+  SUPABASE_ANON_KEY: SUPABASE_ANON_KEY ? 'SET' : 'NOT SET',
+  BACKEND_URL: BACKEND_URL ? 'SET' : 'NOT SET'
 })
 
 // Tells Supabase Auth to continuously refresh the session automatically

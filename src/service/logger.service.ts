@@ -13,8 +13,8 @@ class LogService {
 
   constructor() {
     const extra = Constants.expoConfig?.extra as AppConfigExtra;
-    const LOG_ENV = extra.APP_ENV || 'local';
-    this.isLocal = LOG_ENV === 'local';
+    const LOG_ENV = extra.APP_ENV || 'development';
+    this.isLocal = LOG_ENV === 'development';
   }
 
   private async log(functionName: string, message: string, details?: any) {
@@ -27,14 +27,17 @@ class LogService {
     // Always console log in local/dev
     if (this.isLocal) {
       console.log(`[${functionName}] ${message}`, details || '');
-      return;
     }
 
+    // Always try to log to Supabase in both environments
     try {
       await supabase.from('logs').insert([logEntry]);
     } catch (err) {
-      console.error('Failed to log to Supabase:', err);
-      console.log(`[${functionName}] ${message}`, details || '');
+      // If Supabase logging fails, ensure we at least have console logs
+      if (!this.isLocal) {
+        console.error('Failed to log to Supabase:', err);
+        console.log(`[${functionName}] ${message}`, details || '');
+      }
     }
   }
 

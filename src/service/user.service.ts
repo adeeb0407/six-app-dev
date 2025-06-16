@@ -21,11 +21,6 @@ export const checkUserExists = async (id: string): Promise<boolean> => {
       .single();
 
     if (error) {
-        logger.info(
-        'checkUserExists',  
-        'Error checking user existence:',
-        error.message || error.details || JSON.stringify(error)
-      );
       return false;
     }
 
@@ -47,7 +42,6 @@ export const createUser = async ({ id, phone }: CreateUserParams) => {
     const exists = await checkUserExists(id);
     
     if (exists) {
-      logger.info('createUser', 'User already exists:', id);
       return {
         success: true,
         exists: true,

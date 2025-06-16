@@ -3,8 +3,7 @@ import { logger } from "./logger.service";
 import { addConnection } from "./neo4j.service";
 
 export const syncContactsWithSupabase = async (phoneNumbers: string[]) => {
-  logger.info('syncContactsWithSupabase', 'syncing contacts')
-  try {
+    try {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError || !sessionData?.session?.user?.id) {
@@ -36,16 +35,12 @@ export const syncContactsWithSupabase = async (phoneNumbers: string[]) => {
     for (const user of matchedUsers) {
       const { contact_user_id, name, phone } = user;
 
-      logger.info('Matched contact', `Name: ${name}, Phone: ${phone}, ID: ${contact_user_id}`);
-
       if (contact_user_id && contact_user_id !== currentUserId) {
         try {
           await addConnection(currentUserId, contact_user_id);
-          logger.info('Connection created', `${currentUserId} -> ${contact_user_id}`);
           successCount++;
         } catch (neoError) {
           logger.error('syncContactsWithSupabase', `Failed to add Neo4j connection for ${currentUserId} -> ${contact_user_id}`);
-          // Continue with other connections even if one fails
         }
       }
     }

@@ -60,8 +60,6 @@ export const fetchUserChats = async (userId: string): Promise<ChatResponse> => {
             throw new Error(`Failed to fetch chats: ${error.message}`);
         }
 
-        logger.info('fetchUserChats', 'chats data', data)
-
         return {
             success: true,
             data: data as UserChat[]
@@ -88,7 +86,7 @@ export const fetchChatMessages = async (chatId: string): Promise<MessagesRespons
         if (error) {
             throw new Error(`Failed to fetch messages: ${error.message}`);
         }
-        logger.info('fetchChatMessages', 'messages data', data)
+
         return {
             success: true,
             data: data as Message[],

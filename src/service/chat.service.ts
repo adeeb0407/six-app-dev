@@ -1,7 +1,11 @@
 import axios from "axios";
+import Constants from 'expo-constants';
+import { AppConfigExtra } from '../constants/types/env.types';
 import { supabase } from "../db/supabase";
 import { logger } from "./logger.service";
 import { deleteReaction } from "./request.service";
+
+const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra;
 
 export async function createChatRequest(userId1: string, userId2: string, postId: string, requestId: string): Promise<{
   success: boolean;
@@ -32,19 +36,19 @@ export async function createChatRequest(userId1: string, userId2: string, postId
       if (error) throw error;
 
       // create connection between users
-      await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connect`, {
+      await axios.post(`${BACKEND_URL}/users/connect`, {
         userId1: userId1,
         userId2: userId2,
       });
 
-      await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/connect`, {
+      await axios.post(`${BACKEND_URL}/users/connect`, {
         userId1: userId2,
         userId2: userId1,
       });
 
     }
 
-    await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/sixai/introduce`, {
+    await axios.post(`${BACKEND_URL}/sixai/introduce`, {
       userId1,
       userId2,
       postId,
@@ -75,7 +79,7 @@ export async function removeChatAndConnection(userId1: string, userId2: string, 
 }> {
   try {
 
-    await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/users/remove-connetion`, {
+    await axios.post(`${BACKEND_URL}/users/remove-connetion`, {
       userId1,
       userId2,
       chatId,

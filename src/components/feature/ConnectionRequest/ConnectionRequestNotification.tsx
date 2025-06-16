@@ -31,7 +31,6 @@ const ConnectionRequestNotification = () => {
                 },  
                 (payload) => {
                     loadRequests();
-                    logger.info('aaya hai', 'payload', payload);
                 }
             )
             .subscribe();

@@ -41,13 +41,10 @@ export async function createUserNode(userId: string, name: string, phone: string
 
 export const getConnectionDetails = async (userId1: string, userId2: string) => {
 
-  logger.info('getConnectionDetails', `Getting connection details for ${userId1} and ${userId2}`);
   try {
     const response = await axios.post(`${BACKEND_URL}/users/connection-details`, {
      userId1, userId2
     });
-
-    logger.info('getConnectionDetails', 'reponse of connection details:', response.data);
 
     if (response.status === 200) {
       return response.data.data;
