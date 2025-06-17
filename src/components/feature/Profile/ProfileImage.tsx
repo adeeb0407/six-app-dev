@@ -5,12 +5,14 @@ interface ProfileImageProps {
   imageUrl?: string | null;
   name?: string;
   size?: number;
+  borderRadius?: number;
 }
 
 const ProfileImage: React.FC<ProfileImageProps> = ({ 
   imageUrl, 
   name = '', 
-  size = 40 
+  size = 40,
+  borderRadius = 100
 }) => {
   const getInitials = (name: string) => {
     return name
@@ -24,7 +26,7 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
     return (
       <Image
         source={{ uri: imageUrl }}
-        style={[styles.image, { width: size, height: size, borderRadius: size / 2 }]}
+        style={[styles.image, { width: size, height: size, borderRadius: borderRadius }]}
       />
     );
   }
@@ -33,7 +35,7 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
     <View style={[styles.initialsContainer, { 
       width: size, 
       height: size, 
-      borderRadius: size / 2,
+      borderRadius: borderRadius,
       backgroundColor: '#9191ff'
     }]}>
       <Text style={[styles.initials, { fontSize: size * 0.4 }]}>

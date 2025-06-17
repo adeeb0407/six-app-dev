@@ -15,6 +15,7 @@ interface MessageType {
     timestamp: Date;
     isOwnMessage?: boolean;
     other_user_id?: string;
+    keyword_summary?: string[];
 }
 
 interface ChatMessageCardProps {
@@ -85,6 +86,8 @@ const ChatMessageCard: React.FC<ChatMessageCardProps> = ({ message, onRemoveConn
         }
     };
 
+    console.log(message)
+
     return (
         <>
             <TouchableOpacity
@@ -97,6 +100,7 @@ const ChatMessageCard: React.FC<ChatMessageCardProps> = ({ message, onRemoveConn
                         name: message.name,
                         profile_photo: message.profile_photo,
                         sender_id: message.sender_id,
+                        keyword_summary: message.keyword_summary
                     }
                 })}
                 onLongPress={handleLongPress}

@@ -54,12 +54,11 @@ export const sendMessage = async (
 export const fetchUserChats = async (userId: string): Promise<ChatResponse> => {
     try {
         const { data, error } = await supabase
-            .rpc('get_user_chats', { p_user_id: userId });
+            .rpc('get_latest_chats', { p_user_id: userId });
 
         if (error) {
             throw new Error(`Failed to fetch chats: ${error.message}`);
         }
-
         return {
             success: true,
             data: data as UserChat[]

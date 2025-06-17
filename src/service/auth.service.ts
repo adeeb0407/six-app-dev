@@ -24,7 +24,12 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
         }
         const response = await axios.post(`${BACKEND_URL}/otp/verify`, body)
 
-        if(response.data.success) {
+        console.log('body', body)
+        console.log('response', response.data.success)
+        console.log('response', response.data.isNewUser)
+        console.log('response', response.data.error)
+
+        if (response.data.success) {
             await supabase.auth.setSession({
                 access_token: response.data.session.access_token,
                 refresh_token: response.data.session.refresh_token
@@ -36,12 +41,10 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
                 isNewUser: response.data.isNewUser
             };
         }
-        else {
-            return {
-                success: false,
-                error: response.data.error
-            };
-        }
+        return {
+            success: false,
+            error: response.data.error
+        };
     } catch (error) {
         logger.error('verifyOTP', 'Error verifying OTP:', error as string);
         return {

@@ -18,11 +18,13 @@ const ChatHeader = ({ contact, isLoadingConnectionDetails = false }: ChatHeaderP
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <Feather name="arrow-left" size={24} color="black" />
       </TouchableOpacity>
-      <ProfileImage
-        imageUrl={contact.profile_photo}
-        name={contact.name}
-        size={90}
-      />
+        <TouchableOpacity onPress={() => router.push({ pathname: '/connectionProfile', params: { contact: JSON.stringify(contact) } })}>
+        <ProfileImage
+          imageUrl={contact.profile_photo}
+          name={contact.name}
+          size={90}
+        />
+     </TouchableOpacity>
       <View style={styles.headerTextContainer}>
         <Text style={styles.headerName}>{contact.name}</Text>
         {isLoadingConnectionDetails ? (
@@ -47,8 +49,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#E5E7EB',
   },
   backButton: {
     marginRight: 20,

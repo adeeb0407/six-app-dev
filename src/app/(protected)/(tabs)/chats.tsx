@@ -177,7 +177,8 @@ const ChatsListScreen = () => {
                 profile_photo: chat.other_user_profile_photo || undefined,
                 message: chat.last_message,
                 timestamp: new Date(chat.last_message_at),
-                isOwnMessage: chat.last_message_sender === user?.id
+                isOwnMessage: chat.last_message_sender === user?.id,
+                keyword_summary: chat.other_user_keyword_summary || []
               }}
               onRemoveConnection={handleRemoveConnection}
             />

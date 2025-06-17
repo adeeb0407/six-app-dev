@@ -59,19 +59,13 @@ const PhoneAuthScreen = () => {
     setLoading(true);
     Keyboard.dismiss();
 
-    const formattedPhone = `+${callingCode}${phone}`;
-
     const sendiMessage = (message: string) => {
       if (Platform.OS === 'ios') {
         const recipient = 'sixmessage@a.imsg.co';
         const body = encodeURIComponent(message);
         const url = `imessage://${recipient}&body=${body}`;
-        Linking.openURL(url).catch(err => {
-          logger.error('handleSendCode', 'Failed to open iMessage:', err);
-        });
-      } else {
-        logger.error('handleSendCode', 'iMessage deep linking is only supported on iOS.');  
-      }
+        Linking.openURL(url);
+      } 
     };
 
     setIsCodeSent(true);
@@ -99,6 +93,7 @@ const PhoneAuthScreen = () => {
 
     const formattedPhone = `+${callingCode}${phone}`;
     const response = await verifyOTP(formattedPhone, code, authType);
+    console.log('response im phoneAuth', response)
     if (response.success) {
       const userData = {
         id: response.data.id,
@@ -106,7 +101,7 @@ const PhoneAuthScreen = () => {
       };
       setUser({ id: userData.id, phone: userData.phone });
 
-      if (authType === AuthType.SignUp && response.isNewUser) {
+      if (authType === AuthType.SignUp && response.isNewUser)  {
         const user = await createUser(userData);
         if (user.success) router.replace('/enterName');
       } else {
@@ -127,7 +122,7 @@ const PhoneAuthScreen = () => {
         <RotatingLogo />
       </View>
 
-      <Text style={styles.heading}>Let's Begin</Text>
+      <Text style={styles.heading}>{authType === AuthType.SignUp ? 'Let\'s Begin' : 'Welcome Back'}</Text>
       <Text style={styles.subheading}>
         {isCodeSent
           ? "Enter the code we sent you"

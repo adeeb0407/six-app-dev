@@ -25,12 +25,14 @@ const ChatScreen: React.FC = () => {
     id: chatId,
     name,
     profile_photo,
-    sender_id
+    sender_id,
+    keyword_summary
   } = useLocalSearchParams<{
     id: string;
     name: string;
     profile_photo: string;
     sender_id: string;
+    keyword_summary: string[];
   }>();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -40,11 +42,11 @@ const ChatScreen: React.FC = () => {
     profile_photo: '',
     sender_id: '',
     connectionDegree: '',
-    mutualCount: 0
+    mutualCount: 0,
+    keyword_summary: []
   });
   const [loading, setLoading] = useState(true);
   const [loadingConnectionDetails, setLoadingConnectionDetails] = useState(true);
-  const [activeTab, setActiveTab] = useState<'chat' | 'profile'>('chat');
   const supabaseChannel = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
@@ -143,7 +145,8 @@ const ChatScreen: React.FC = () => {
           profile_photo: profile_photo || '',
           sender_id: sender_id,
           connectionDegree: '',
-          mutualCount: 0
+          mutualCount: 0,
+          keyword_summary: keyword_summary
         };
         setConnectionDetails(initialContact);
 
@@ -156,7 +159,8 @@ const ChatScreen: React.FC = () => {
           profile_photo: profile_photo || '',
           sender_id: sender_id,
           connectionDegree: details?.connectionDegree ? `${details.connectionDegree}° connection` : 'connection',
-          mutualCount: details?.mutualCount || 0
+          mutualCount: details?.mutualCount || 0,
+          keyword_summary: keyword_summary
         };
         
         setConnectionDetails(contact);
@@ -194,9 +198,7 @@ const ChatScreen: React.FC = () => {
         contact={connectionDetails} 
         isLoadingConnectionDetails={loadingConnectionDetails}
       />
-      {/* <ChatTabs activeTab={activeTab} onTabChange={setActiveTab} /> */}
 
-      {activeTab === 'chat' && (
         <View style={styles.chatContainer}>
           {loading ? (
             <View style={styles.loadingContainer}>
@@ -207,15 +209,9 @@ const ChatScreen: React.FC = () => {
               <MessageList messages={messages} />
               <MessageInput onSend={handleSend} />
             </>
-          )}
-        </View>
-      )}
+        )}
+      </View>
 
-      {/* {activeTab === 'profile' && (
-        <View style={styles.profileContainer}>
-          
-        </View>
-      )} */}
     </SafeAreaView>
   );
 };

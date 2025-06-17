@@ -6,6 +6,7 @@ export interface UserChat {
     other_user_id: string;
     other_user_name: string;
     other_user_profile_photo: string | null;
+    other_user_keyword_summary: string[] | null;
 }
 
 export interface ChatResponse {

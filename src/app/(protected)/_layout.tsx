@@ -14,6 +14,7 @@ export default function RootLayout() {
       <Stack.Screen name='profile' />
       <Stack.Screen name="request"/>
       <Stack.Screen name="chat/[id]" options={{ title: 'chat' }} />
+      <Stack.Screen name="connectionProfile" />  
     </Stack>
   )
 }

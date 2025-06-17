@@ -83,6 +83,10 @@
           "ios": {
             "deploymentTarget": "15.1"
           }
+        },{
+          "android": {
+            "useClearTextTraffic": true
+          }
         }
       ],
       [
@@ -102,9 +106,7 @@
       }
     },
     "owner": "sixai",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.1",
     "updates": {
       "url": "https://u.expo.dev/1b0f9bd1-5ad7-434c-9b1b-b811cc1ddb13"
     }

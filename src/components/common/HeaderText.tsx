@@ -1,13 +1,14 @@
 import React from 'react'
-import { StyleSheet, Text } from 'react-native'
+import { StyleProp, StyleSheet, Text, TextStyle } from 'react-native'
 
 type HeaderTextProps = {
     title: string
+    style?: StyleProp<TextStyle>
 }
 
-const HeaderText = ({title}: HeaderTextProps) => {
+const HeaderText = ({title, style}: HeaderTextProps) => {
     return (
-        <Text style={styles.headerTitle}>{title}</Text>
+        <Text style={[styles.headerTitle, style]}>{title}</Text>
     )
 }
 

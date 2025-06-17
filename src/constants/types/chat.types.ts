@@ -11,7 +11,7 @@ export interface Message {
   id: string;
   text: string;
   sender: 'user' | 'contact' | 'sixai';
-  timestamp: Date;
+  timestamp: Date;  
   sender_name?: string;
   profile_photo?: string | null;
 }
@@ -22,5 +22,6 @@ export interface Contact {
   profile_photo: string;
   sender_id: string;
   connectionDegree: string
-  mutualCount: number
+  mutualCount: number,
+  keyword_summary: string[]
 }
