@@ -86,15 +86,6 @@ const RequestMessageCard: React.FC<RequestMessageCardProps> = ({
   );
 };
 
-const RequestsList: React.FC = () => {
- 
-  return (
-    <View style={styles.container}>
-
-    </View>
-  );
-};
-
 const styles = StyleSheet.create({
   requestCard: {
     flexDirection: 'row',

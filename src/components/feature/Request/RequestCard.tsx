@@ -107,7 +107,6 @@ const RequestCard: React.FC<RequestCardProps> = ({ request }) => {
 const styles = StyleSheet.create({
   requestCard: {
     marginVertical: 6,
-    alignSelf: 'flex-start',
     maxWidth: '100%',
     backgroundColor: '#ffffff',
     borderRadius: 16,

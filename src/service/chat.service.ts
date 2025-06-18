@@ -1,9 +1,7 @@
 import axios from "axios";
 import Constants from 'expo-constants';
 import { AppConfigExtra } from '../constants/types/env.types';
-import { supabase } from "../db/supabase";
 import { logger } from "./logger.service";
-import { deleteReaction } from "./request.service";
 
 const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra;
 
@@ -14,53 +12,21 @@ export async function createChatRequest(userId1: string, userId2: string, postId
 }> {
   try {
     const chatId = [userId1, userId2].sort().join('_');
-
-    const { data: existingChat, error: checkError } = await supabase
-      .from('chats')
-      .select('chat_id')
-      .eq('chat_id', chatId)
-      .single();
-
-    if (checkError && checkError.code !== 'PGRST116') {
-      throw checkError;
-    }
-
-    if (!existingChat) {
-      const { data, error } = await supabase.from('chats').insert([
-        {
-          chat_id: chatId,
-          user1: userId1,
-          user2: userId2
-        },
-      ]);
-      if (error) throw error;
-
-      // create connection between users
-      await axios.post(`${BACKEND_URL}/users/connect`, {
-        userId1: userId1,
-        userId2: userId2,
-      });
-
-      await axios.post(`${BACKEND_URL}/users/connect`, {
-        userId1: userId2,
-        userId2: userId1,
-      });
-
-    }
-
-    await axios.post(`${BACKEND_URL}/sixai/introduce`, {
+    // create connection between users
+    const { data } = await axios.post(`${BACKEND_URL}/chat/create-chat-and-intro-message`, {
       userId1,
       userId2,
       postId,
-      chatId
+      chatId,
+      postReactionId: requestId,
     });
 
-    await deleteReaction(requestId);
+    console.log('response', data)
 
     return {
-      success: true,
+      success: data.success,
       error: null,
-      data: { chat_id: chatId },
+      data: data.data,
     };
   } catch (error) {
     logger.error("createChat", 'Error while creating chat', error as string);
