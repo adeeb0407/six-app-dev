@@ -76,6 +76,7 @@ const ChatScreen: React.FC = () => {
         },
         (payload) => {
           const newMessage = payload.new as ChatMessage;
+          console.log(newMessage)
 
           if (newMessage.sender_id !== user?.id) {
             // Only handling messages from others, not our own
@@ -83,6 +84,8 @@ const ChatScreen: React.FC = () => {
               id: newMessage.id,
               text: newMessage.content,
               sender: newMessage.sender_id === '81dde3f4-d5e5-4686-937c-745a81a21e9a' ? 'sixai' : 'contact',
+              sender_name: name,
+              profile_photo: profile_photo,
               timestamp: new Date(newMessage.created_at),
             };
             setMessages(prev => [...prev, mappedMessage]);

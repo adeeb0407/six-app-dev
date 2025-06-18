@@ -71,7 +71,9 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => {
             // Get unread count from Zustand store
             const unreadCount = useChatStore(
-              (state) => state.chats.reduce((sum, chat) => sum + (chat.unread_count || 0), 0)
+              (state) => state.chats.reduce((sum, chat) => {
+                return sum + (chat.unread_count > 0 ? 1 : 0)
+              }, 0)
             );
 
             return (
