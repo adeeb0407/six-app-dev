@@ -76,7 +76,6 @@ const ChatScreen: React.FC = () => {
         },
         (payload) => {
           const newMessage = payload.new as ChatMessage;
-          console.log(newMessage)
 
           if (newMessage.sender_id !== user?.id) {
             // Only handling messages from others, not our own
@@ -208,7 +207,6 @@ const ChatScreen: React.FC = () => {
     const response = await markMessagesAsRead(chatId, user.id);
     if (response.success) {
       logger.info('ChatScreen: markMessagesAsRead', 'Messages marked as read');
-      setChats(chats.map(chat => chat.chat_id === chatId ? { ...chat, unread_count: 0 } : chat));
     } else {
       logger.error('ChatScreen: markMessagesAsRead', 'Error marking messages as read:', response.error);
     }

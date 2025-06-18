@@ -2,8 +2,10 @@ import { logger } from '@/src/service/logger.service';
 import { Session } from '@supabase/supabase-js';
 import { useRouter } from 'expo-router';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 import { supabase } from '../db/supabase';
 import { storage } from '../storage/session.storage';
+
 type User = {
   id: string;
   phone?: string;
@@ -56,18 +58,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Listen for auth changes
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session) {
         await storage.setSession(session);
         await storage.setUserData(session.user);
+      } else {
+        // Clear stored data when session is null
+        await storage.clearAuth();
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Add session refresh on app focus
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active' && session) {
+        supabase.auth.refreshSession().then(({ data, error }) => {
+          if (error) {
+          } else if (data.session) {
+            setSession(data.session);
+            setUser(data.session.user);
+            storage.setSession(data.session);
+            storage.setUserData(data.session.user);
+          }
+        });
+        }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [session]);
 
   const login = async (userData: User) => {
     setUser(userData);

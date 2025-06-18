@@ -129,7 +129,7 @@ const Profile = () => {
             }
             
             Burnt.toast({
-                title: "Contacts synced successfully",
+                title: "Contacts synced",
                 preset: "done",
             });
         } catch (error) {

@@ -113,9 +113,7 @@ export const markMessagesAsRead = async (chatId: string, userId: string): Promis
 
     if (error) {
       logger.error("markMessagesAsRead", "❌ Failed to mark messages as read:", error.message);
-    } else {
-      logger.info("markMessagesAsRead", "✅ Messages marked as read via SQL function.");
-    }
+    } 
 
     return {
       success: true,

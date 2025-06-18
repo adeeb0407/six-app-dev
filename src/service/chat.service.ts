@@ -21,8 +21,6 @@ export async function createChatRequest(userId1: string, userId2: string, postId
       postReactionId: requestId,
     });
 
-    console.log('response', data)
-
     return {
       success: data.success,
       error: null,

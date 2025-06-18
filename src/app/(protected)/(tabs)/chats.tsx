@@ -8,6 +8,7 @@ import { logger } from '@/src/service/logger.service';
 import { fetchUserChats } from '@/src/service/message.services';
 import { useChatStore } from '@/src/store/chat.store';
 import { usePostModalStore } from '@/src/store/postModalStore';
+import { usePostStore } from '@/src/store/postStore';
 import { useUserStore } from '@/src/store/userStore';
 import Feather from '@expo/vector-icons/Feather';
 import { useLocalSearchParams } from 'expo-router';
@@ -25,6 +26,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const ChatsListScreen = () => {
   const { user } = useUserStore();
   const { chats, setChats, updateChat, clearChats } = useChatStore();
+  const { removeUserPost } = usePostStore();
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
@@ -110,8 +112,8 @@ const ChatsListScreen = () => {
     try {
       if (!user?.id) return;
       await removeChatAndConnection(user.id, chatUserId, chatId);
-
-      setChats(chats.filter(chat => chat.chat_id !== chatId));
+      // setChats(chats.filter(chat => chat.chat_id !== chatId));
+      removeUserPost(chatUserId);
     } catch (error) {
       logger.error('handleRemoveConnection', 'Error removing connection:', error as string);
     }
