@@ -1,18 +1,20 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface ProfileImageProps {
   imageUrl?: string | null;
   name?: string;
   size?: number;
   borderRadius?: number;
+  onPress?: () => void;
 }
-  
-const ProfileImage: React.FC<ProfileImageProps> = ({ 
-  imageUrl, 
-  name = '', 
+
+const ProfileImage: React.FC<ProfileImageProps> = ({
+  imageUrl,
+  name = '',
   size = 40,
-  borderRadius = 100
+  borderRadius = 100,
+  onPress
 }) => {
   const getInitials = (name: string) => {
     return name
@@ -20,21 +22,23 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
       .map(word => word.charAt(0))
       .join('')
       .toUpperCase();
-  };  
+  };
 
   if (imageUrl) {
     return (
-      <Image
-        source={{ uri: imageUrl }}
-        style={[styles.image, { width: size, height: size, borderRadius: borderRadius }]}
-      />
+      <TouchableOpacity onPress={onPress} disabled={!onPress}>
+        <Image
+          source={{ uri: imageUrl }}
+          style={[styles.image, { width: size, height: size, borderRadius: borderRadius }]}
+        />
+      </TouchableOpacity>
     );
   }
 
   return (
-    <View style={[styles.initialsContainer, { 
-      width: size, 
-      height: size, 
+    <View style={[styles.initialsContainer, {
+      width: size,
+      height: size,
       borderRadius: borderRadius,
       backgroundColor: '#9191ff'
     }]}>

@@ -1,13 +1,14 @@
-import { Message } from '@/src/constants/types/chat.types';
+import { Contact, Message } from '@/src/constants/types/chat.types';
 import React, { useEffect, useRef } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import MessageItem from './MessageItem';
 
 type MessageListProps = {
   messages: Message[];
+  contact: Contact;
 };
 
-const MessageList: React.FC<MessageListProps> = ({ messages }) => {
+const MessageList: React.FC<MessageListProps> = ({ messages, contact }) => {
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Scroll to bottom when messages change
@@ -30,6 +31,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
           <MessageItem 
             key={message.id} 
             message={message} 
+            contact={contact}
           />
         ))}
       </ScrollView>

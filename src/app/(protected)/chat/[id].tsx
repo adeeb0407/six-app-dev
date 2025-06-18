@@ -5,8 +5,9 @@ import { Contact, Message } from '@/src/constants/types/chat.types';
 import { useAuth } from '@/src/context/AuthContext';
 import { supabase } from '@/src/db/supabase';
 import { logger } from '@/src/service/logger.service';
-import { fetchChatMessages, sendMessage } from '@/src/service/message.services';
+import { fetchChatMessages, markMessagesAsRead, sendMessage } from '@/src/service/message.services';
 import { getConnectionDetails } from '@/src/service/neo4j.service';
+import { useChatStore } from '@/src/store/chat.store';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -35,6 +36,7 @@ const ChatScreen: React.FC = () => {
     keyword_summary: string[];
   }>();
   const { user } = useAuth();
+  const { chats, setChats } = useChatStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionDetails, setConnectionDetails] = useState<Contact>({
     id: '',
@@ -53,6 +55,9 @@ const ChatScreen: React.FC = () => {
     if (chatId) {
       loadMessages();
       loadConnectionDetails();
+      if (user?.id) {
+        markMessagesAsReadFunc(chatId, user.id);
+      }
     }
   }, [chatId, user?.id]);
 
@@ -81,6 +86,9 @@ const ChatScreen: React.FC = () => {
               timestamp: new Date(newMessage.created_at),
             };
             setMessages(prev => [...prev, mappedMessage]);
+            if (user?.id && newMessage.sender_id !== user.id) {
+              markMessagesAsReadFunc(chatId, user.id);
+            }
           }
         }
       )
@@ -137,7 +145,7 @@ const ChatScreen: React.FC = () => {
     if (user?.id) {
       try {
         setLoadingConnectionDetails(true);
-        
+
         // Set initial contact data with what we have from params
         const initialContact: Contact = {
           id: sender_id,
@@ -151,7 +159,7 @@ const ChatScreen: React.FC = () => {
         setConnectionDetails(initialContact);
 
         const details = await getConnectionDetails(user.id, sender_id);
-        
+
         // Update with complete contact object including connection details
         const contact: Contact = {
           id: sender_id,
@@ -162,7 +170,7 @@ const ChatScreen: React.FC = () => {
           mutualCount: details?.mutualCount || 0,
           keyword_summary: keyword_summary
         };
-        
+
         setConnectionDetails(contact);
       } catch (error) {
         logger.error('loadConnectionDetails', 'Error fetching connection details:', error as string);
@@ -192,23 +200,35 @@ const ChatScreen: React.FC = () => {
     }
   };
 
+  const markMessagesAsReadFunc = async (chatId: string, userId: string) => {
+    if (!user?.id || !chatId) return;
+    const response = await markMessagesAsRead(chatId, user.id);
+    if (response.success) {
+      logger.info('ChatScreen: markMessagesAsRead', 'Messages marked as read');
+      setChats(chats.map(chat => chat.chat_id === chatId ? { ...chat, unread_count: 0 } : chat));
+    } else {
+      logger.error('ChatScreen: markMessagesAsRead', 'Error marking messages as read:', response.error);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <ChatHeader 
-        contact={connectionDetails} 
+      <ChatHeader
+        contact={connectionDetails}
         isLoadingConnectionDetails={loadingConnectionDetails}
       />
 
-        <View style={styles.chatContainer}>
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <Text>Loading messages...</Text>
-            </View>
-          ) : (
-            <>
-              <MessageList messages={messages} />
-              <MessageInput onSend={handleSend} />
-            </>
+      <View style={styles.chatContainer}>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <Text>Loading messages...</Text>
+          </View>
+        ) : (
+          <>
+            <MessageList messages={messages}
+              contact={connectionDetails} />
+            <MessageInput onSend={handleSend} />
+          </>
         )}
       </View>
 

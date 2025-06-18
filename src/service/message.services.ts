@@ -34,6 +34,7 @@ export const sendMessage = async (
                     chat_id: chatId,
                     sender_id: currentUserId,
                     content,
+                    read_by: [currentUserId]
                 },
             ]);
 
@@ -100,6 +101,34 @@ export const fetchChatMessages = async (chatId: string): Promise<MessagesRespons
             error: error instanceof Error ? error.message : 'Failed to fetch messages'
         };
     }
+};
+
+
+export const markMessagesAsRead = async (chatId: string, userId: string): Promise<MessageResponse> => {
+  try {
+    const { data, error } = await supabase.rpc("mark_messages_as_read_text", {
+        chat: chatId,
+        uid: userId,
+    });
+
+    if (error) {
+      logger.error("markMessagesAsRead", "❌ Failed to mark messages as read:", error.message);
+    } else {
+      logger.info("markMessagesAsRead", "✅ Messages marked as read via SQL function.");
+    }
+
+    return {
+      success: true,
+      error: undefined
+    };
+
+  } catch (err) {
+    logger.error("markMessagesAsRead", "🔥 Unexpected error in markMessagesAsRead:", err as string);
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to mark messages as read'
+    };
+  }
 };
 
 

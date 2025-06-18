@@ -2,11 +2,11 @@ import HeaderText from '@/src/components/common/HeaderText';
 import ChatMessageCard from '@/src/components/feature/Chat/ChatMessageCard';
 import ConnectionRequestNotification from '@/src/components/feature/ConnectionRequest/ConnectionRequestNotification';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
-import { UserChat } from '@/src/constants/types/message.types';
 import { supabase } from '@/src/db/supabase';
 import { removeChatAndConnection } from '@/src/service/chat.service';
 import { logger } from '@/src/service/logger.service';
 import { fetchUserChats } from '@/src/service/message.services';
+import { useChatStore } from '@/src/store/chat.store';
 import { usePostModalStore } from '@/src/store/postModalStore';
 import { useUserStore } from '@/src/store/userStore';
 import Feather from '@expo/vector-icons/Feather';
@@ -22,10 +22,9 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 const ChatsListScreen = () => {
   const { user } = useUserStore();
-  const [chats, setChats] = useState<UserChat[]>([]);
+  const { chats, setChats, updateChat, clearChats } = useChatStore();
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
@@ -38,7 +37,10 @@ const ChatsListScreen = () => {
   }, [showPostModal]);
 
   useEffect(() => {
-    loadChats();
+    if (user?.id) {
+      setLoading(true);
+      loadChats();
+    }
   }, [user]);
 
   useEffect(() => {
@@ -68,10 +70,17 @@ const ChatsListScreen = () => {
           }
         }
       )
-      .subscribe((status) => {
-      });
+      .on(
+        'broadcast',
+        { event: 'chat-update' },
+        (payload) => {
+          if (payload.payload.type === 'read') {
+            loadChats();
+          }
+        }
+      )
+      .subscribe();
 
-    // Cleanup subscription
     return () => {
       if (supabaseChannel.current) {
         supabase.removeChannel(supabaseChannel.current);
@@ -83,7 +92,6 @@ const ChatsListScreen = () => {
     if (!user?.id) return;
 
     try {
-      setLoading(true);
       const response = await fetchUserChats(user.id);
 
       if (response.success) {
@@ -103,14 +111,14 @@ const ChatsListScreen = () => {
       if (!user?.id) return;
       await removeChatAndConnection(user.id, chatUserId, chatId);
 
-      setChats(prevChats => prevChats.filter(chat => chat.chat_id !== chatId));
+      setChats(chats.filter(chat => chat.chat_id !== chatId));
     } catch (error) {
       logger.error('handleRemoveConnection', 'Error removing connection:', error as string);
     }
   };
 
   // Filter chats based on search query
-  const filteredChats = chats.filter(chat => 
+  const filteredChats = chats.filter(chat =>
     chat.other_user_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -123,11 +131,9 @@ const ChatsListScreen = () => {
         <HeaderText title="Chats" />
       </View>
 
-
-
       {/* Search Bar */}
       <View style={styles.searchContainer}>
-       <ConnectionRequestNotification />
+        <ConnectionRequestNotification />
         <View style={styles.searchBar}>
           <Feather name="search" size={20} color="#999" />
           <TextInput
@@ -155,7 +161,6 @@ const ChatsListScreen = () => {
 
       {/* Messages List */}
       <ScrollView style={styles.messagesContainer}>
-
         {loading ? (
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading chats...</Text>
@@ -178,7 +183,8 @@ const ChatsListScreen = () => {
                 message: chat.last_message,
                 timestamp: new Date(chat.last_message_at),
                 isOwnMessage: chat.last_message_sender === user?.id,
-                keyword_summary: chat.other_user_keyword_summary || []
+                keyword_summary: chat.other_user_keyword_summary || [],
+                unread_count: chat.unread_count
               }}
               onRemoveConnection={handleRemoveConnection}
             />

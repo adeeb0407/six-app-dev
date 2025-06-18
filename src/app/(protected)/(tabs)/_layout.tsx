@@ -3,7 +3,8 @@ import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { useChatStore } from '../../../store/chat.store';
 
 export default function TabLayout() {
   const [currentTab, setCurrentTab] = useState('index');
@@ -67,9 +68,38 @@ export default function TabLayout() {
         name="chats"
         options={{
           title: 'Chats',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="chatbox-outline" size={32} color={color} /> 
-          ),
+          tabBarIcon: ({ color }) => {
+            // Get unread count from Zustand store
+            const unreadCount = useChatStore(
+              (state) => state.chats.reduce((sum, chat) => sum + (chat.unread_count || 0), 0)
+            );
+
+            return (
+              <View style={{ width: 32, height: 32, justifyContent: 'center', alignItems: 'center' }}>
+                <Ionicons name="chatbox-outline" size={32} color={color} />
+                {unreadCount > 0 && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: -2,
+                      right: -2,
+                      backgroundColor: '#9191ff',
+                      borderRadius: 8,
+                      minWidth: 16,
+                      height: 16,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingHorizontal: 3,
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          },
         }}
       />
     </Tabs>

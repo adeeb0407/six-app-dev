@@ -4,8 +4,6 @@ import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import ConnectionModal from '../../common/ConnectionModal';
 import ProfileImage from '../Profile/ProfileImage';
 
-const { width, height } = Dimensions.get('window');
-
 interface MessageType {
     id: string;
     sender_id: string;
@@ -16,6 +14,7 @@ interface MessageType {
     isOwnMessage?: boolean;
     other_user_id?: string;
     keyword_summary?: string[];
+    unread_count?: number;
 }
 
 interface ChatMessageCardProps {
@@ -41,7 +40,7 @@ const getTimeAgo = (date: Date): string => {
     return date.toLocaleDateString();
 };
 
-const ChatMessageCard: React.FC<ChatMessageCardProps> = ({ message, onRemoveConnection }) => {
+const ChatMessageCard = ({ message, onRemoveConnection }: ChatMessageCardProps) => {
     const router = useRouter();
     const [modalVisible, setModalVisible] = useState(false);
     const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
@@ -50,30 +49,30 @@ const ChatMessageCard: React.FC<ChatMessageCardProps> = ({ message, onRemoveConn
     const handleLongPress = () => {
         if (cardRef.current) {
             cardRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
-                const modalWidth = 200; 
-                const modalHeight = 60; 
+                const modalWidth = 200;
+                const modalHeight = 60;
                 const screenWidth = Dimensions.get('window').width;
                 const screenHeight = Dimensions.get('window').height;
-                
+
                 let modalX = x + width - modalWidth - 10;
                 if (modalX < 20) {
                     modalX = x + 20;
                 }
-                
+
                 if (modalX + modalWidth > screenWidth - 20) {
                     modalX = screenWidth - modalWidth - 20;
                 }
-                
+
                 let modalY = y + (height / 2) + 10;
-                
+
                 if (modalY + modalHeight > screenHeight - 100) {
                     modalY = y - modalHeight - 10;
                 }
-                
+
                 if (modalY < 50) {
-                    modalY = y + height + 5; 
+                    modalY = y + height + 5;
                 }
-                
+
                 setModalPosition({ x: modalX, y: modalY });
                 setModalVisible(true);
             });
@@ -86,10 +85,17 @@ const ChatMessageCard: React.FC<ChatMessageCardProps> = ({ message, onRemoveConn
         }
     };
 
-    console.log(message)
+
+    const renderMessageContent = () => {
+        return (
+            <Text style={styles.messageText} numberOfLines={1}>
+                {message.message}
+            </Text>
+        );
+    };
 
     return (
-        <>
+        <View>
             <TouchableOpacity
                 ref={cardRef}
                 style={styles.messageCard}
@@ -118,12 +124,16 @@ const ChatMessageCard: React.FC<ChatMessageCardProps> = ({ message, onRemoveConn
                             {getTimeAgo(message.timestamp)}
                         </Text>
                     </View>
-                    <Text style={styles.messageText} numberOfLines={1}>
-                        {message.isOwnMessage ? 'You: ' : ''}{message.message}
-                    </Text>
+                    <View style={styles.messageContainer}>
+                        {renderMessageContent()}
+                        <View style={[styles.unreadCountContainer, {
+                            backgroundColor: message.unread_count && message.unread_count > 0 ? '#9191ff' : '#fff'
+                        }]}>
+                            <Text style={styles.unreadCountText}>{message.unread_count && message.unread_count > 99 ? '99+' : message.unread_count}</Text>
+                        </View>
+                    </View>
                 </View>
             </TouchableOpacity>
-
             <ConnectionModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
@@ -131,7 +141,7 @@ const ChatMessageCard: React.FC<ChatMessageCardProps> = ({ message, onRemoveConn
                 position={modalPosition}
                 userName={message.name}
             />
-        </>
+        </View>
     );
 };
 
@@ -140,7 +150,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 12,
-        paddingHorizontal: 16, // Added horizontal padding for better touch area
+        paddingHorizontal: 16,
     },
     avatar: {
         width: 60,
@@ -156,10 +166,17 @@ const styles = StyleSheet.create({
         flex: 1,
         marginLeft: 15,
     },
+    messageContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
     messageText: {
         fontSize: 14,
         color: '#666',
         marginTop: 3,
+        width: '80%',
     },
     nameContainer: {
         flexDirection: 'row',
@@ -171,6 +188,17 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#999',
         marginLeft: 'auto',
+    },
+    unreadCountContainer: {
+        backgroundColor: '#9191ff',
+        borderRadius: 10,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+
+    },
+    unreadCountText: {
+        color: '#fff',
+        fontSize: 12,
     },
 });
 

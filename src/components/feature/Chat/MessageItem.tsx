@@ -1,15 +1,17 @@
-import { Message } from '@/src/constants/types/chat.types';
+import { Contact, Message } from '@/src/constants/types/chat.types';
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ProfileImage from '../Profile/ProfileImage';
 
 type MessageItemProps = {
   message: Message;
+  contact: Contact;
 };
 
-const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ message, contact }) => {
   const formatMessageText = (text: string) => {
     const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.[^\s]+)/g;
 
@@ -53,6 +55,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
               imageUrl={message.profile_photo}
               name={message.sender_name}
               size={40}
+              onPress={() => router.push({ pathname: '/connectionProfile', params: { contact: JSON.stringify(contact) } })}
             />
             <View style={styles.receivedMessage}>
               <Text style={styles.messageText}>{message.text}</Text>
