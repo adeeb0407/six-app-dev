@@ -88,7 +88,7 @@ const ChatMessageCard = ({ message, onRemoveConnection }: ChatMessageCardProps) 
 
     const renderMessageContent = () => {
         return (
-            <Text style={styles.messageText} numberOfLines={1}>
+            <Text style={[styles.messageText, message.unread_count && message.unread_count > 0 ? styles.unreadMsgText : {}]} numberOfLines={1}>
                 {message.message}
             </Text>
         );
@@ -200,6 +200,10 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 12,
     },
+    unreadMsgText: {
+        color: '#000',
+        fontWeight: '500',
+    }
 });
 
 export default ChatMessageCard;

@@ -16,12 +16,12 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   },
 })
 
-console.log('Environment Config:', {
-  APP_ENV,
-  SUPABASE_URL: SUPABASE_URL ? 'SET' : 'NOT SET',
-  SUPABASE_ANON_KEY: SUPABASE_ANON_KEY ? 'SET' : 'NOT SET',
-  BACKEND_URL: BACKEND_URL ? 'SET' : 'NOT SET'
-})
+// console.log('Environment Config:', {
+//   APP_ENV,
+//   SUPABASE_URL: SUPABASE_URL ? 'SET' : 'NOT SET',
+//   SUPABASE_ANON_KEY: SUPABASE_ANON_KEY ? 'SET' : 'NOT SET',
+//   BACKEND_URL: BACKEND_URL ? 'SET' : 'NOT SET'
+// })
 
 // Tells Supabase Auth to continuously refresh the session automatically
 // if the app is in the foreground. When this is added, you will continue

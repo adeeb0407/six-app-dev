@@ -65,7 +65,14 @@ const PostCard = ({ post }: props) => {
     <TouchableWithoutFeedback onPress={handleShowDetailsToggle}>
       <View key={post.id} style={styles.postCard}>
         <View style={styles.postHeader}>
-          <View style={styles.subPostHeader}>
+          {
+            post.connection_degree == ConnectionLevel.First ? (
+              <View style={styles.subPostHeader}>
+                <Text style={styles.postConnectionText}>{post.user_name}</Text>
+              </View>
+            )
+            :
+            <View style={styles.subPostHeader}>
             <Text style={styles.postConnectionText}>{connectionText}</Text>
             {
               post.mutual_count > 0 && (
@@ -78,6 +85,7 @@ const PostCard = ({ post }: props) => {
               )
             }
           </View>
+          }
           <Text style={styles.postTimeText}>{getTimeAgo(post.created_at)}</Text>
         </View>
 
@@ -85,9 +93,9 @@ const PostCard = ({ post }: props) => {
         {/* {post.category !== CategoryTabs.General && */}
 
         <View style={styles.postActions}>
-          <TouchableOpacity style={styles.meetButton}>
+          <View style={styles.meetButton}>
             <Text style={styles.meetButtonText}>{post.category}</Text>
-          </TouchableOpacity>
+          </View>
         </View>
 
         {showDetails && user && post.user_id != user.id && (
@@ -183,6 +191,11 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     marginBottom: 2,
     // fontFamily: 'TimesNewRomanRegular',
+  },
+  userNameText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#333',
   },
   postDescription: {
     color: '#555',

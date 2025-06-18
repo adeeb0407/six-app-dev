@@ -4,6 +4,7 @@ import { PostTabs } from "./postTabs.types";
 export interface Post {
   id: string;
   user_id: string;
+  user_name: string;
   content: string;
   category: CategoryTabs;
   hide_from_chat: boolean;

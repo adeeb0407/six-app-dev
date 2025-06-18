@@ -24,7 +24,6 @@ export const fetchPostsByDegree = async (
         limit
       }
     })
-
     if (response.data.success) {
       return response.data
     }
