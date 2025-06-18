@@ -23,12 +23,7 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
             isSignup: authType === AuthType.SignUp ? true : false
         }
         const response = await axios.post(`${BACKEND_URL}/otp/verify`, body)
-
-        console.log('body', body)
-        console.log('response', response.data.success)
-        console.log('response', response.data.isNewUser)
-        console.log('response', response.data.error)
-
+        
         if (response.data.success) {
             await supabase.auth.setSession({
                 access_token: response.data.session.access_token,

@@ -7,7 +7,7 @@ interface ProfileImageProps {
   size?: number;
   borderRadius?: number;
 }
-
+  
 const ProfileImage: React.FC<ProfileImageProps> = ({ 
   imageUrl, 
   name = '', 
@@ -20,7 +20,7 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
       .map(word => word.charAt(0))
       .join('')
       .toUpperCase();
-  };
+  };  
 
   if (imageUrl) {
     return (

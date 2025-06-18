@@ -221,9 +221,12 @@ const Profile = () => {
 
                 <View style={styles.infoContainer}>
                     {(userProfile?.keyword_summary ?? []).map((keyword, i, arr) => (
-                        <Text key={i} style={styles.infoText}>
-                            {keyword} {i === arr.length - 1 ? '' : '| '}
-                        </Text>
+                        <React.Fragment key={i}>
+                            <Text style={styles.infoText}>{keyword}</Text>
+                            {i !== arr.length - 1 && (
+                                <Text style={styles.infoText}> | </Text>
+                            )}
+                        </React.Fragment>
                     ))}
                 </View>
 
@@ -313,13 +316,17 @@ const styles = StyleSheet.create({
         fontFamily: 'TimesNewRomanBoldItalic',
     },
     infoContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         justifyContent: 'center',
+        alignItems: 'center',
         marginTop: 10,
-        flexDirection: 'row'
     },
     infoText: {
         fontSize: 20,
-        fontWeight: '400'
+        fontWeight: '400',
+        textAlign: 'center',
+        marginHorizontal: 2,
     },
     sharingCardContainer: {
         alignItems: 'center',

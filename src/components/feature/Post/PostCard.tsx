@@ -45,7 +45,7 @@ const PostCard = ({ post }: props) => {
 
   const handleInterestedClick = async () => {
     if (user) {
-      const response = await reactToPost(post.id, post.user_id,  user.id);
+      const response = await reactToPost(post.id, post.user_id, user.id);
       if (!response.success) {
         logger.error('handleInterestedClick', 'Failed to react:', response.error);
       }
@@ -67,8 +67,15 @@ const PostCard = ({ post }: props) => {
         <View style={styles.postHeader}>
           <View style={styles.subPostHeader}>
             <Text style={styles.postConnectionText}>{connectionText}</Text>
-            {post.mutual_count > 0 &&
-            <Text style={styles.postConnectionText}>mutuals {post.mutual_count}</Text>
+            {
+              post.mutual_count > 0 && (
+              <View style={styles.mutualContainer}>
+                <Text style={{ fontSize: 18, color: '#888', marginHorizontal: 3, fontWeight: '500', textAlign: 'center' }}>{'\u2022'}</Text>
+                <Text style={styles.postConnectionText}>
+                  mutuals {post.mutual_count}
+                </Text>
+              </View>
+              )
             }
           </View>
           <Text style={styles.postTimeText}>{getTimeAgo(post.created_at)}</Text>
@@ -145,9 +152,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  postConnectionText: {
+  mutualContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  postConnectionText: { 
     color: '#888',
     fontSize: 12,
+    textAlign: 'center',
   },
   postTimeText: {
     color: '#888',

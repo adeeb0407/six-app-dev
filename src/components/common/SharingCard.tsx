@@ -11,9 +11,7 @@ const SharingCard: React.FC<SharingCardProps> = ({ contactsCount = 0 }) => {
     const handleShare = async () => {
         try {
             await Share.share({
-                message: 'Join me on Six!',
-                url: 'https://sixsocialapp.com',
-                title: 'Six App'
+                message: 'Join me on Six! https://sixsocialapp.com'
             });
         } catch (error) {
             logger.error('SharingCard: handleShare', 'Error sharing:', error as string);

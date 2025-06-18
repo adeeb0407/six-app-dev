@@ -2,16 +2,16 @@ import { Theme } from '@/src/constants/color';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import TraitsInput from './TraitsInput';
 
@@ -58,7 +58,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       await onSave(name.trim(), traits.map(trait => trait.trim()));
       onClose();
     } catch (error) {
-      console.error('Error saving profile:', error);
     } finally {
       setIsLoading(false);
     }

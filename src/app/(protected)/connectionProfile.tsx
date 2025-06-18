@@ -1,9 +1,8 @@
-import ProfileImage from '@/src/components/feature/Profile/ProfileImage';
 import { Contact } from '@/src/constants/types/chat.types';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ConnectionProfile = () => {
@@ -29,12 +28,22 @@ const ConnectionProfile = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.content}>
-        <ProfileImage
-          imageUrl={connectionDetails.profile_photo}
-          name={connectionDetails.name}
-          size={200}
-          borderRadius={20}
-        />
+       <View style={styles.profileImageContainer}>
+       {
+        connectionDetails.profile_photo ? (
+          <Image
+            source={{ uri: connectionDetails.profile_photo }}
+            style={styles.profileImage}
+          />
+        ) : (
+          <View style={[styles.profileTextContainer]}>
+            <Text style={[styles.initials, { fontSize: 350 * 0.4 }]}>
+              {connectionDetails.name.charAt(0)}
+            </Text>
+          </View>
+        )
+       }
+       </View>
         <Text style={styles.name}>{connectionDetails.name}</Text>
         <Text style={styles.degree}>Degree: {connectionDetails.connectionDegree}</Text>
         <Text style={styles.mutual}>{connectionDetails.mutualCount} mutual connections</Text>
@@ -66,9 +75,8 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 28,
-    fontFamily: 'TimesNewRomanBold',
+    fontFamily: 'TimesNewRomanBoldItalic',
     marginTop: 24,
-    color: '#222',
   },
   degree: {
     fontSize: 16,
@@ -78,15 +86,48 @@ const styles = StyleSheet.create({
   },
   mutual: {   
     fontSize: 15,
-    color: '#888',
+    color: '#666',
     marginBottom: 16,
   },
   keywords: {
-    fontSize: 24,
-    marginTop: 12,
+      fontSize: 20,
+        fontWeight: '400',
     textAlign: 'center',
-    fontFamily: 'TimesNewRomanRegular',
   },
-});
+  profileImageContainer: {
+    width: 350,
+    height: 350,
+    alignSelf: 'center',
+  },
+  profileTextContainer: {
+    width: 350,
+    height: 350,
+    alignSelf: 'center',
+    backgroundColor: '#9191ff',
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileImage: {
+    width: "100%",
+    height: "100%",
+    alignSelf: 'center',
+    borderRadius: 50,
+    backgroundColor: '#f0f0f0',
+  },
+  profileImageText: {
+    fontSize: 60,
+    fontFamily: 'TimesNewRomanBoldItalic',
+    color: '#666',
+  },
+  initialsContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  initials: {
+    color: '#FFFFFF',
+    fontFamily: 'TimesNewRomanBold',
+  },
+}); 
 
 export default ConnectionProfile

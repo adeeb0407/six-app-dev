@@ -83,7 +83,7 @@ const Share = () => {
     return (
       <>
         <View style={styles.syncHeader}>
-          <Text style={styles.subtitle}>Refer six contacts to join</Text>
+          <Text style={styles.subtitle}>Click to Sync</Text>
           <TouchableOpacity
             style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
             onPress={handleSyncContacts}
@@ -158,7 +158,7 @@ const Share = () => {
 
       <NextButton
         onPress={() => {
-          router.push('/guide1');
+          router.replace('/guide1');
         }}
         disabled={permissionStatus !== 'granted' || isLoading || isSyncing}
       />

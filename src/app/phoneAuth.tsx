@@ -1,3 +1,12 @@
+import CustomButton from '@/src/components/common/CustomButton';
+import RotatingLogo from '@/src/components/common/RotatingLogo';
+import { AuthType } from '@/src/constants/types/auth.types';
+import { useAuth } from '@/src/context/AuthContext';
+import { verifyOTP } from '@/src/service/auth.service';
+import { logger } from '@/src/service/logger.service';
+import { createUser } from '@/src/service/user.service';
+import { useUserStore } from '@/src/store/userStore';
+import { useNavigation } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
@@ -13,14 +22,6 @@ import {
   View
 } from 'react-native';
 import CountryPicker, { Country, CountryCode } from 'react-native-country-picker-modal';
-import CustomButton from '../components/common/CustomButton';
-import RotatingLogo from '../components/common/RotatingLogo';
-import { AuthType } from '../constants/types/auth.types';
-import { useAuth } from '../context/AuthContext';
-import { verifyOTP } from '../service/auth.service';
-import { logger } from '../service/logger.service';
-import { createUser } from '../service/user.service';
-import { useUserStore } from '../store/userStore';
 
 const PhoneAuthScreen = () => {
   const router = useRouter();
@@ -37,6 +38,8 @@ const PhoneAuthScreen = () => {
 
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const navigation = useNavigation();
 
   const onSelectCountry = (country: Country) => {
     setCountryCode(country.cca2);
@@ -93,7 +96,6 @@ const PhoneAuthScreen = () => {
 
     const formattedPhone = `+${callingCode}${phone}`;
     const response = await verifyOTP(formattedPhone, code, authType);
-    console.log('response im phoneAuth', response)
     if (response.success) {
       const userData = {
         id: response.data.id,
@@ -103,15 +105,21 @@ const PhoneAuthScreen = () => {
 
       if (authType === AuthType.SignUp && response.isNewUser)  {
         const user = await createUser(userData);
-        if (user.success) router.replace('/enterName');
+        if (user.success) {
+          router.replace('/(protected)/(onboarding)/enterName');
+        }
       } else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: '(protected)' as never   }],
+        });
         login(userData);
-        router.push('/')
       }
     } else {
       logger.error('handleLogin', 'Failed to verify OTP:', response.error);
-      Alert.alert('Failed to verify OTP', response.error);
-      // router.back();
+      Alert.alert('Failed to verify OTP', response.error, [{ text: 'OK', onPress: () => {
+        router.back();
+      } }]);
     }
     setLoading(false);
   };

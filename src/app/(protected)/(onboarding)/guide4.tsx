@@ -1,7 +1,7 @@
 import { useAuth } from '@/src/context/AuthContext';
 import { logger } from '@/src/service/logger.service';
 import { useUserStore } from '@/src/store/userStore';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -9,12 +9,18 @@ const Guide2 = () => {
   const router = useRouter();
   const { login } = useAuth();
   const { user } = useUserStore();
+  const navigation = useNavigation();
 
   const handleNext = async () => {
     if (user) {
        login({
         id: user.id,
       });
+      navigation.reset({
+        index: 0,
+        routes: [{ name: '(protected)' as never   }],
+      });
+      router.dismissAll();
       router.replace('/');
     } else {
       logger.error('Guide2: handleNext', 'No user data found at end of onboarding');

@@ -42,7 +42,7 @@ const EnterName = () => {
     if(user && user.id && user.phone) {
       await createUserNode(user?.id, inputName, user?.phone);
     }
-    router.push('/traits');
+    router.replace('/traits');
   };
 
   return (

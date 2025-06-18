@@ -70,7 +70,7 @@ const Traits = () => {
         }
       } 
 
-      router.push('/share');
+      router.replace('/share');
     } catch (error) {
       logger.error('handleNext', 'Error in handleNext:', error instanceof Error ? error.message : error as string);
     }
