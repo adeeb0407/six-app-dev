@@ -43,12 +43,11 @@ export async function removeChatAndConnection(userId1: string, userId2: string, 
 }> {
   try {
 
-    await axios.post(`${BACKEND_URL}/users/remove-connetion`, {
+    await axios.post(`${BACKEND_URL}/users/remove-connection-and-chat`, {
       userId1,
       userId2,
       chatId,
     });
-
     return {
       success: true,
       error: null,
@@ -58,6 +57,29 @@ export async function removeChatAndConnection(userId1: string, userId2: string, 
     return {
       success: false,
       error,
+    };
+  }
+}
+
+export async function removeConnection(userId1: string, userId2: string): Promise<{
+  success: boolean;
+  error: any;
+}> {
+  try {
+    await axios.post(`${BACKEND_URL}/users/remove-connection`, {
+      userId1,
+      userId2,
+    });
+
+    return {
+      success: true,
+      error: null,
+    };
+  } catch (error) {
+    logger.error("removeChat", "Error while removing chat", error as string);
+    return {
+      success: false,
+      error: error,
     };
   }
 }

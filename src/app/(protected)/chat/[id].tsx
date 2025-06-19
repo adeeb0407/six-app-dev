@@ -56,7 +56,7 @@ const ChatScreen: React.FC = () => {
       loadMessages();
       loadConnectionDetails();
       if (user?.id) {
-        markMessagesAsReadFunc(chatId, user.id);
+        markMessagesAsReadFunc(chatId);
       }
     }
   }, [chatId, user?.id]);
@@ -89,7 +89,7 @@ const ChatScreen: React.FC = () => {
             };
             setMessages(prev => [...prev, mappedMessage]);
             if (user?.id && newMessage.sender_id !== user.id) {
-              markMessagesAsReadFunc(chatId, user.id);
+              markMessagesAsReadFunc(chatId); 
             }
           }
         }
@@ -202,15 +202,20 @@ const ChatScreen: React.FC = () => {
     }
   };
 
-  const markMessagesAsReadFunc = async (chatId: string, userId: string) => {
-    if (!user?.id || !chatId) return;
-    const response = await markMessagesAsRead(chatId, user.id);
-    if (response.success) {
-      logger.info('ChatScreen: markMessagesAsRead', 'Messages marked as read');
-    } else {
-      logger.error('ChatScreen: markMessagesAsRead', 'Error marking messages as read:', response.error);
+  const markMessagesAsReadFunc = async (chatId: string) => {
+    try {
+      if (!user?.id || !chatId) return;
+      const response = await markMessagesAsRead(chatId, user.id);
+      if (response.success) {
+        const updatedChats = chats.map(chat => chat.chat_id === chatId ? { ...chat, unread_count: 0 } : chat);
+        setChats(updatedChats);
+      } else {
+        logger.error('ChatScreen: markMessagesAsRead', 'Error marking messages as read:', response.error);
+      }
+    } catch (error) {
+      logger.error('ChatScreen: markMessagesAsRead', 'Error marking messages as read:', error as string);
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>

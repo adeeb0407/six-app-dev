@@ -3,7 +3,7 @@ import ChatMessageCard from '@/src/components/feature/Chat/ChatMessageCard';
 import ConnectionRequestNotification from '@/src/components/feature/ConnectionRequest/ConnectionRequestNotification';
 import FlexiblePostComponent from '@/src/components/feature/Post/PostModal';
 import { supabase } from '@/src/db/supabase';
-import { removeChatAndConnection } from '@/src/service/chat.service';
+import { removeChatAndConnection, removeConnection } from '@/src/service/chat.service';
 import { logger } from '@/src/service/logger.service';
 import { fetchUserChats } from '@/src/service/message.services';
 import { useChatStore } from '@/src/store/chat.store';
@@ -14,6 +14,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -23,11 +24,13 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 const ChatsListScreen = () => {
   const { user } = useUserStore();
   const { chats, setChats, updateChat, clearChats } = useChatStore();
   const { removeUserPost } = usePostStore();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { showPostModal } = useLocalSearchParams<{ showPostModal?: string }>();
   const { isChatPostModalVisible, setChatPostModalVisible } = usePostModalStore();
@@ -90,6 +93,34 @@ const ChatsListScreen = () => {
     };
   }, [user?.id]);
 
+  // Separate useEffect for handling chat deletion
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const deleteChannel = supabase
+      .channel('chat-deletion')
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'chats',
+        },
+        (payload) => {
+          const deletedChat = payload.old;
+          if (deletedChat && deletedChat.chat_id) {
+            const updatedChats = chats.filter(chat => chat.chat_id !== deletedChat.chat_id);
+            setChats(updatedChats);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(deleteChannel);
+    };
+  }, [user?.id, chats]);
+
   const loadChats = async () => {
     if (!user?.id) return;
 
@@ -108,15 +139,31 @@ const ChatsListScreen = () => {
     }
   };
 
-  const handleRemoveConnection = async (chatId: string, chatUserId: string) => {
-    try {
+  const handleRemoveConnection = async (chatUserId: string) => {
+    try { 
       if (!user?.id) return;
-      await removeChatAndConnection(user.id, chatUserId, chatId);
-      // setChats(chats.filter(chat => chat.chat_id !== chatId));
+      await removeConnection(user.id, chatUserId);
       removeUserPost(chatUserId);
     } catch (error) {
       logger.error('handleRemoveConnection', 'Error removing connection:', error as string);
     }
+  };
+
+  const handleRemoveChatAndConnection = async (chatId: string, chatUserId: string) => {
+    try {
+      if (!user?.id) return;
+      await removeChatAndConnection(user.id, chatUserId, chatId);
+      removeUserPost(chatUserId);
+      setChats(chats.filter(chat => chat.chat_id !== chatId));
+    } catch (error) {
+      logger.error('handleRemoveChat', 'Error removing chat:', error as string);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadChats();
+    setRefreshing(false);
   };
 
   // Filter chats based on search query
@@ -162,7 +209,17 @@ const ChatsListScreen = () => {
       )}
 
       {/* Messages List */}
-      <ScrollView style={styles.messagesContainer}>
+      <ScrollView 
+        style={styles.messagesContainer} 
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#9191ff']}
+            tintColor="#9191ff"
+          />
+        }
+      >
         {loading ? (
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading chats...</Text>
@@ -189,6 +246,7 @@ const ChatsListScreen = () => {
                 unread_count: chat.unread_count
               }}
               onRemoveConnection={handleRemoveConnection}
+              onRemoveChat={handleRemoveChatAndConnection}
             />
           ))
         )}
@@ -329,3 +387,4 @@ const styles = StyleSheet.create({
 });
 
 export default ChatsListScreen;
+

@@ -47,7 +47,6 @@ const ConnectionRequestNotification = () => {
         try {
             setIsLoading(true);
             const response = await fetchPostRequests(user.id, user.name);
-
             if (response.success) {
                 setRequests(response.data);
             }

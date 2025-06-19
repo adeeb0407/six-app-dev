@@ -30,9 +30,6 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
                 refresh_token: response.data.session.refresh_token
             })
 
-            const { data: { session } } = await supabase.auth.getSession();
-            console.log('session', session)
-
             return {
                 success: true,
                 data: response.data.user,

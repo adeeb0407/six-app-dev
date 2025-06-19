@@ -22,7 +22,7 @@ interface MessagesResponse {
 }
 
 export const sendMessage = async (
-    currentUserId: string,      
+    currentUserId: string,
     chatId: string,
     content: string
 ): Promise<MessageResponse> => {
@@ -105,28 +105,27 @@ export const fetchChatMessages = async (chatId: string): Promise<MessagesRespons
 
 
 export const markMessagesAsRead = async (chatId: string, userId: string): Promise<MessageResponse> => {
-  try {
-    const { data, error } = await supabase.rpc("mark_messages_as_read_text", {
-        chat: chatId,
-        uid: userId,
-    });
+    try {
+        const { data, error } = await supabase.rpc("mark_messages_as_read_text", {
+            chat: chatId,
+            uid: userId,
+        });
+        if (error) {
+            logger.error("markMessagesAsRead", "❌ Failed to mark messages as read:", error.message);
+        }
 
-    if (error) {
-      logger.error("markMessagesAsRead", "❌ Failed to mark messages as read:", error.message);
-    } 
+        return {
+            success: true,
+            error: undefined
+        };
 
-    return {
-      success: true,
-      error: undefined
-    };
-
-  } catch (err) {
-    logger.error("markMessagesAsRead", "🔥 Unexpected error in markMessagesAsRead:", err as string);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : 'Failed to mark messages as read'
-    };
-  }
+    } catch (err) {
+        logger.error("markMessagesAsRead", "🔥 Unexpected error in markMessagesAsRead:", err as string);
+        return {
+            success: false,
+            error: err instanceof Error ? err.message : 'Failed to mark messages as read'
+        };
+    }
 };
 
 

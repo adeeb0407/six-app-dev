@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ConnectionModal from '../../common/ConnectionModal';
 import ProfileImage from '../Profile/ProfileImage';
 
@@ -19,7 +19,8 @@ interface MessageType {
 
 interface ChatMessageCardProps {
     message: MessageType;
-    onRemoveConnection?: (chatId: string, chatUserId: string) => void;
+    onRemoveConnection?: (chatUserId: string) => void;
+    onRemoveChat?: (chatId: string, chatUserId: string) => void;    
 }
 
 const getTimeAgo = (date: Date): string => {
@@ -40,48 +41,24 @@ const getTimeAgo = (date: Date): string => {
     return date.toLocaleDateString();
 };
 
-const ChatMessageCard = ({ message, onRemoveConnection }: ChatMessageCardProps) => {
+const   ChatMessageCard = ({ message, onRemoveConnection, onRemoveChat }: ChatMessageCardProps) => {
     const router = useRouter();
     const [modalVisible, setModalVisible] = useState(false);
-    const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
     const cardRef = useRef<any>(null);
 
     const handleLongPress = () => {
-        if (cardRef.current) {
-            cardRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
-                const modalWidth = 200;
-                const modalHeight = 60;
-                const screenWidth = Dimensions.get('window').width;
-                const screenHeight = Dimensions.get('window').height;
-
-                let modalX = x + width - modalWidth - 10;
-                if (modalX < 20) {
-                    modalX = x + 20;
-                }
-
-                if (modalX + modalWidth > screenWidth - 20) {
-                    modalX = screenWidth - modalWidth - 20;
-                }
-
-                let modalY = y + (height / 2) + 10;
-
-                if (modalY + modalHeight > screenHeight - 100) {
-                    modalY = y - modalHeight - 10;
-                }
-
-                if (modalY < 50) {
-                    modalY = y + height + 5;
-                }
-
-                setModalPosition({ x: modalX, y: modalY });
-                setModalVisible(true);
-            });
-        }
+        setModalVisible(true);
     };
 
     const handleRemoveConnection = () => {
         if (onRemoveConnection) {
-            onRemoveConnection(message.id, message.sender_id);
+            onRemoveConnection(message.sender_id);    
+        }
+    };
+
+    const handleRemoveChat = () => {
+        if (onRemoveChat) {
+            onRemoveChat(message.id, message.sender_id);
         }
     };
 
@@ -137,8 +114,8 @@ const ChatMessageCard = ({ message, onRemoveConnection }: ChatMessageCardProps) 
             <ConnectionModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
-                onRemoveConnection={handleRemoveConnection}
-                position={modalPosition}
+                handleRemoveConnection={handleRemoveConnection}
+                handleRemoveChat={handleRemoveChat}
                 userName={message.name}
             />
         </View>
