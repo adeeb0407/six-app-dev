@@ -66,7 +66,7 @@ const PostCard = ({ post }: props) => {
       <View key={post.id} style={styles.postCard}>
         <View style={styles.postHeader}>
           {
-            post.connection_degree == ConnectionLevel.First ? (
+            post.connection_degree == ConnectionLevel.First && !post.has_chat ? (
               <View style={styles.subPostHeader}>
                 <Text style={styles.postConnectionText}>{post.user_name}</Text>
               </View>

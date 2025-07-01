@@ -1,4 +1,3 @@
-import { syncContactsWithSupabase } from '@/src/service/contact.service';
 import { logger } from '@/src/service/logger.service';
 import * as Contacts from 'expo-contacts';
 import { useCallback, useRef, useState } from 'react';
@@ -50,14 +49,18 @@ export const useContacts = (): UseContactsReturn => {
 
   // Load contacts from device with caching
   const loadContacts = useCallback(async (): Promise<Contacts.Contact[]> => {
+    console.log('🔄 loadContacts: Starting to load contacts');
+    
     // If we're already loading, return the existing promise
     if (loadingPromise.current) {
+      console.log('🔄 loadContacts: Already loading, returning existing promise');
       return await loadingPromise.current;
     }
 
     // Check if we loaded recently (within 30 seconds) and have contacts
     const now = Date.now();
     if (contacts.length > 0 && (now - lastLoadTime.current) < 30000) {
+      console.log('🔄 loadContacts: Using cached contacts (loaded recently)');
       return contacts;
     }
 
@@ -68,8 +71,10 @@ export const useContacts = (): UseContactsReturn => {
       try {
         const { status } = await Contacts.getPermissionsAsync();
         setPermissionStatus(status);
+        console.log('🔄 loadContacts: Permission status:', status);
 
         if (status !== 'granted') {
+          console.log('❌ loadContacts: Permission not granted');
           return [];
         }
 
@@ -77,10 +82,14 @@ export const useContacts = (): UseContactsReturn => {
           fields: [Contacts.Fields.PhoneNumbers, Contacts.Fields.Name],
         });
 
+        console.log('data', data);
+
         if (!data || data.length === 0) {
+          console.log('❌ loadContacts: No contacts found');
           return [];
         }
 
+        console.log('✅ loadContacts: Loaded', data.length, 'contacts');
         setContacts(data);
         lastLoadTime.current = now;
         return data;
@@ -98,8 +107,11 @@ export const useContacts = (): UseContactsReturn => {
 
   // Sync contacts with Supabase
   const syncContacts = useCallback(async (contactsData?: Contacts.Contact[]): Promise<void> => {
+    console.log('🔄 syncContacts: Starting sync');
+    
     // Prevent multiple simultaneous syncs
     if (isSyncing) {
+      console.log('🔄 syncContacts: Already syncing, skipping');
       return;
     }
     
@@ -107,18 +119,16 @@ export const useContacts = (): UseContactsReturn => {
     
     try {
       const contactsToSync = contactsData || contacts;
+      console.log('📱 syncContacts: Total contacts to sync:', contactsToSync.length);
       
       if (contactsToSync.length === 0) {
         throw new Error('No contacts available to sync');
       }
 
       const phoneNumbers = extractUniqueLast10Digits(contactsToSync);
-
-      if (phoneNumbers.length === 0) {
-        throw new Error('No valid phone numbers found in contacts');
-      }
-
-      await syncContactsWithSupabase(phoneNumbers);
+      console.log('📞 syncContacts: Unique phone numbers to sync:', phoneNumbers.length);
+      console.log('phoneNumbers', phoneNumbers);
+      console.log('✅ syncContacts: Sync completed successfully');
     } catch (error) {
       logger.error('syncContacts', 'Error syncing contacts:', error as string);
       throw error;
@@ -129,8 +139,11 @@ export const useContacts = (): UseContactsReturn => {
 
   // Check permissions and load contacts (with optional auto-sync) 
   const checkAndLoadContacts = useCallback(async (shouldAutoSync: boolean = false): Promise<void> => {
+    console.log('🔄 checkAndLoadContacts: Starting with shouldAutoSync:', shouldAutoSync);
+    
     // If we're already checking, return the existing promise
     if (checkingPromise.current) {
+      console.log('🔄 checkAndLoadContacts: Already checking, returning existing promise');
       return await checkingPromise.current;
     }
 
@@ -138,20 +151,24 @@ export const useContacts = (): UseContactsReturn => {
     checkingPromise.current = (async (): Promise<void> => {
       try {
         let { status } = await Contacts.getPermissionsAsync();
+        console.log('🔄 checkAndLoadContacts: Initial permission status:', status);
 
         // Always request permission if not granted
         if (status !== 'granted') {
           const { status: newStatus } = await Contacts.requestPermissionsAsync();
           status = newStatus;
+          console.log('🔄 checkAndLoadContacts: New permission status after request:', status);
         }
 
         setPermissionStatus(status);
 
         if (status === 'granted') {
           const loadedContacts = await loadContacts();
+          console.log('✅ checkAndLoadContacts: Loaded', loadedContacts.length, 'contacts');
           
           // Only auto-sync if explicitly requested and we have contacts
           if (shouldAutoSync && loadedContacts.length > 0) {
+            console.log('🔄 checkAndLoadContacts: Auto-syncing contacts');
             await syncContacts(loadedContacts);
           }
         } else {

@@ -119,6 +119,7 @@ const Profile = () => {
     };
 
     const handleSyncContacts = async () => {
+        console.log('permissionStatus', permissionStatus);
         try {
             // First check permissions and load contacts if needed
             if (permissionStatus !== 'granted' || contacts.length === 0) {
@@ -133,6 +134,7 @@ const Profile = () => {
                 preset: "done",
             });
         } catch (error) {
+            console.log('error', error);
             logger.error('handleSyncContacts', 'Error syncing contacts:', error as string);
             
             // If permission is denied, show a more helpful message

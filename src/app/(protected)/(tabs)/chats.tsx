@@ -27,7 +27,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ChatsListScreen = () => {
   const { user } = useUserStore();
-  const { chats, setChats, updateChat, clearChats } = useChatStore();
+  const { chats, setChats } = useChatStore();
   const { removeUserPost } = usePostStore();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

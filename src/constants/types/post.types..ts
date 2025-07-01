@@ -17,6 +17,7 @@ export interface Post {
   user_interested: boolean
   user_accepted: boolean
   mutual_count: number;
+  has_chat: boolean;
 }
 
 export interface PaginatedPostsResponse {
