@@ -103,7 +103,7 @@ const HomeScreen: FC = () => {
         <HeaderText title='Six' />
         <TouchableOpacity onPress={() => router.push('/(protected)/profile')}>
           <ProfileImage
-            imageUrl={userProfile?.profile_photo}
+            imageUrl={userProfile?.profile_photos?.[0]}
             name={userProfile?.name || ''}
             size={40}
           />

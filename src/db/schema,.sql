@@ -4,7 +4,7 @@ CREATE TABLE users (
     phone TEXT,
     name TEXT,
     keyword_summary TEXT[],
-    profile_photo TEXT,
+    profile_photo TEXT[],
     created_at TIMESTAMP
 );
 

@@ -22,7 +22,7 @@ export const fetchUserProfile = async (userId: string): Promise<ProfileResponse>
       .select(`
         id,
         name,
-        profile_photo, 
+        profile_photos, 
         keyword_summary
       `)
       .eq('id', userId)
@@ -48,6 +48,7 @@ export const fetchUserProfile = async (userId: string): Promise<ProfileResponse>
 export const updateProfilePicture = async (
   userId: string,
   base64Image: string,
+  photoIndex: number = 0
 ): Promise<UploadResponse> => {
   try {
     // Remove the data:image/jpeg;base64, prefix if present
@@ -60,20 +61,23 @@ export const updateProfilePicture = async (
       return { success: false, error: 'Invalid image data' };
     }
 
-    // Clean up old profile pictures
+    // Clean up old profile pictures for this specific index
     const { data: filesList } = await supabase
       .storage
       .from('pfp')
       .list(`${userId}`);
 
     if (filesList && filesList.length > 0) {
-      const filesToDelete = filesList.map(file => `${userId}/${file.name}`);
-      await supabase.storage.from('pfp').remove(filesToDelete);
+      // Delete old photo for this specific index
+      const oldPhotoFile = filesList.find(file => file.name.includes(`photo-${photoIndex}`));
+      if (oldPhotoFile) {
+        await supabase.storage.from('pfp').remove([`${userId}/${oldPhotoFile.name}`]);
+      }
     }
 
     // Upload new profile picture
     const timestamp = Date.now();
-    const fileName = `${userId}/profile-pic-${timestamp}`;
+    const fileName = `${userId}/photo-${photoIndex}-${timestamp}`;
 
     const { error: uploadError } = await supabase
       .storage
@@ -94,10 +98,23 @@ export const updateProfilePicture = async (
 
     const cacheBustedUrl = `${publicUrl}?t=${timestamp}`;
 
-    // Update user profile
+    // Get current profile photos array
+    const { data: currentUser } = await supabase
+      .from('users')
+      .select('profile_photos')
+      .eq('id', userId)
+      .single();
+
+    const currentPhotos = currentUser?.profile_photos || [];
+    const updatedPhotos = [...currentPhotos];
+    
+    // Update the specific photo at the given index
+    updatedPhotos[photoIndex] = cacheBustedUrl;
+
+    // Update user profile with the new photos array
     const { error: updateError } = await supabase
       .from('users')
-      .update({ profile_photo: cacheBustedUrl })
+      .update({ profile_photos: updatedPhotos })
       .eq('id', userId);
 
     if (updateError) throw updateError;
