@@ -93,7 +93,7 @@ const PostCard = ({ post }: props) => {
           <Text style={styles.postTimeText}>{getTimeAgo(post.created_at)}</Text>
         </View>
 
-        <Text style={styles.postTitle}>{post.content}</Text>
+        {post.content && <Text style={styles.postTitle}>{post.content}</Text>}
         {/* {post.category !== CategoryTabs.General && */}
 
         <View style={styles.postActions}>

@@ -21,6 +21,7 @@ import {
   Animated,
   Image,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -67,8 +68,8 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
 
 
   useEffect(() => {
-    setIsPostButtonActive(noteText.length > 0);
-  }, [noteText]);
+    setIsPostButtonActive(noteText.length > 0 || selectedImage !== null);
+  }, [noteText, selectedImage]);
 
   const handleTabPress = (tab: CategoryTabs) => {
     setActiveTab(tab);
@@ -215,91 +216,97 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   }
 
   const renderContent = () => (
-    <View style={styles.content}>
-      <View style={styles.header}>
-        <View style={styles.subHeader}>
-          <View style={styles.tagIcon}>
-            <Feather name="tag" size={20} color="#666" />
+    <ScrollView
+      style={styles.scrollableContent}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <View style={styles.subHeader}>
+            <View style={styles.tagIcon}>
+              <Feather name="tag" size={20} color="#666" />
+            </View>
+            <CategoryDropdown
+              activeTab={activeTab}
+              onTabPress={handleTabPress}
+            />
           </View>
-          <CategoryDropdown
-            activeTab={activeTab}
-            onTabPress={handleTabPress}
-          />
+
+          <View style={styles.subHeader}>
+            <ConnectionDropdown
+              activeConnectionLevel={connectionLevel}
+              onConnectionLevelChange={handleConnectionLevelChange}
+            />
+            {onClose && (
+              <TouchableOpacity style={styles.closeButton} onPress={() => onClose(false)}>
+                <Feather name="x" size={22} color="#666" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
-        <View style={styles.subHeader}>
-          <ConnectionDropdown
-            activeConnectionLevel={connectionLevel}
-            onConnectionLevelChange={handleConnectionLevelChange}
-          />
-          {onClose && (
-            <TouchableOpacity style={styles.closeButton} onPress={() => onClose(false)}>
-              <Feather name="x" size={22} color="#666" />
+        <View style={styles.inputContainer}>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Type your note..."
+              placeholderTextColor="#A0A0A0"
+              multiline
+              scrollEnabled={true}
+              value={noteText}
+              onChangeText={setNoteText}
+            />
+          </View>
+        </View>
+
+        {selectedImage && (
+          <View style={{ alignItems: 'center', marginBottom: 12 }}>
+            <Image source={{ uri: selectedImage.uri }} style={{ width: 180, height: 180, borderRadius: 12 }} />
+            <TouchableOpacity onPress={handleRemoveImage} style={{ marginTop: 6 }}>
+              <Text style={{ color: '#9191ff' }}>Remove Image</Text>
             </TouchableOpacity>
-          )}
-        </View>
-      </View>
+          </View>
+        )}
+        <TouchableOpacity style={styles.uploadImageContainer} onPress={handlePickImage} disabled={isUploadingImage}>
+          <Text style={styles.uploadImageText}>{isUploadingImage ? 'Uploading...' : 'Upload Image'}</Text>
+          <Feather name="upload" size={20} color="#666" />
+        </TouchableOpacity>
 
-      <View style={styles.inputContainer}>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Type your note..."
-            placeholderTextColor="#A0A0A0"
-            multiline
-            scrollEnabled={true}
-            value={noteText}
-            onChangeText={setNoteText}
-          />
-        </View>
-      </View>
+        <View style={styles.bottomSection}>
+          <View style={styles.optionsRow}>
+            <TouchableOpacity style={styles.option}
+              onPress={handleToggleConnectionVisibility}
+            >
+              <Text style={styles.optionText}>{connectionVisibility}</Text>
+            </TouchableOpacity>
 
-      {selectedImage && (
-        <View style={{ alignItems: 'center', marginBottom: 12 }}>
-          <Image source={{ uri: selectedImage.uri }} style={{ width: 180, height: 180, borderRadius: 12 }} />
-          <TouchableOpacity onPress={handleRemoveImage} style={{ marginTop: 6 }}>
-            <Text style={{ color: '#9191ff' }}>Remove Image</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      <TouchableOpacity style={styles.uploadImageContainer} onPress={handlePickImage} disabled={isUploadingImage}>
-        <Text style={styles.uploadImageText}>{isUploadingImage ? 'Uploading...' : 'Upload Image'}</Text>
-        <Feather name="upload" size={20} color="#666" />
-      </TouchableOpacity>
-
-      <View style={styles.bottomSection}>
-        <View style={styles.optionsRow}>
-          <TouchableOpacity style={styles.option}
-            onPress={handleToggleConnectionVisibility}
-          >
-            <Text style={styles.optionText}>{connectionVisibility}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.suggestionButton, isLoadingSuggestion && styles.suggestionButtonDisabled]}
+              onPress={handlePostSuggestion}
+              disabled={isLoadingSuggestion}
+            >
+              {isLoadingSuggestion ? (
+                <ActivityIndicator size="small" color="#666" />
+              ) : (
+                <Feather name="zap" size={18} color="#666" />
+              )}
+              <Text style={styles.suggestionText}>Suggestion</Text>
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
-            style={[styles.suggestionButton, isLoadingSuggestion && styles.suggestionButtonDisabled]}
-            onPress={handlePostSuggestion}
-            disabled={isLoadingSuggestion}
+            style={[styles.postButton, isPostButtonActive ? styles.postButtonActive : {}]}
+            onPress={handlePost}
+            disabled={!isPostButtonActive}
           >
-            {isLoadingSuggestion ? (
-              <ActivityIndicator size="small" color="#666" />
-            ) : (
-              <Feather name="zap" size={18} color="#666" />
-            )}
-            <Text style={styles.suggestionText}>Suggestion</Text>
+            <Text style={[styles.postButtonText, isPostButtonActive ? styles.postButtonTextActive : {}]}>
+              Post
+            </Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          style={[styles.postButton, isPostButtonActive ? styles.postButtonActive : {}]}
-          onPress={handlePost}
-          disabled={!isPostButtonActive}
-        >
-          <Text style={[styles.postButtonText, isPostButtonActive ? styles.postButtonTextActive : {}]}>
-            Post
-          </Text>
-        </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 
   if (!isModal) {
@@ -479,6 +486,9 @@ const styles = StyleSheet.create({
   uploadImageText: {
     color: '#666',
     fontSize: 14,
+  },
+  scrollableContent: {
+    maxHeight:350
   },
 });
 
