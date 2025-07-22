@@ -4,7 +4,7 @@ CREATE TABLE users (
     phone TEXT,
     name TEXT,
     keyword_summary TEXT[],
-    profile_photo TEXT[],
+    profile_photos TEXT[],
     created_at TIMESTAMP
 );
 
@@ -59,3 +59,16 @@ CREATE TABLE logs (
     message TEXT,
     details TEXT
 );
+
+
+CREATE TABLE user_connections (
+  user_id UUID,           -- requester
+  connection_id UUID,     -- person connected to
+  degree INTEGER,         -- 0 / 1 / 2 / 3 etc.
+  is_chat BOOLEAN,
+  PRIMARY KEY (user_id, connection_id)
+);
+
+CREATE INDEX idx_user_connections_user_id ON user_connections(user_id);
+CREATE INDEX idx_user_connections_connection_id ON user_connections(connection_id);
+CREATE INDEX idx_user_connections_chat_degree ON user_connections(user_id, degree, is_chat);

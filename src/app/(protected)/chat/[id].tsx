@@ -25,23 +25,28 @@ const ChatScreen: React.FC = () => {
   const {
     id: chatId,
     name,
-    profile_photo,
+    profile_photos: profilePhotosParam,
     sender_id,
-    keyword_summary
+    keyword_summary: keywordSummaryParam
   } = useLocalSearchParams<{
     id: string;
     name: string;
-    profile_photo: string;
+    profile_photos: string;
     sender_id: string;
-    keyword_summary: string[];
+    keyword_summary: string;
   }>();
+  
+  // Convert profile_photos from string to array
+  const profile_photos = profilePhotosParam ? [profilePhotosParam] : [];
+  const keyword_summary = keywordSummaryParam ? keywordSummaryParam.split(',') : [];
+  
   const { user } = useAuth();
   const { chats, setChats } = useChatStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionDetails, setConnectionDetails] = useState<Contact>({
     id: '',
     name: '',
-    profile_photo: '',
+    profile_photos: [],
     sender_id: '',
     connectionDegree: '',
     mutualCount: 0,
@@ -53,6 +58,8 @@ const ChatScreen: React.FC = () => {
 
   useEffect(() => {
     if (chatId) {
+      console.log('keyword_summary', keyword_summary);
+      console.log('profile_photos', profile_photos);
       loadMessages();
       loadConnectionDetails();
       if (user?.id) {
@@ -84,7 +91,7 @@ const ChatScreen: React.FC = () => {
               text: newMessage.content,
               sender: newMessage.sender_id === '81dde3f4-d5e5-4686-937c-745a81a21e9a' ? 'sixai' : 'contact',
               sender_name: name,
-              profile_photo: profile_photo,
+              profile_photos: profile_photos,
               timestamp: new Date(newMessage.created_at),
             };
             setMessages(prev => [...prev, mappedMessage]);
@@ -127,7 +134,7 @@ const ChatScreen: React.FC = () => {
             text: msg.content,
             sender,
             sender_name: name,
-            profile_photo: profile_photo,
+            profile_photos: profile_photos,
             timestamp: new Date(msg.created_at),
           };
         });
@@ -148,11 +155,10 @@ const ChatScreen: React.FC = () => {
       try {
         setLoadingConnectionDetails(true);
 
-        // Set initial contact data with what we have from params
         const initialContact: Contact = {
           id: sender_id,
           name: name || 'Unknown',
-          profile_photo: profile_photo || '',
+          profile_photos: profile_photos || [],
           sender_id: sender_id,
           connectionDegree: '',
           mutualCount: 0,
@@ -166,13 +172,12 @@ const ChatScreen: React.FC = () => {
         const contact: Contact = {
           id: sender_id,
           name: name || 'Unknown',
-          profile_photo: profile_photo || '',
+          profile_photos: profile_photos || [],
           sender_id: sender_id,
           connectionDegree: details?.connectionDegree ? `${details.connectionDegree}° connection` : 'connection',
           mutualCount: details?.mutualCount || 0,
           keyword_summary: keyword_summary
         };
-
         setConnectionDetails(contact);
       } catch (error) {
         logger.error('loadConnectionDetails', 'Error fetching connection details:', error as string);

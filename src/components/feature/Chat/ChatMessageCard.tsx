@@ -8,7 +8,7 @@ interface MessageType {
     id: string;
     sender_id: string;
     name: string;
-    profile_photo?: string;
+    profile_photos?: string[];
     message: string;
     timestamp: Date;
     isOwnMessage?: boolean;
@@ -81,7 +81,7 @@ const   ChatMessageCard = ({ message, onRemoveConnection, onRemoveChat }: ChatMe
                     params: {
                         id: message.id,
                         name: message.name,
-                        profile_photo: message.profile_photo,
+                        profile_photos: message.profile_photos,
                         sender_id: message.sender_id,
                         keyword_summary: message.keyword_summary
                     }
@@ -90,7 +90,7 @@ const   ChatMessageCard = ({ message, onRemoveConnection, onRemoveChat }: ChatMe
                 delayLongPress={500}
             >
                 <ProfileImage
-                    imageUrl={message.profile_photo}
+                    imageUrl={message.profile_photos?.[0] || null}
                     name={message.name || 'User'}
                     size={60}
                 />

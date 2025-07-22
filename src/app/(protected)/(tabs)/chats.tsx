@@ -126,6 +126,7 @@ const ChatsListScreen = () => {
 
     try {
       const response = await fetchUserChats(user.id);
+      console.log('response', response);
 
       if (response.success) {
         setChats(response.data);
@@ -238,7 +239,7 @@ const ChatsListScreen = () => {
                 id: chat.chat_id,
                 sender_id: chat.other_user_id,
                 name: chat.other_user_name,
-                profile_photo: chat.other_user_profile_photo || undefined,
+                profile_photos: chat.other_user_profile_photos  || undefined,
                 message: chat.last_message,
                 timestamp: new Date(chat.last_message_at),
                 isOwnMessage: chat.last_message_sender === user?.id,

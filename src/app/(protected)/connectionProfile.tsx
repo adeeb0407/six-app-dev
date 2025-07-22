@@ -1,13 +1,41 @@
+import ProfileImageCarousel from '@/src/components/feature/Profile/ProfileImageCarousel';
 import { Contact } from '@/src/constants/types/chat.types';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ConnectionProfile = () => {
   const { contact } = useLocalSearchParams();
   const connectionDetails = JSON.parse(contact as string) as Contact;
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<number | null>(null);
+
+  console.log('connectionDetails', connectionDetails);
+
+  // Parse profile_photos if it's a string
+  let parsedProfilePhotos: string[] = [];
+  const profilePhotosData = connectionDetails.profile_photos;
+  
+  if (typeof profilePhotosData === 'string') {
+    try {
+      // First try to parse as JSON
+      const jsonParsed = JSON.parse(profilePhotosData);
+      if (Array.isArray(jsonParsed)) {
+        parsedProfilePhotos = jsonParsed;
+      } else {
+        // If it's not an array, split by comma
+        parsedProfilePhotos = (profilePhotosData as string).split(',').map((url: string) => url.trim());
+      }
+    } catch (error) {
+      console.log('Failed to parse profile_photos as JSON, splitting by comma');
+      // Split by comma if JSON parsing fails
+      parsedProfilePhotos = (profilePhotosData as string).split(',').map((url: string) => url.trim());
+    }
+  } else if (Array.isArray(profilePhotosData)) {
+    parsedProfilePhotos = profilePhotosData;
+  }
 
   // Ensure keyword_summary is an array of strings
   let keywords: string[] = [];
@@ -20,6 +48,14 @@ const ConnectionProfile = () => {
       .filter(Boolean);
   }
 
+  // Check if there are any profile photos
+  const hasProfilePhotos = parsedProfilePhotos && 
+    parsedProfilePhotos.length > 0 && 
+    parsedProfilePhotos.some(photo => photo && photo.trim() !== '');
+
+  console.log('hasProfilePhotos:', hasProfilePhotos);
+  console.log('parsedProfilePhotos:', parsedProfilePhotos);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.header}>
@@ -28,22 +64,22 @@ const ConnectionProfile = () => {
         </TouchableOpacity>
       </View>
       <View style={styles.content}>
-       <View style={styles.profileImageContainer}>
-       {
-        connectionDetails.profile_photo ? (
-          <Image
-            source={{ uri: connectionDetails.profile_photo }}
-            style={styles.profileImage}
+        {hasProfilePhotos ? (
+          <ProfileImageCarousel
+            profilePhotos={parsedProfilePhotos}
+            isLoading={isLoading}
+            uploadingPhotoIndex={uploadingPhotoIndex}
+            onImagePress={() => {}}
+            disabled={true} 
+            showUploadPlaceholders={false} 
           />
         ) : (
-          <View style={[styles.profileTextContainer]}>
+          <View style={styles.profileTextContainer}>
             <Text style={[styles.initials, { fontSize: 350 * 0.4 }]}>
               {connectionDetails.name.charAt(0)}
             </Text>
           </View>
-        )
-       }
-       </View>
+        )}
         <Text style={styles.name}>{connectionDetails.name}</Text>
         <Text style={styles.degree}>Degree: {connectionDetails.connectionDegree}</Text>
         <Text style={styles.mutual}>{connectionDetails.mutualCount} mutual connections</Text>

@@ -12,19 +12,25 @@ type ChatHeaderProp = {
 
 const ChatHeader = ({ contact, isLoadingConnectionDetails = false }: ChatHeaderProp) => {
   const router = useRouter();
+  // Get the first profile photo or null if array is empty/null
+  const profilePhoto = contact.profile_photos && contact.profile_photos.length > 0
+    ? contact.profile_photos[0]
+    : null;
 
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <Feather name="arrow-left" size={24} color="black" />
       </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push({ pathname: '/connectionProfile', params: { contact: JSON.stringify(contact) } })}>
+      <TouchableOpacity onPress={() => router.push({ pathname: '/connectionProfile', params: { 
+        contact: JSON.stringify(contact)
+      } })}>
         <ProfileImage
-          imageUrl={contact.profile_photo}
+          imageUrl={profilePhoto}
           name={contact.name}
           size={90}
         />
-     </TouchableOpacity>
+      </TouchableOpacity>
       <View style={styles.headerTextContainer}>
         <Text style={styles.headerName}>{contact.name}</Text>
         {isLoadingConnectionDetails ? (

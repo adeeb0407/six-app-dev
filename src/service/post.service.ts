@@ -24,6 +24,8 @@ export const fetchPostsByDegree = async (
         limit
       }
     })
+    const finalUrl = `${BACKEND_URL}/users/posts/${userId}?degreeFilter=${degreeFilter}&page=${page}&limit=${limit}`
+    console.log('finalUrl', finalUrl);
     if (response.data.success) {
       return response.data
     }

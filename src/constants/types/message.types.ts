@@ -5,7 +5,7 @@ export interface UserChat {
     last_message_sender: string;
     other_user_id: string;
     other_user_name: string;
-    other_user_profile_photo: string | null;
+    other_user_profile_photos: string[] | null;
     other_user_keyword_summary: string[] | null;
     unread_count: number;
 }

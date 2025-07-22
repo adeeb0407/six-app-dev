@@ -11,6 +11,7 @@ interface ProfileImageCarouselProps {
     uploadingPhotoIndex: number | null;
     onImagePress: (index: number) => void;
     disabled?: boolean;
+    showUploadPlaceholders?: boolean;
 }
 
 const ProfileImageCarousel: React.FC<ProfileImageCarouselProps> = ({
@@ -18,17 +19,25 @@ const ProfileImageCarousel: React.FC<ProfileImageCarouselProps> = ({
     isLoading,
     uploadingPhotoIndex,
     onImagePress,
-    disabled = false
+    disabled = false,
+    showUploadPlaceholders = true
 }) => {
     const carouselRef = useRef<ICarouselInstance>(null);
     const itemWidth = screenWidth * 0.85; 
 
-    // Ensure we always have 3 items
-    const carouselData = [
-        profilePhotos[0] || null,
-        profilePhotos[1] || null,
-        profilePhotos[2] || null,
-    ];
+    // Filter out null/empty photos if not showing placeholders
+    const validPhotos = showUploadPlaceholders 
+        ? profilePhotos 
+        : profilePhotos.filter(photo => photo && photo.trim() !== '');
+
+    // Ensure we always have 3 items for editing mode, or just show valid photos for read-only
+    const carouselData = showUploadPlaceholders 
+        ? [
+            profilePhotos[0] || null,
+            profilePhotos[1] || null,
+            profilePhotos[2] || null,
+          ]
+        : validPhotos;
 
     const renderProfileImage = (imageUrl: string | null, index: number) => {
         const isUploading = uploadingPhotoIndex === index;
@@ -51,12 +60,18 @@ const ProfileImageCarousel: React.FC<ProfileImageCarouselProps> = ({
             );
         }
 
-        return (
-            <View style={styles.uploadContainer}>
-                <Feather name="upload" size={50} color="#666" />
-                <Text style={styles.uploadText}>Upload Photo {index + 1}</Text>
-            </View>
-        );
+        // Only show upload placeholder if showUploadPlaceholders is true
+        if (showUploadPlaceholders) {
+            return (
+                <View style={styles.uploadContainer}>
+                    <Feather name="upload" size={50} color="#666" />
+                    <Text style={styles.uploadText}>Upload Photo {index + 1}</Text>
+                </View>
+            );
+        }
+
+        // Return null if no placeholder should be shown
+        return null;
     };
 
     return (

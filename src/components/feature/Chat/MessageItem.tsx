@@ -52,7 +52,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, contact }) => {
         {message.sender === 'contact' ? (
           <>
             <ProfileImage
-              imageUrl={message.profile_photo}
+              imageUrl={message.profile_photos && message.profile_photos.length > 0 ? message.profile_photos[0] : null}
               name={message.sender_name}
               size={40}
               onPress={() => router.push({ pathname: '/connectionProfile', params: { contact: JSON.stringify(contact) } })}

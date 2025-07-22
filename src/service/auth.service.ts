@@ -22,6 +22,7 @@ export const verifyOTP = async (phoneNumber: string, otp: string, authType: Auth
             otp: otp,
             isSignup: authType === AuthType.SignUp ? true : false
         }
+        console.log('BACKEND_URL', BACKEND_URL);
         const response = await axios.post(`${BACKEND_URL}/otp/verify`, body)
         
         if (response.data.success) {

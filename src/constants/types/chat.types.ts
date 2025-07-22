@@ -13,13 +13,13 @@ export interface Message {
   sender: 'user' | 'contact' | 'sixai';
   timestamp: Date;  
   sender_name?: string;
-  profile_photo?: string | null;
+  profile_photos?: string[] | null;
 }
 
 export interface Contact {
   id: string;
   name: string;
-  profile_photo: string;
+  profile_photos: string[] | null;
   sender_id: string;
   connectionDegree: string
   mutualCount: number,

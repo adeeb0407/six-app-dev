@@ -63,7 +63,7 @@ export const PostsList: React.FC<PostsListProps> = ({
     setError(null);
 
     try {
-      const response = await fetchPostsByDegree(userId, degreeFilter, page, 5);
+      const response = await fetchPostsByDegree(userId, degreeFilter, page, 20);
 
       if (response?.success && response.data) {
         const { posts: newPosts, pagination: paginationInfo } = response.data;
@@ -81,7 +81,7 @@ export const PostsList: React.FC<PostsListProps> = ({
       } else {
         throw new Error('Failed to load posts');
       }
-    } catch (err) { 
+    } catch (err) {
       logger.error('PostsList', 'Error loading posts:', err as string);
       setError('Error loading posts');
       setPagination(prev => ({ ...prev, isLoading: false, isLoadingMore: false, hasMore: false }));
