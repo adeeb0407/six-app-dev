@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   scrollableContent: {
-    maxHeight:350
+    maxHeight:398
   },
 });
 
