@@ -22,7 +22,7 @@ export interface Post {
 
 export interface PaginatedPostsResponse {
   posts: Post[];
-  pagination: {
+  pagination: { 
     currentPage: number;
     limit: number;
     hasMore: boolean;

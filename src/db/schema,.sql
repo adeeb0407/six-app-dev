@@ -66,6 +66,7 @@ CREATE TABLE user_connections (
   connection_id UUID,     -- person connected to
   degree INTEGER,         -- 0 / 1 / 2 / 3 etc.
   is_chat BOOLEAN,
+  mutuals INTEGER,
   PRIMARY KEY (user_id, connection_id)
 );
 

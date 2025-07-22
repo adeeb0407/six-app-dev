@@ -95,6 +95,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
         const newPost: Post = {
           id: data.data?.id,
           user_id: user.id,
+          user_name: user.name || 'Anonymous',
           content: noteText,
           category: activeTab,
           hide_from_chat: post.hide_from_chat,
@@ -106,7 +107,8 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
           keyword_summary: [],
           user_interested: false,
           user_accepted: false,
-          mutual_count: 0
+          mutual_count: 0,
+          has_chat: false
         };
 
         addPostOnTop(newPost);
