@@ -10,8 +10,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: "Six",
     slug: PROJECT_SLUG,
-    version: "1.0.6",
-    runtimeVersion: "1.0.6",
+    version: "1.0.7",
+    runtimeVersion: "1.0.7",
     orientation: "portrait",
     icon: "./src/assets/icons/ios-light.png",
     scheme: "six",
@@ -96,7 +96,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         {
           photosPermission: "The app accesses your photos to let you share them with your friends."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     experiments: {
       typedRoutes: true

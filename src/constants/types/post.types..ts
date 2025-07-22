@@ -18,6 +18,7 @@ export interface Post {
   user_accepted: boolean
   mutual_count: number;
   has_chat: boolean;
+  image_url: string | null;
 }
 
 export interface PaginatedPostsResponse {
@@ -38,6 +39,7 @@ export interface PostInput {
   category: CategoryTabs;
   hide_from_chat: boolean;
   connectiontype: ConnectionLevel | null;
+  image_url?: string | null;
 }
 
 export enum ConnectionLevel {

@@ -48,10 +48,13 @@ export const createPost = async (input: PostInput) => {
         content: input.content,
         category: input.category,
         hide_from_chat: input.hide_from_chat ?? false,
-        connection_type: input.connectiontype
+        connection_type: input.connectiontype,
+        image_url: input.image_url
       }])
       .select()
       .single();
+
+    console.log('data', data);  
     if (error) throw error;
 
     return {

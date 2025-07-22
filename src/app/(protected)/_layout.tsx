@@ -6,8 +6,8 @@ export default function RootLayout() {
   const {user} = useAuth();
   if(!user) {
     return <Redirect href='/landing'/>
-  
   }
+  
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

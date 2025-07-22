@@ -4,6 +4,7 @@ import { logger } from '@/src/service/logger.service';
 import { reactToPost } from '@/src/service/request.service';
 import React, { useState } from 'react';
 import {
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -64,6 +65,9 @@ const PostCard = ({ post }: props) => {
   return (
     <TouchableWithoutFeedback onPress={handleShowDetailsToggle}>
       <View key={post.id} style={styles.postCard}>
+        {post.image_url && (
+          <Image source={{ uri: post.image_url }} style={styles.postImage} />
+        )}
         <View style={styles.postHeader}>
           {
             post.connection_degree == ConnectionLevel.First && !post.has_chat ? (
@@ -146,6 +150,12 @@ const styles = StyleSheet.create({
     padding: 15,
     borderWidth: 1,
     borderColor: '#eee',
+  },
+  postImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 15,
+    marginBottom: 10,
   },
   postHeader: {
     flexDirection: 'row',

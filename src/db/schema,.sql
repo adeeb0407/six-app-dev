@@ -5,7 +5,9 @@
         name TEXT,
         keyword_summary TEXT[],
         profile_photos TEXT[],
-        created_at TIMESTAMP
+        created_at TIMESTAMP,
+        is_connection_cached BOOLEAN,
+        connection_cached_at TIMESTAMP
     );
 
     -- CHATS TABLE
@@ -35,6 +37,7 @@
         hide_from_chat BOOLEAN,
         expires_at TIMESTAMP,
         locked BOOLEAN,
+        image_url TEXT,
         created_at TIMESTAMP,
         connection_type TEXT
     );

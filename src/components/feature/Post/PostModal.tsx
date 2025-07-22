@@ -6,16 +6,20 @@ import {
   PostInput,
 } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
+import { supabase } from '@/src/db/supabase';
 import { logger } from '@/src/service/logger.service';
 import { createPost } from '@/src/service/post.service';
 import { fetchPostSuggestion } from '@/src/service/six.service';
 import { usePostStore } from '@/src/store/postStore';
 import { useUserStore } from '@/src/store/userStore';
 import { Feather } from '@expo/vector-icons';
+import { Buffer } from 'buffer'; // Make sure this is at the top
+import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
+  Image,
   Modal,
   StyleSheet,
   Text,
@@ -48,6 +52,9 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
   const [isPostButtonActive, setIsPostButtonActive] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [selectedImage, setSelectedImage] = useState<{ uri: string; base64: string } | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isModal || !visible) return;
@@ -78,15 +85,82 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       setConnectionVisibility(PostConnectionVisibility.All)
   }
 
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: true,
+      aspect: [1, 1], // Square
+      quality: 0.7,
+      base64: true,
+      allowsMultipleSelection: false,
+      selectionLimit: 1,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      if (asset.base64) {
+        setSelectedImage({ uri: asset.uri, base64: asset.base64 });
+      }
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setUploadedImageUrl(null);
+  };
+
+  const uploadImageToSupabase = async () => {
+    if (!selectedImage || !user) {
+      return null;
+    }
+    setIsUploadingImage(true);
+    try {
+      const base64Str = selectedImage.base64;
+      const res = Buffer.from(base64Str, 'base64');
+      const timestamp = Date.now();
+      const fileName = `${user.id}/post-${timestamp}.jpg`;
+      const { error: uploadError } = await supabase
+        .storage
+        .from('posts')
+        .upload(fileName, res, {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+          upsert: true,
+        });
+      if (uploadError) {
+        return null;
+      }
+      const { data } = supabase
+        .storage
+        .from('posts')
+        .getPublicUrl(fileName);
+      if (!data || !data.publicUrl) {
+        return null;
+      }
+      const cacheBustedUrl = `${data.publicUrl}?t=${timestamp}`;
+      setUploadedImageUrl(cacheBustedUrl);
+      return cacheBustedUrl;
+    } catch (error) {
+      logger.error('uploadImageToSupabase', 'Error uploading post image:', error as string);
+      return null;
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const handlePost = async () => {
     if (user) {
+      let imageUrl = uploadedImageUrl;
+      if (selectedImage && !uploadedImageUrl) {
+        imageUrl = await uploadImageToSupabase();
+      }
       const post: PostInput = {
         user_id: user.id,
         content: noteText,
         category: activeTab,
         connectiontype: connectionLevel,
-        hide_from_chat: connectionVisibility === PostConnectionVisibility.All ? false : true
-      }
+        hide_from_chat: connectionVisibility === PostConnectionVisibility.All ? false : true,
+        image_url: imageUrl || null
+      };
 
       const data = await createPost(post);
       if (!data) logger.error('handlePost', 'error creating post');
@@ -108,7 +182,8 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
           user_interested: false,
           user_accepted: false,
           mutual_count: 0,
-          has_chat: false
+          has_chat: false,
+          image_url: imageUrl || null
         };
 
         addPostOnTop(newPost);
@@ -119,6 +194,8 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
       }
 
       setNoteText('');
+      setSelectedImage(null);
+      setUploadedImageUrl(null);
     }
   };
 
@@ -177,10 +254,18 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
         </View>
       </View>
 
-      {/* <TouchableOpacity style={styles.uploadImageContainer}>
-        <Text style={styles.uploadImageText}>Upload Image</Text>
+      {selectedImage && (
+        <View style={{ alignItems: 'center', marginBottom: 12 }}>
+          <Image source={{ uri: selectedImage.uri }} style={{ width: 180, height: 180, borderRadius: 12 }} />
+          <TouchableOpacity onPress={handleRemoveImage} style={{ marginTop: 6 }}>
+            <Text style={{ color: '#9191ff' }}>Remove Image</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      <TouchableOpacity style={styles.uploadImageContainer} onPress={handlePickImage} disabled={isUploadingImage}>
+        <Text style={styles.uploadImageText}>{isUploadingImage ? 'Uploading...' : 'Upload Image'}</Text>
         <Feather name="upload" size={20} color="#666" />
-      </TouchableOpacity> */}
+      </TouchableOpacity>
 
       <View style={styles.bottomSection}>
         <View style={styles.optionsRow}>
