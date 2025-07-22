@@ -8,6 +8,8 @@ export interface UserChat {
     other_user_profile_photos: string[] | null;
     other_user_keyword_summary: string[] | null;
     unread_count: number;
+    connection_degree: number;
+    mutual_connections: number;
 }
 
 export interface ChatResponse {

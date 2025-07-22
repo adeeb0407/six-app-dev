@@ -12,7 +12,6 @@ const ConnectionProfile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<number | null>(null);
 
-  console.log('connectionDetails', connectionDetails);
 
   // Parse profile_photos if it's a string
   let parsedProfilePhotos: string[] = [];
@@ -29,7 +28,7 @@ const ConnectionProfile = () => {
         parsedProfilePhotos = (profilePhotosData as string).split(',').map((url: string) => url.trim());
       }
     } catch (error) {
-      console.log('Failed to parse profile_photos as JSON, splitting by comma');
+      ('Failed to parse profile_photos as JSON, splitting by comma');
       // Split by comma if JSON parsing fails
       parsedProfilePhotos = (profilePhotosData as string).split(',').map((url: string) => url.trim());
     }
@@ -53,8 +52,6 @@ const ConnectionProfile = () => {
     parsedProfilePhotos.length > 0 && 
     parsedProfilePhotos.some(photo => photo && photo.trim() !== '');
 
-  console.log('hasProfilePhotos:', hasProfilePhotos);
-  console.log('parsedProfilePhotos:', parsedProfilePhotos);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>

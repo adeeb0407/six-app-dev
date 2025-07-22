@@ -30,7 +30,7 @@ const ChatHeader = ({ contact, isLoadingConnectionDetails = false }: ChatHeaderP
           name={contact.name}
           size={90}
         />
-      </TouchableOpacity>
+     </TouchableOpacity>
       <View style={styles.headerTextContainer}>
         <Text style={styles.headerName}>{contact.name}</Text>
         {isLoadingConnectionDetails ? (

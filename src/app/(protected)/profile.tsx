@@ -10,13 +10,13 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Profile = () => {
-    const {
+    const { 
         userProfile,
         isLoading,
         uploadingPhotoIndex,
         isEditModalVisible,
         isLoadingContacts,
-        isSyncing,
+        isSyncing, 
         pickImage,
         handleEditProfile,
         handleSyncContacts,

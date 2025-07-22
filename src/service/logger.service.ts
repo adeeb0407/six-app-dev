@@ -28,7 +28,7 @@ class LogService {
     if (this.isLocal) {
       console.log(`[${functionName}] ${message}`, details || '');
     }
-
+// 
     // Always try to log to Supabase in both environments
     try {
       await supabase.from('logs').insert([logEntry]);

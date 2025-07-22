@@ -1,5 +1,5 @@
 import { Contact, Message } from '@/src/constants/types/chat.types';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import MessageItem from './MessageItem';
 
@@ -10,27 +10,49 @@ type MessageListProps = {
 
 const MessageList: React.FC<MessageListProps> = ({ messages, contact }) => {
   const scrollViewRef = useRef<ScrollView>(null);
+  const prevMessagesLength = useRef<number>(0);
+  const [initialScrollDone, setInitialScrollDone] = useState(false);
 
-  // Scroll to bottom when messages change
+  // On mount, scroll to bottom (initial load)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-    
-    return () => clearTimeout(timer); 
+    if (messages.length > 0) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: false });
+        setTimeout(() => setInitialScrollDone(true), 50); // Show after scroll
+      }, 200); // Wait for messages to render
+    } else {
+      setInitialScrollDone(true);
+    }
+    prevMessagesLength.current = messages.length;
+  }, []);
+
+  // On new message, scroll to bottom (but not on initial load)
+  useEffect(() => {
+    if (
+      messages.length > prevMessagesLength.current // new message added
+      && messages.length > 0
+    ) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+    prevMessagesLength.current = messages.length;
   }, [messages]);
 
   return (
     <View style={styles.container}>
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
-        style={styles.chatContainer} 
+        style={[
+          styles.chatContainer,
+          !initialScrollDone && { opacity: 0, height: 1 }, // Hide until scrolled
+        ]}
         contentContainerStyle={styles.chatContent}
       >
         {messages.map((message) => (
-          <MessageItem 
-            key={message.id} 
-            message={message} 
+          <MessageItem
+            key={message.id}
+            message={message}
             contact={contact}
           />
         ))}

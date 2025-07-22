@@ -15,6 +15,8 @@ interface MessageType {
     other_user_id?: string;
     keyword_summary?: string[];
     unread_count?: number;
+    connection_degree?: number;
+    connection_mutuals?: number;
 }
 
 interface ChatMessageCardProps {
@@ -62,14 +64,14 @@ const   ChatMessageCard = ({ message, onRemoveConnection, onRemoveChat }: ChatMe
         }
     };
 
-
     const renderMessageContent = () => {
         return (
             <Text style={[styles.messageText, message.unread_count && message.unread_count > 0 ? styles.unreadMsgText : {}]} numberOfLines={1}>
                 {message.message}
             </Text>
         );
-    };
+    }
+    
 
     return (
         <View>
@@ -83,7 +85,9 @@ const   ChatMessageCard = ({ message, onRemoveConnection, onRemoveChat }: ChatMe
                         name: message.name,
                         profile_photos: message.profile_photos,
                         sender_id: message.sender_id,
-                        keyword_summary: message.keyword_summary
+                        keyword_summary: message.keyword_summary,
+                        connection_degree: message.connection_degree?.toString(),
+                        connection_mutuals: message.connection_mutuals?.toString()
                     }
                 })}
                 onLongPress={handleLongPress}

@@ -43,7 +43,7 @@ const ChatsListScreen = () => {
 
   useEffect(() => {
     if (user?.id) {
-      setLoading(true);
+      // setLoading(true);
       loadChats();
     }
   }, [user]);
@@ -126,7 +126,6 @@ const ChatsListScreen = () => {
 
     try {
       const response = await fetchUserChats(user.id);
-      console.log('response', response);
 
       if (response.success) {
         setChats(response.data);
@@ -244,7 +243,9 @@ const ChatsListScreen = () => {
                 timestamp: new Date(chat.last_message_at),
                 isOwnMessage: chat.last_message_sender === user?.id,
                 keyword_summary: chat.other_user_keyword_summary || [],
-                unread_count: chat.unread_count
+                unread_count: chat.unread_count,
+                connection_degree: chat.connection_degree,  
+                connection_mutuals: chat.mutual_connections
               }}
               onRemoveConnection={handleRemoveConnection}
               onRemoveChat={handleRemoveChatAndConnection}

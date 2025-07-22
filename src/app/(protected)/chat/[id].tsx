@@ -6,7 +6,6 @@ import { useAuth } from '@/src/context/AuthContext';
 import { supabase } from '@/src/db/supabase';
 import { logger } from '@/src/service/logger.service';
 import { fetchChatMessages, markMessagesAsRead, sendMessage } from '@/src/service/message.services';
-import { getConnectionDetails } from '@/src/service/neo4j.service';
 import { useChatStore } from '@/src/store/chat.store';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -27,13 +26,17 @@ const ChatScreen: React.FC = () => {
     name,
     profile_photos: profilePhotosParam,
     sender_id,
-    keyword_summary: keywordSummaryParam
+    keyword_summary: keywordSummaryParam  ,
+    connection_degree: connectionDegreeParam,
+    connection_mutuals: connectionMutualsParam
   } = useLocalSearchParams<{
     id: string;
     name: string;
     profile_photos: string;
     sender_id: string;
     keyword_summary: string;
+    connection_degree: string;
+    connection_mutuals: string;
   }>();
   
   // Convert profile_photos from string to array
@@ -43,14 +46,24 @@ const ChatScreen: React.FC = () => {
   const { user } = useAuth();
   const { chats, setChats } = useChatStore();
   const [messages, setMessages] = useState<Message[]>([]);
+  const connectionDegree =
+    connectionDegreeParam && connectionDegreeParam !== 'undefined'
+      ? `${connectionDegreeParam}° connection`
+      : 'connection';
+
+  const mutualCount =
+    connectionMutualsParam && !isNaN(Number(connectionMutualsParam))
+      ? parseInt(connectionMutualsParam)
+      : 0;
+
   const [connectionDetails, setConnectionDetails] = useState<Contact>({
-    id: '',
-    name: '',
-    profile_photos: [],
-    sender_id: '',
-    connectionDegree: '',
-    mutualCount: 0,
-    keyword_summary: []
+    id: sender_id,
+    name: name || 'Unknown',
+    profile_photos: profile_photos || [],
+    sender_id: sender_id,
+    connectionDegree,
+    mutualCount,
+    keyword_summary: keyword_summary,
   });
   const [loading, setLoading] = useState(true);
   const [loadingConnectionDetails, setLoadingConnectionDetails] = useState(true);
@@ -58,8 +71,6 @@ const ChatScreen: React.FC = () => {
 
   useEffect(() => {
     if (chatId) {
-      console.log('keyword_summary', keyword_summary);
-      console.log('profile_photos', profile_photos);
       loadMessages();
       loadConnectionDetails();
       if (user?.id) {
@@ -160,25 +171,11 @@ const ChatScreen: React.FC = () => {
           name: name || 'Unknown',
           profile_photos: profile_photos || [],
           sender_id: sender_id,
-          connectionDegree: '',
-          mutualCount: 0,
-          keyword_summary: keyword_summary
+          connectionDegree,
+          mutualCount,
+          keyword_summary: keyword_summary,
         };
         setConnectionDetails(initialContact);
-
-        const details = await getConnectionDetails(user.id, sender_id);
-
-        // Update with complete contact object including connection details
-        const contact: Contact = {
-          id: sender_id,
-          name: name || 'Unknown',
-          profile_photos: profile_photos || [],
-          sender_id: sender_id,
-          connectionDegree: details?.connectionDegree ? `${details.connectionDegree}° connection` : 'connection',
-          mutualCount: details?.mutualCount || 0,
-          keyword_summary: keyword_summary
-        };
-        setConnectionDetails(contact);
       } catch (error) {
         logger.error('loadConnectionDetails', 'Error fetching connection details:', error as string);
       } finally {
@@ -234,6 +231,7 @@ const ChatScreen: React.FC = () => {
           <View style={styles.loadingContainer}>
             <Text>Loading messages...</Text>
           </View>
+
         ) : (
           <>
             <MessageList messages={messages}

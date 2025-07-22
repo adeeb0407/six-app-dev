@@ -55,8 +55,7 @@ export const sendMessage = async (
 export const fetchUserChats = async (userId: string): Promise<ChatResponse> => {
     try {
         const { data, error } = await supabase
-            .rpc('get_latest_chats_with_photos', { p_user_id: userId });
-        console.log('data', data);
+            .rpc('get_latest_chats_with_photos_and_connections', { p_user_id: userId });
 
         if (error) {
             throw new Error(`Failed to fetch chats: ${error.message}`);

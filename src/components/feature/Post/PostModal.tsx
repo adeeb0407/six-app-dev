@@ -177,6 +177,11 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
         </View>
       </View>
 
+      {/* <TouchableOpacity style={styles.uploadImageContainer}>
+        <Text style={styles.uploadImageText}>Upload Image</Text>
+        <Feather name="upload" size={20} color="#666" />
+      </TouchableOpacity> */}
+
       <View style={styles.bottomSection}>
         <View style={styles.optionsRow}>
           <TouchableOpacity style={styles.option}
@@ -371,6 +376,24 @@ const styles = StyleSheet.create({
   },
   postButtonTextActive: {
     color: '#000',
+  },
+  uploadImageContainer: {
+    marginBottom: 16,
+    backgroundColor: '#F9F9FB',
+    borderRadius: 12,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderStyle: 'dashed',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+  },
+  uploadImageText: {
+    color: '#666',
+    fontSize: 14,
   },
 });
 
