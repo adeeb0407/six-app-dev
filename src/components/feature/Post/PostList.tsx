@@ -150,6 +150,30 @@ export const PostsList: React.FC<PostsListProps> = ({
     }
   }, [isNearBottom, loadMorePosts]);
 
+  const renderItem = useCallback(({ item: post }: { item: Post }) => (
+    <PostCard key={post.id} post={post} />
+  ), []);
+
+  const keyExtractor = useCallback((item: Post) => item.id, []);
+  
+  const ListFooterComponent = useCallback(() => (
+    <>
+      {pagination.isLoadingMore && (
+        <View style={styles.loadingIndicator}>
+          <ActivityIndicator size="small" color="#999" />
+        </View>
+      )}
+
+      {!pagination.hasMore && filteredPosts.length > 0 && (
+        <View style={styles.loadingIndicator}>
+          <Text style={styles.endText}>You've reached the end</Text>
+        </View>
+      )}
+
+      <View style={styles.bottomPadding} />
+    </>
+  ), [pagination.isLoadingMore, pagination.hasMore, filteredPosts.length]);
+
   useEffect(() => {
     clearPosts();
     setPagination({
@@ -191,30 +215,6 @@ export const PostsList: React.FC<PostsListProps> = ({
       </View>
     );
   }
-
-  const renderItem = useCallback(({ item: post }: { item: Post }) => (
-    <PostCard key={post.id} post={post} />
-  ), []);
-
-  const keyExtractor = useCallback((item: Post) => item.id, []);
-  
-  const ListFooterComponent = useCallback(() => (
-    <>
-      {pagination.isLoadingMore && (
-        <View style={styles.loadingIndicator}>
-          <ActivityIndicator size="small" color="#999" />
-        </View>
-      )}
-
-      {!pagination.hasMore && filteredPosts.length > 0 && (
-        <View style={styles.loadingIndicator}>
-          <Text style={styles.endText}>You've reached the end</Text>
-        </View>
-      )}
-
-      <View style={styles.bottomPadding} />
-    </>
-  ), [pagination.isLoadingMore, pagination.hasMore, filteredPosts.length]);
 
   return (
     <FlatList
