@@ -24,12 +24,13 @@ export interface Post {
 export interface PaginatedPostsResponse {
   posts: Post[];
   pagination: { 
-    currentPage: number;
+    currentPage?: number; // For backward compatibility
     limit: number;
     hasMore: boolean;
     totalFetched: number;
     isUpToDate: boolean;
-    nextPage?: number;
+    nextPage?: number; // For backward compatibility
+    nextCursor?: string | null; // For cursor-based pagination
   };
 }
 

@@ -11,26 +11,42 @@ const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra;
 export const fetchPostsByDegree = async (
   userId: string,
   degreeFilter: number = 0,
-  page: number = 1,
+  cursor: string | null = null,
   limit: number = 20
-
 ): Promise<ApiResponse<PaginatedPostsResponse> | null> => {
-
   try {
+    // Request optimizations
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 15000); // 15 second timeout
+    
     const response = await axios.get(`${BACKEND_URL}/users/posts/${userId}`, {
       params: {
         degreeFilter,
-        page,
+        cursor,
         limit
+      },
+      signal: abortController.signal,
+      headers: {
+        'Cache-Control': 'max-age=300' // Cache for 5 minutes on CDN level
       }
-    })
+    });
+    
+    clearTimeout(timeoutId);
 
     if (response.data.success) {
-      return response.data
+      return response.data;
     }
     return null;
 
   } catch (error) {
+    if (axios.isCancel(error)) {
+      logger.warn('fetchPostsByDegree', 'Request cancelled after timeout');
+      return {
+        success: false,
+        error: 'Request timed out'
+      };
+    }
+    
     logger.error('fetchPostsByDegree', 'Error fetching posts:', error as string);
     return {
       success: false,

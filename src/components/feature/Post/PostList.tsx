@@ -1,10 +1,11 @@
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
+import { Post } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
 import { logger } from '@/src/service/logger.service';
 import { fetchPostsByDegree } from '@/src/service/post.service';
 import { usePostStore } from '@/src/store/postStore';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import PostCard from './PostCard';
 
 interface PostsListProps {
@@ -14,7 +15,7 @@ interface PostsListProps {
 }
 
 interface PaginationState {
-  currentPage: number;
+  cursor: string | null;
   hasMore: boolean;
   isLoading: boolean;
   isLoadingMore: boolean;
@@ -26,10 +27,10 @@ export const PostsList: React.FC<PostsListProps> = ({
   postTabs,
   categoryTabs,
 }) => {
-  const { posts, setPosts, addPosts, clearPosts } = usePostStore();
+  const { posts, setPosts, addPosts, clearPosts, clearCache, getCachedPostsByDegree, lastCursor, hasMore: storeHasMore } = usePostStore();
   const [refreshing, setRefreshing] = useState(false);
   const [pagination, setPagination] = useState<PaginationState>({
-    currentPage: 1,
+    cursor: null,
     hasMore: true,
     isLoading: false,
     isLoadingMore: false,
@@ -55,26 +56,51 @@ export const PostsList: React.FC<PostsListProps> = ({
     return posts.filter(post => categoryTabs.includes(post.category));
   }, [posts, categoryTabs]);
 
-  const loadPosts = useCallback(async (page: number = 1, isLoadMore: boolean = false) => {
+  const loadPosts = useCallback(async (useCursor: string | null = null, isLoadMore: boolean = false) => {
     if (isLoadingRef.current) return;
 
     isLoadingRef.current = true;
     setPagination(prev => ({ ...prev, isLoading: !isLoadMore, isLoadingMore: isLoadMore }));
     setError(null);
 
+    // Check if we have valid cached data first
+    if (!isLoadMore) {
+      const cachedData = getCachedPostsByDegree(degreeFilter);
+      if (cachedData.isCacheValid && cachedData.posts.length > 0) {
+        // Use cached data
+        setPosts(cachedData.posts, degreeFilter);
+        setPagination(prev => ({
+          ...prev,
+          cursor: cachedData.lastCursor,
+          hasMore: cachedData.hasMore,
+          isLoading: false,
+          isLoadingMore: false
+        }));
+        isLoadingRef.current = false;
+        return;
+      }
+    }
+
     try {
-      const response = await fetchPostsByDegree(userId, degreeFilter, page, 20);
+      // Use cursor-based pagination
+      const cursor = isLoadMore ? useCursor : null;
+      const response = await fetchPostsByDegree(userId, degreeFilter, cursor, 20);
 
       if (response?.success && response.data) {
         const { posts: newPosts, pagination: paginationInfo } = response.data;
+        const newCursor = paginationInfo.nextCursor || null;
 
-        page === 1 ? setPosts(newPosts) : addPosts(newPosts);
+        if (isLoadMore) {
+          addPosts(newPosts, degreeFilter, newCursor, paginationInfo.hasMore);
+        } else {
+          setPosts(newPosts, degreeFilter);
+        }
 
         setPagination(prev => ({
           ...prev,
-          currentPage: paginationInfo.currentPage,
+          cursor: newCursor,
           hasMore: paginationInfo.hasMore,
-          totalFetched: paginationInfo.totalFetched,
+          totalFetched: isLoadMore ? prev.totalFetched + newPosts.length : newPosts.length,
           isLoading: false,
           isLoadingMore: false
         }));
@@ -88,23 +114,24 @@ export const PostsList: React.FC<PostsListProps> = ({
     } finally {
       isLoadingRef.current = false;
     }
-  }, [userId, degreeFilter, setPosts, addPosts]);
+  }, [userId, degreeFilter, setPosts, addPosts, getCachedPostsByDegree]);
 
   const loadMorePosts = useCallback(() => {
     if (pagination.hasMore && !isLoadingRef.current) {
-      loadPosts(pagination.currentPage + 1, true);
+      loadPosts(pagination.cursor, true);
     }
-  }, [loadPosts, pagination.hasMore, pagination.currentPage]);
+  }, [loadPosts, pagination.hasMore, pagination.cursor]);
 
   const handleRefresh = useCallback(async () => {
     clearPosts();
+    clearCache(); // Clear the cache on manual refresh
     setRefreshing(true);
     try {
-      await loadPosts(1, false);
+      await loadPosts(null, false);
     } finally {
       setRefreshing(false);
     }
-  }, [loadPosts, setRefreshing, clearPosts]);
+  }, [loadPosts, setRefreshing, clearPosts, clearCache]);
 
   const isNearBottom = useCallback((nativeEvent: any) => {
     const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
@@ -126,7 +153,7 @@ export const PostsList: React.FC<PostsListProps> = ({
   useEffect(() => {
     clearPosts();
     setPagination({
-      currentPage: 1,
+      cursor: null,
       hasMore: true,
       isLoading: false,
       isLoadingMore: false,
@@ -134,7 +161,7 @@ export const PostsList: React.FC<PostsListProps> = ({
     });
     setError(null);
     isLoadingRef.current = false;
-    loadPosts(1, false);
+    loadPosts(null, false);
   }, [userId, degreeFilter]);
 
   if (pagination.isLoading && posts.length === 0) {
@@ -165,25 +192,14 @@ export const PostsList: React.FC<PostsListProps> = ({
     );
   }
 
-  return (
-    <ScrollView
-      style={styles.container}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
-      showsVerticalScrollIndicator={true}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          colors={['#333']}
-          tintColor="#333"
-        />
-      }
-    >
-      {filteredPosts.map((post, index) => (
-        <PostCard key={`${post.id}-${index}`} post={post} />
-      ))}
+  const renderItem = useCallback(({ item: post }: { item: Post }) => (
+    <PostCard key={post.id} post={post} />
+  ), []);
 
+  const keyExtractor = useCallback((item: Post) => item.id, []);
+  
+  const ListFooterComponent = useCallback(() => (
+    <>
       {pagination.isLoadingMore && (
         <View style={styles.loadingIndicator}>
           <ActivityIndicator size="small" color="#999" />
@@ -197,7 +213,32 @@ export const PostsList: React.FC<PostsListProps> = ({
       )}
 
       <View style={styles.bottomPadding} />
-    </ScrollView>
+    </>
+  ), [pagination.isLoadingMore, pagination.hasMore, filteredPosts.length]);
+
+  return (
+    <FlatList
+      data={filteredPosts}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
+      style={styles.container}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
+      showsVerticalScrollIndicator={true}
+      initialNumToRender={10}
+      maxToRenderPerBatch={10}
+      windowSize={10}
+      removeClippedSubviews={true}
+      ListFooterComponent={ListFooterComponent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={['#333']}
+          tintColor="#333"
+        />
+      }
+    />
   );
 };
 
