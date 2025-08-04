@@ -41,21 +41,32 @@ export const fetchPostsByDegree = async (
 
 export const createPost = async (input: PostInput) => {
   try {
+    // Log the input to debug image URL issues
+    console.log('Creating post with input:', JSON.stringify(input, null, 2));
+    
+    // Ensure the image_url is properly formatted
+    const postData = {
+      user_id: input.user_id,
+      content: input.content,
+      category: input.category,
+      hide_from_chat: input.hide_from_chat ?? false,
+      connection_type: input.connectiontype,
+      image_url: input.image_url || null // Make sure it's explicitly null if undefined
+    };
+    
+    console.log('Post data being sent to database:', JSON.stringify(postData, null, 2));
+    
     const { data, error } = await supabase
       .from("posts")
-      .insert([{
-        user_id: input.user_id,
-        content: input.content,
-        category: input.category,
-        hide_from_chat: input.hide_from_chat ?? false,
-        connection_type: input.connectiontype,
-        image_url: input.image_url
-      }])
+      .insert([postData])
       .select()
       .single();
 
-    console.log('data', data);  
-    if (error) throw error;
+    console.log('Database response:', data);  
+    if (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
 
     return {
       success: true,

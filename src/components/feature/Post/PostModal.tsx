@@ -150,18 +150,26 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
 
   const handlePost = async () => {
     if (user) {
+      // First, ensure we have the image URL by uploading if necessary
       let imageUrl = uploadedImageUrl;
       if (selectedImage && !uploadedImageUrl) {
         imageUrl = await uploadImageToSupabase();
+        // Log the image URL to confirm we have it
+        console.log('Image URL after upload:', imageUrl);
       }
+      
+      // Ensure connectionLevel is properly passed as the selected value
       const post: PostInput = {
         user_id: user.id,
         content: noteText,
         category: activeTab,
-        connectiontype: connectionLevel,
+        connectiontype: connectionLevel, // This should now correctly use the selected value
         hide_from_chat: connectionVisibility === PostConnectionVisibility.All ? false : true,
         image_url: imageUrl || null
       };
+
+      // Log the post object to verify image_url is included
+      console.log('Post object before creating:', post);
 
       const data = await createPost(post);
       if (!data) logger.error('handlePost', 'error creating post');
@@ -177,8 +185,8 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
           created_at: new Date().toISOString(),
           expires_at: null,
           locked: false,
-          connection_type: ConnectionLevel.You,
-          connection_degree: ConnectionLevel.You,
+          connection_type: connectionLevel, // Use the selected connectionLevel instead of hardcoding
+          connection_degree: connectionLevel, // Also update this to use the selected value
           keyword_summary: [],
           user_interested: false,
           user_accepted: false,
