@@ -51,6 +51,7 @@ export const createPost = async (input: PostInput) => {
       category: input.category,
       hide_from_chat: input.hide_from_chat ?? false,
       connection_type: input.connectiontype,
+      connection_degree: input.connectiontype, // Adding connection_degree to fix filtering
       image_url: input.image_url || null // Make sure it's explicitly null if undefined
     };
     

@@ -163,7 +163,7 @@ const FlexiblePostComponent: React.FC<PostComponentProps> = ({
         user_id: user.id,
         content: noteText,
         category: activeTab,
-        connectiontype: connectionLevel, // This should now correctly use the selected value
+        connectiontype: connectionLevel, // Using field name as defined in the PostInput interface
         hide_from_chat: connectionVisibility === PostConnectionVisibility.All ? false : true,
         image_url: imageUrl || null
       };
