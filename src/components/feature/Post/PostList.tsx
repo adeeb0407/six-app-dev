@@ -43,7 +43,7 @@ export const PostsList: React.FC<PostsListProps> = ({
 
   const isLoadingRef = useRef(false);
   const lastScrollY = useRef(0);
-
+  
   const degreeFilter = useMemo(() => {
     const degreeMap = {
       [PostTabs.FirstDegree]: 1,
@@ -58,6 +58,56 @@ export const PostsList: React.FC<PostsListProps> = ({
     if (categoryTabs.length === 0) return posts;
     return posts.filter(post => categoryTabs.includes(post.category));
   }, [posts, categoryTabs]);
+  
+  // Memoized render item function for better performance
+  const renderItem = useCallback(({ item }: { item: Post }) => {
+    return <MemoizedPostCard post={item} />;
+  }, []);
+
+  // Memoized key extractor
+  const keyExtractor = useCallback((item: Post) => item.id, []);
+  
+  // Memoized footer component
+  const ListFooterComponent = useCallback(() => {
+    if (pagination.isLoadingMore) {
+      return (
+        <View style={styles.loadingIndicator}>
+          <ActivityIndicator size="small" color="#999" />
+        </View>
+      );
+    }
+    
+    if (!pagination.hasMore && filteredPosts.length > 0) {
+      return (
+        <View style={styles.loadingIndicator}>
+          <Text style={styles.endText}>You've reached the end</Text>
+        </View>
+      );
+    }
+    
+    return <View style={styles.bottomPadding} />;
+  }, [pagination.isLoadingMore, pagination.hasMore, filteredPosts.length]);
+
+  // Memoized empty component
+  const ListEmptyComponent = useCallback(() => {
+    if (pagination.isLoading) {
+      return (
+        <View style={styles.centeredContainer}>
+          <ActivityIndicator size="large" color="#999" />
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.statusText}>
+          {categoryTabs.length > 0 ? 'No posts found for selected categories' : 'No posts found'}
+        </Text>
+      </View>
+    );
+  }, [pagination.isLoading, categoryTabs.length]);
+
+  // degreeFilter and filteredPosts were moved up to be defined before they are used
 
   const loadPosts = useCallback(async (page: number = 1, isLoadMore: boolean = false) => {
     if (isLoadingRef.current) return;
@@ -155,53 +205,7 @@ export const PostsList: React.FC<PostsListProps> = ({
     );
   }
 
-  // Memoized render item function for better performance
-  const renderItem = useCallback(({ item }: { item: Post }) => {
-    return <MemoizedPostCard post={item} />;
-  }, []);
-
-  // Memoized footer component
-  const ListFooterComponent = useCallback(() => {
-    if (pagination.isLoadingMore) {
-      return (
-        <View style={styles.loadingIndicator}>
-          <ActivityIndicator size="small" color="#999" />
-        </View>
-      );
-    }
-    
-    if (!pagination.hasMore && filteredPosts.length > 0) {
-      return (
-        <View style={styles.loadingIndicator}>
-          <Text style={styles.endText}>You've reached the end</Text>
-        </View>
-      );
-    }
-    
-    return <View style={styles.bottomPadding} />;
-  }, [pagination.isLoadingMore, pagination.hasMore, filteredPosts.length]);
-
-  // Memoized empty component
-  const ListEmptyComponent = useCallback(() => {
-    if (pagination.isLoading) {
-      return (
-        <View style={styles.centeredContainer}>
-          <ActivityIndicator size="large" color="#999" />
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.statusText}>
-          {categoryTabs.length > 0 ? 'No posts found for selected categories' : 'No posts found'}
-        </Text>
-      </View>
-    );
-  }, [pagination.isLoading, categoryTabs.length]);
-
-  // Optimized extraction of item keys
-  const keyExtractor = useCallback((item: Post) => item.id, []);
+  // Hooks were moved to the top of the component
 
   return (
     <FlatList
