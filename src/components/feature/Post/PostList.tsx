@@ -112,12 +112,19 @@ export const PostsList: React.FC<PostsListProps> = ({
   const loadPosts = useCallback(async (page: number = 1, isLoadMore: boolean = false) => {
     if (isLoadingRef.current) return;
 
+    // Debug logs
+    console.log('Loading posts with degree filter:', degreeFilter);
+    console.log('Current postTabs value:', postTabs);
+    
     isLoadingRef.current = true;
     setPagination(prev => ({ ...prev, isLoading: !isLoadMore, isLoadingMore: isLoadMore }));
     setError(null);
 
     try {
       const response = await fetchPostsByDegree(userId, degreeFilter, page, 20);
+      
+      // Debug API response
+      console.log('API response:', response);
 
       if (response?.success && response.data) {
         const { posts: newPosts, pagination: paginationInfo } = response.data;
