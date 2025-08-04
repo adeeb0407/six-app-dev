@@ -2,14 +2,15 @@ import { ConnectionLevel, Post } from '@/src/constants/types/post.types.';
 import { useAuth } from '@/src/context/AuthContext';
 import { logger } from '@/src/service/logger.service';
 import { reactToPost } from '@/src/service/request.service';
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import {
   Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View
+  View,
+  Platform
 } from 'react-native';
 
 type props = {
@@ -35,16 +36,16 @@ const getTimeAgo = (dateString: string): string => {
   return postDate.toLocaleDateString();
 };
 
-const PostCard = ({ post }: props) => {
+const PostCard: React.FC<props> = ({ post }) => {
   const { user } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
   const [isReplied, setIsReplied] = useState(false);
 
-  const handleShowDetailsToggle = () => {
+  const handleShowDetailsToggle = useCallback(() => {
     setShowDetails(s => !s);
-  };
+  }, []);
 
-  const handleInterestedClick = async () => {
+  const handleInterestedClick = useCallback(async () => {
     if (user) {
       const response = await reactToPost(post.id, post.user_id, user.id);
       if (!response.success) {
@@ -52,7 +53,7 @@ const PostCard = ({ post }: props) => {
       }
       setIsReplied(true);
     }
-  };
+  }, [user, post.id, post.user_id]);
 
   const connectionText =
     post.connection_degree == ConnectionLevel.First
@@ -66,7 +67,18 @@ const PostCard = ({ post }: props) => {
     <TouchableWithoutFeedback onPress={handleShowDetailsToggle}>
       <View key={post.id} style={styles.postCard}>
         {post.image_url && (
-          <Image source={{ uri: post.image_url }} style={styles.postImage} />
+          <Image 
+            source={{ uri: post.image_url }} 
+            style={styles.postImage}
+            fadeDuration={300}
+            progressiveRenderingEnabled={true}
+            resizeMode="cover"
+            // Android-specific performance improvements
+            {...(Platform.OS === 'android' && {
+              loadingIndicatorSource: { uri: post.image_url },
+              progressiveRenderingEnabled: true,
+            })}
+          />
         )}
         <View style={styles.postHeader}>
           {
@@ -280,4 +292,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PostCard;
+// Export as memoized component to prevent unnecessary re-renders
+export default memo(PostCard, (prevProps, nextProps) => {
+  // Custom equality check to optimize rerenders
+  return prevProps.post.id === nextProps.post.id && 
+         prevProps.post.user_interested === nextProps.post.user_interested;
+});

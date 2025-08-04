@@ -90,37 +90,44 @@ const PhoneAuthScreen = () => {
     setLoading(false);
   };
 
-  const handleLogin = async () => {
+  cconst handleLogin = async () => {
     setLoading(true);
     Keyboard.dismiss();
-
     const formattedPhone = `+${callingCode}${phone}`;
-    const response = await verifyOTP(formattedPhone, code, authType);
-    if (response.success) {
-      const userData = {
-        id: response.data.id,
-        phone: response.data.phone
+    // Commented code for android devs to work
+    // Using tawishi's account
+        const userData = {
+        id: '036f36d4-8de1-4798-b4f7-caed8297a9ae',
+        phone: '19296973965'
       };
-      setUser({ id: userData.id, phone: userData.phone });
-
-      if (authType === AuthType.SignUp && response.isNewUser)  {
-        const user = await createUser(userData);
-        if (user.success) {
-          router.replace('/(protected)/(onboarding)/enterName');
-        }
-      } else {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: '(protected)' as never   }],
-        });
-        login(userData);
-      }
-    } else {
-      logger.error('handleLogin', 'Failed to verify OTP:', response.error);
-      Alert.alert('Failed to verify OTP', response.error, [{ text: 'OK', onPress: () => {
-        router.back();
-      } }]);
-    }
+       setUser({ id: userData.id, phone: userData.phone });
+       login(userData);
+       router.replace('/(protected)/(onboarding)/enterName');
+    // const response = await verifyOTP(formattedPhone, code, authType);
+    // if (response.success) {
+    //   const userData = {
+    //     id: response.data.id,
+    //     phone: response.data.phone
+    //   };
+    //   setUser({ id: userData.id, phone: userData.phone });
+    //   if (authType === AuthType.SignUp && response.isNewUser)  {
+    //     const user = await createUser(userData);
+    //     if (user.success) {
+    //       router.replace('/(protected)/(onboarding)/enterName');
+    //     }
+    //   } else {
+    //     navigation.reset({
+    //       index: 0,
+    //       routes: [{ name: '(protected)' as never   }],
+    //     });
+    //     login(userData);
+    //   }
+    // } else {
+    //   logger.error('handleLogin', 'Failed to verify OTP:', response.error);
+    //   Alert.alert('Failed to verify OTP', response.error, [{ text: 'OK', onPress: () => {
+    //     router.back();
+    //   } }]);
+    // }
     setLoading(false);
   };
 

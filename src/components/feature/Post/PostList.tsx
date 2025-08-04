@@ -1,11 +1,15 @@
 import { CategoryTabs } from '@/src/constants/types/categoryTabs';
+import { Post } from '@/src/constants/types/post.types.';
 import { PostTabs } from '@/src/constants/types/postTabs.types';
 import { logger } from '@/src/service/logger.service';
 import { fetchPostsByDegree } from '@/src/service/post.service';
 import { usePostStore } from '@/src/store/postStore';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import PostCard from './PostCard';
+
+// Create a memoized version of PostCard to prevent unnecessary re-renders
+const MemoizedPostCard = React.memo(PostCard);
 
 interface PostsListProps {
   userId: string;
@@ -106,22 +110,8 @@ export const PostsList: React.FC<PostsListProps> = ({
     }
   }, [loadPosts, setRefreshing, clearPosts]);
 
-  const isNearBottom = useCallback((nativeEvent: any) => {
-    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-    const distanceFromEnd = contentSize.height - (layoutMeasurement.height + contentOffset.y);
-    const scrollPercentage = (contentOffset.y + layoutMeasurement.height) / contentSize.height;
-    const isScrollingDown = contentOffset.y > lastScrollY.current;
-
-    lastScrollY.current = contentOffset.y;
-
-    return isScrollingDown && (distanceFromEnd < 300 || scrollPercentage >= 0.85);
-  }, []);
-
-  const handleScroll = useCallback(({ nativeEvent }: any) => {
-    if (isNearBottom(nativeEvent)) {
-      loadMorePosts();
-    }
-  }, [isNearBottom, loadMorePosts]);
+  // We don't need the manual scroll handling with FlatList as it provides onEndReached
+  // These methods are removed as they're no longer needed
 
   useEffect(() => {
     clearPosts();
@@ -165,12 +155,70 @@ export const PostsList: React.FC<PostsListProps> = ({
     );
   }
 
+  // Memoized render item function for better performance
+  const renderItem = useCallback(({ item }: { item: Post }) => {
+    return <MemoizedPostCard post={item} />;
+  }, []);
+
+  // Memoized footer component
+  const ListFooterComponent = useCallback(() => {
+    if (pagination.isLoadingMore) {
+      return (
+        <View style={styles.loadingIndicator}>
+          <ActivityIndicator size="small" color="#999" />
+        </View>
+      );
+    }
+    
+    if (!pagination.hasMore && filteredPosts.length > 0) {
+      return (
+        <View style={styles.loadingIndicator}>
+          <Text style={styles.endText}>You've reached the end</Text>
+        </View>
+      );
+    }
+    
+    return <View style={styles.bottomPadding} />;
+  }, [pagination.isLoadingMore, pagination.hasMore, filteredPosts.length]);
+
+  // Memoized empty component
+  const ListEmptyComponent = useCallback(() => {
+    if (pagination.isLoading) {
+      return (
+        <View style={styles.centeredContainer}>
+          <ActivityIndicator size="large" color="#999" />
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.statusText}>
+          {categoryTabs.length > 0 ? 'No posts found for selected categories' : 'No posts found'}
+        </Text>
+      </View>
+    );
+  }, [pagination.isLoading, categoryTabs.length]);
+
+  // Optimized extraction of item keys
+  const keyExtractor = useCallback((item: Post) => item.id, []);
+
   return (
-    <ScrollView
+    <FlatList
+      data={filteredPosts}
+      renderItem={renderItem}
+      keyExtractor={keyExtractor}
       style={styles.container}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
+      contentContainerStyle={styles.listContentContainer}
       showsVerticalScrollIndicator={true}
+      onEndReached={loadMorePosts}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={ListFooterComponent}
+      ListEmptyComponent={ListEmptyComponent}
+      initialNumToRender={5}
+      maxToRenderPerBatch={10}
+      windowSize={10}
+      removeClippedSubviews={true}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -179,25 +227,7 @@ export const PostsList: React.FC<PostsListProps> = ({
           tintColor="#333"
         />
       }
-    >
-      {filteredPosts.map((post, index) => (
-        <PostCard key={`${post.id}-${index}`} post={post} />
-      ))}
-
-      {pagination.isLoadingMore && (
-        <View style={styles.loadingIndicator}>
-          <ActivityIndicator size="small" color="#999" />
-        </View>
-      )}
-
-      {!pagination.hasMore && filteredPosts.length > 0 && (
-        <View style={styles.loadingIndicator}>
-          <Text style={styles.endText}>You've reached the end</Text>
-        </View>
-      )}
-
-      <View style={styles.bottomPadding} />
-    </ScrollView>
+    />
   );
 };
 
@@ -206,31 +236,35 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20
   },
+  listContentContainer: {
+    paddingTop: 10,
+    paddingBottom: 30
+  },
   centeredContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 20,
   },
   statusText: {
     marginTop: 10,
     color: '#666',
     fontSize: 16,
     textAlign: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
   },
   errorText: {
-    color: '#ff4444',
+    color: '#f44336',
   },
   loadingIndicator: {
-    paddingVertical: 20,
+    padding: 15,
     alignItems: 'center',
   },
   endText: {
-    color: '#999',
+    color: '#888',
     fontSize: 14,
   },
   bottomPadding: {
-    height: 50,
+    height: 60,
   },
 });
