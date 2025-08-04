@@ -10,7 +10,7 @@ const { BACKEND_URL } = Constants.expoConfig?.extra as AppConfigExtra;
 
 export const fetchPostsByDegree = async (
   userId: string,
-  degreeFilter: number = 0,
+  degreeFilter: string = '0',
   page: number = 1,
   limit: number = 20
 

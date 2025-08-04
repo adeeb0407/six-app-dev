@@ -46,12 +46,12 @@ export const PostsList: React.FC<PostsListProps> = ({
   
   const degreeFilter = useMemo(() => {
     const degreeMap = {
-      [PostTabs.FirstDegree]: 1,
-      [PostTabs.SecondDegree]: 2,
-      [PostTabs.ThirdDegree]: 3,
-      [PostTabs.AllPosts]: 0,
+      [PostTabs.FirstDegree]: '1',
+      [PostTabs.SecondDegree]: '2',
+      [PostTabs.ThirdDegree]: '3',
+      [PostTabs.AllPosts]: '0',
     };
-    return degreeMap[postTabs] ?? 0;
+    return degreeMap[postTabs] ?? '0';
   }, [postTabs]);
 
   const filteredPosts = useMemo(() => {
